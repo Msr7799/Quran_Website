@@ -1,0 +1,550 @@
+/* SurahCardCarousel.module.css - محسن للتخطيط 3×3 */
+
+/* الحاوي الرئيسي */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* شريط البحث */
+.searchContainer {
+  margin-bottom: 30px;
+  display: flex;
+  justify-content: center;
+}
+
+.searchWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 15px 50px 15px 20px;
+  font-size: 1.1rem;
+  border: 2px solid #e2e8f0;
+  border-radius: 25px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  text-align: right;
+  direction: rtl;
+  outline: none;
+}
+
+.searchInput:focus {
+  border-color: #060c0f;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+  background: white;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* معلومات العرض */
+.displayInfo {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+/* رسالة عدم وجود نتائج */
+.noResults {
+  text-align: center;
+  padding: 60px 20px;
+  color: #64748b;
+  font-size: 1.2rem;
+  background: rgba(248, 250, 252, 0.8);
+  border-radius: 15px;
+  border: 2px dashed #cbd5e1;
+}
+
+/* حاوي الكاروسيل */
+.carouselWrapper {
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* إعدادات Embla */
+.embla {
+  overflow: hidden;
+  width: 100%;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.emblaContainer {
+  display: flex;
+  direction: rtl;
+  will-change: transform;
+}
+
+.emblaSlide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  padding: 10px;
+}
+
+/* شبكة 2×3 */
+.gridWrapper {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 25px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 520px;
+  align-items: stretch;
+}
+
+.gridItem {
+  display: flex;
+  width: 100%;
+  min-height: 220px;
+}
+
+.emptyGridItem {
+  /* مساحة فارغة للحفاظ على تخطيط الشبكة */
+  visibility: hidden;
+}
+
+/* بطاقة السورة - تصميم Instagram */
+.instagramCard {
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  position: relative;
+}
+
+.instagramCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4CAF50, #2196F3, #9C27B0);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.instagramCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 16px 48px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.08);
+}
+
+.instagramCard:hover::before {
+  opacity: 1;
+}
+
+.cardHeader {
+  padding: 20px 24px 15px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.surahNumber {
+  background: linear-gradient(135deg, #7a2626, #820d0df0);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+  flex-shrink: 0;
+}
+
+.surahNameAr {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  flex: 1;
+  text-align: right;
+}
+
+.cardBody {
+  padding: 20px 24px;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.englishName {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-style: italic;
+}
+
+.verseCount {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.cardFooter {
+  padding: 12px 24px;
+  background: rgba(248, 250, 252, 0.8);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  text-align: center;
+}
+
+.revelationType {
+  font-size: 0.85rem;
+  color: #475569;
+  background: rgba(226, 232, 240, 0.6);
+  padding: 4px 12px;
+  border-radius: 12px;
+  display: inline-block;
+  font-weight: 500;
+}
+
+/* أزرار التنقل */
+.navigationContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+  margin-top: 40px;
+  padding: 20px;
+}
+
+.navButton {
+  background: linear-gradient(145deg, #ffffff, #f1f5f9);
+  border: 2px solid #e2e8f0;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #475569;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.navButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.navButton:hover:not(:disabled) {
+  background: linear-gradient(145deg, #0d1a44, #15194a);
+  color: white;
+  border-color: #101a4e;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 24px rgba(76, 175, 80, 0.3),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.navButton:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.navButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f1f5f9;
+  color: #cbd5e1;
+  border-color: #e2e8f0;
+  transform: none;
+  box-shadow: none;
+}
+
+.arrow {
+  font-weight: bold;
+  line-height: 1;
+}
+
+/* مؤشر الصفحات */
+.pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+.pageInfo {
+  font-size: 0.95rem;
+  color: #64748b;
+  font-weight: 600;
+  background: rgba(248, 250, 252, 0.8);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.dots {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: none;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.dot:hover {
+  background: #94a3b8;
+  transform: scale(1.2);
+}
+
+.activeDot {
+  background: linear-gradient(100deg, #701512, #a51111da);
+  transform: scale(1.3);
+  box-shadow: 0 2px 8px rgba(7, 3, 23, 0.4);
+}
+
+/* اختصارات لوحة المفاتيح */
+.keyboardHints {
+  text-align: center;
+  margin-top: 20px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+}
+
+/* الوضع المظلم */
+[data-theme='dark'] .instagramCard {
+  background: #030608;
+  border-color: #475569;
+}
+
+[data-theme='dark'] .surahNameAr {
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .englishName {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .verseCount {
+  color: #94a3b8;
+}
+
+[data-theme='dark'] .cardHeader,
+[data-theme='dark'] .cardFooter {
+  background: rgba(15, 23, 42, 0.5);
+  border-color: #475569;
+}
+
+[data-theme='dark'] .revelationType {
+  background: rgba(71, 85, 105, 0.6);
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .searchInput {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #475569;
+  color: #f1f5f9;
+}
+
+[data-theme='dark'] .noResults {
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+/* استجابة للشاشات */
+@media (max-width: 1200px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .gridWrapper {
+    max-width: 900px;
+    gap: 20px;
+    min-height: 650px;
+  }
+  
+  .instagramCard {
+    min-height: 190px;
+  }
+}
+
+@media (max-width: 900px) {
+  .gridWrapper {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    max-width: 600px;
+    gap: 18px;
+    min-height: 400px;
+  }
+  
+  .instagramCard {
+    min-height: 170px;
+  }
+  
+  .surahNameAr {
+    font-size: 1.2rem;
+  }
+  
+  .navigationContainer {
+    gap: 20px;
+  }
+  
+  .navButton {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 10px;
+  }
+  
+  .gridWrapper {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(6, 1fr);
+    max-width: 320px;
+    gap: 15px;
+    min-height: 400px;
+  }
+  
+  .instagramCard {
+    min-height: 140px;
+  }
+  
+  .surahNameAr {
+    font-size: 1.1rem;
+  }
+  
+  .cardHeader {
+    padding: 15px 18px 12px;
+    gap: 12px;
+  }
+  
+  .surahNumber {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+  
+  .cardBody {
+    padding: 15px 18px;
+  }
+  
+  .searchInput {
+    padding: 12px 40px 12px 15px;
+    font-size: 1rem;
+  }
+  
+  .navigationContainer {
+    gap: 15px;
+    margin-top: 30px;
+  }
+  
+  .dots {
+    gap: 8px;
+  }
+  
+  .dot {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+/* تحسينات الأداء */
+.instagramCard {
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+.emblaContainer {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* تأثيرات إضافية للتفاعل */
+.instagramCard:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+.navButton:active:not(:disabled) {
+  transform: translateY(-1px) scale(0.95);
+}
+
+/* مؤشر التحميل */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+  color: #11164d;
+  font-size: 1.1rem;
+}
+
+.loading::after {
+  content: '⟳';
+  margin-right: 10px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

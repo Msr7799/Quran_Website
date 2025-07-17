@@ -1,0 +1,37 @@
+/* ملف بسيط جداً - بدون قيود على التفاعل */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* حماية العناصر المثبتة من التحجيم */
+[style*="position: fixed"],
+.MuiBox-root[style*="position: fixed"],
+.MuiPaper-root,
+.MuiPopper-root {
+  transform: none !important;
+  zoom: 1 !important;
+  scale: 1 !important;
+}
+
+/* حماية إضافية للقوائم المنسدلة */
+.MuiMenu-root,
+.MuiSelect-root,
+.MuiList-root,
+.MuiPaper-root.MuiMenu-paper {
+  transform: none !important;
+  zoom: 1 !important;
+  scale: 1 !important;
+  position: absolute !important;
+}

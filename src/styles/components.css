@@ -1,0 +1,194 @@
+/* Components Styles - محسنة وموحدة */
+
+/* Quran Card Component */
+.quran-card {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: clamp(1rem, 3vw, 2rem);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.quran-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.quran-card-title {
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+}
+
+/* Audio Player Component */
+.audio-player-container {
+  background: var(--card-bg);
+  border-radius: 16px;
+  padding: clamp(1rem, 3vw, 2rem);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+  border: 2px solid var(--primary-color);
+  margin: 2rem 0;
+}
+
+.audio-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.5rem, 2vw, 1rem);
+  flex-wrap: wrap;
+}
+
+.audio-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: clamp(40px, 8vw, 60px);
+  height: clamp(40px, 8vw, 60px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.audio-button:hover {
+  background: var(--primary-dark);
+  transform: scale(1.1);
+}
+
+/* Search Component */
+.search-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto 2rem;
+}
+
+.search-input {
+  width: 100%;
+  padding: clamp(0.75rem, 2vw, 1rem);
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  border: 2px solid var(--border-color);
+  border-radius: 25px;
+  background: var(--card-bg);
+  transition: all 0.3s ease;
+  text-align: right;
+  direction: rtl;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
+}
+
+/* Navigation Component */
+.navigation-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  background: var(--card-bg);
+  border-radius: 16px;
+  margin: 2rem 0;
+}
+
+.nav-button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: clamp(0.5rem, 2vw, 1rem) clamp(1rem, 3vw, 2rem);
+  font-size: clamp(0.875rem, 2vw, 1rem);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.nav-button:disabled {
+  background: var(--border-color);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Carousel Component */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.carousel-slide {
+  padding: clamp(1rem, 3vw, 2rem);
+  text-align: center;
+}
+
+.carousel-content {
+  font-size: clamp(1rem, 2.5vw, 1.4rem);
+  line-height: 1.8;
+  color: var(--text-primary);
+}
+
+/* Footer Component */
+.footer-container {
+  background: var(--card-bg);
+  padding: clamp(2rem, 5vw, 4rem) 0;
+  margin-top: 4rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  text-align: center;
+}
+
+/* Responsive Utilities for Components */
+@media (max-width: 768px) {
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+  
+  .mobile-center {
+    text-align: center !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-only {
+    display: block !important;
+  }
+}
