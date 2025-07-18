@@ -2,7 +2,7 @@ import { useRouter } from 'next/router';
 import { useState, useMemo } from 'react';
 import SeoHead from '../../components/SeoHead';
 import SurahsList from '../../components/SurahsList';
-import AudioPlayer from '../../components/AudioPlayer';
+import QuranPlayer from '../../components/QuranPlayer';
 import styles from '../../styles/QuranSound.module.css';
 import quranData from '../../../public/json/metadata.json';
 import recitersData from '../../../public/json/quranMp3.json';
@@ -117,12 +117,17 @@ export default function ReciterPage() {
                     </div>
                 )}
                 {currentAudio && (
-                    <AudioPlayer
-                        src={currentAudio}
+                    <QuranPlayer
+                        reciter={selectedReciterData}
+                        surah={quranData[currentSurahIndex]}
+                        currentAudio={currentAudio}
+                        onPlay={handlePlay}
+                        onBack={handleBack}
                         onClose={handleClosePlayer}
                         onNext={handleNext}
                         onPrev={handlePrev}
-                        prevSurah={getPrevSurah()}
+                        prevSurah={getPrevSurah()}      
+                        src={currentAudio}
                         nextSurah={getNextSurah()}
                     />
                 )}
