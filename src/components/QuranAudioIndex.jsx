@@ -344,12 +344,8 @@ export default function QuranAudioIndex() {
                     showMiniProcessBar={false}
                     showProgressLoadBar={true}
                     showPlay={true}
-                    showReload={false}
-                    showDownload={true}
-                    showPlayMode={false}
                     showThemeSwitch={false}
                     showLyric={false}
-                    showMediaSession={true}
                     onAudioPlay={() => console.log('Audio is playing')}
                     onAudioPause={() => console.log('Audio is paused')}
                     onAudioEnded={() => console.log('Audio ended')}

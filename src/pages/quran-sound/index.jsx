@@ -1,6 +1,6 @@
+// src/pages/quran-sound/index.jsx
 import SeoHead from '../../components/SeoHead';
 import QuranSoundContainer from '../../components/QuranSoundContainer';
-
 export default function QuranSoundPage() {
     return (
         <>

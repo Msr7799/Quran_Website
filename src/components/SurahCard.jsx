@@ -6,12 +6,16 @@ import SurahInstagramCard from './SurahInstagramCard';
 
 const SURAHS_PER_SLIDE = 6; // 2x3 grid
 
+import Link from 'next/link';
+
 const SurahCard = ({ surah }) => {
-  const router = useRouter();
-  const handleClick = () => {
-    router.push(`/quran/${surah.number}`);
-  };
-  return <SurahInstagramCard surah={surah} onClick={handleClick} />;
+  return (
+    <Link href={`/quran/${surah.number}`} passHref legacyBehavior>
+      <a style={{ textDecoration: 'none' }}>
+        <SurahInstagramCard surah={surah} />
+      </a>
+    </Link>
+  );
 };
 
 // تجميع السور في مجموعات من 6 (شبكة 2×3)
