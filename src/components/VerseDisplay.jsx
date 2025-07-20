@@ -100,7 +100,6 @@ const VerseWrapper = styled(Box)(({ theme, isVisible }) => ({
     : `${fadeOutSmooth} 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards`,
   pointerEvents: isVisible ? 'auto' : 'none',
   zIndex: isVisible ? 1100 : 1000, // z-index أعلى لضمان الظهور فوق المحتوى
-  isolation: 'isolate', // إنشاء stacking context منفصل
   '@media (max-width: 768px)': {
     width: '95%',
     animation: isVisible 
