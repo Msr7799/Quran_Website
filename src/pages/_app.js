@@ -10,6 +10,7 @@ import '../styles/globals.css';
 import AppAppBar from '../components/AppAppBar';
 import Layout from '../components/Layout';
 import Footer from '../components/Footer';
+import Logo from '../components/Logo';
 
 /**
  * المكون الأساسي للتطبيق
@@ -101,6 +102,8 @@ export default function MyApp({ Component, pageProps }) {
 
       {/* الأنماط العامة للتطبيق */}
       <style jsx>{`
+
+
         .app-container {
           min-height: 100vh;
           display: flex;
@@ -119,12 +122,22 @@ export default function MyApp({ Component, pageProps }) {
 
         /* تحسين للحركة المنخفضة */
         @media (prefers-reduced-motion: reduce) {
+          .top-logo {
+            transition: none !important;
+          }
+
+          .top-logo:hover {
+            transform: none !important;
+          }
+
           * {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
           }
         }
+
+
 
         /* تحسين للطباعة */
         @media print {

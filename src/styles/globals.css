@@ -46,9 +46,9 @@ body {
   --primary-light: #5d6d7e;
   --primary-dark: #2c3e50;
 
-  --secondary-color: #8b4513;
-  --secondary-light: #a0522d;
-  --secondary-dark: #654321;
+  --secondary-color: #6c757d;
+  --secondary-light: #868e96;
+  --secondary-dark: #495057;
 
   /* ألوان الحالة */
   --success-color: #27ae60;
@@ -127,9 +127,9 @@ body {
   --primary-light: #85929e;
   --primary-dark: #34495e;
 
-  --secondary-color: #cd853f;
-  --secondary-light: #daa520;
-  --secondary-dark: #b8860b;
+  --secondary-color: #9ca3af;
+  --secondary-light: #d1d5db;
+  --secondary-dark: #6b7280;
 
   /* ألوان الحالة */
   --success-color: #2ecc71;

@@ -5,6 +5,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import Logo from './Logo';
 
 // نفس الimports الحالية - لم يتم تغييرها
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,7 +19,6 @@ import ErrorIcon from '@mui/icons-material/Error';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import CloseIcon from '@mui/icons-material/Close';
-import MenuIcon from '@mui/icons-material/Menu';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 // نفس بيانات التنقل الحالية - لم يتم تغييرها
@@ -81,13 +81,50 @@ function AppAppBar() {
   const [mounted, setMounted] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [shouldShakeLogo, setShouldShakeLogo] = useState(false);
   
   const router = useRouter();
   const searchInputRef = useRef(null);
 
   useEffect(() => {
     setMounted(true);
+
+    // التحقق من sessionStorage (يُمسح عند إغلاق التاب)
+    const hasSeenMenuInThisTab = sessionStorage.getItem('hasSeenMenuInThisTab');
+
+    if (!hasSeenMenuInThisTab) {
+      // لم يرَ القائمة في هذا التاب - ابدأ الاهتزاز بعد ثانيتين
+      console.log('🎯 مستخدم جديد في هذا التاب - سيبدأ الاهتزاز');
+      const timer = setTimeout(() => {
+        setShouldShakeLogo(true);
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    } else {
+      // رأى القائمة من قبل في هذا التاب - لا اهتزاز
+      console.log('✅ المستخدم رأى القائمة من قبل في هذا التاب - لا اهتزاز');
+      setShouldShakeLogo(false);
+    }
   }, []);
+
+  // متابعة تغيير shouldShakeLogo
+  useEffect(() => {
+    console.log('🎯 shouldShakeLogo تغيرت إلى:', shouldShakeLogo);
+    console.log('🔍 فحص العنصر...');
+
+    setTimeout(() => {
+      const logoElement = document.querySelector('.logo-menu-button');
+      if (logoElement) {
+        console.log('📍 العنصر موجود!');
+        console.log('📝 الكلاسات:', logoElement.className);
+        console.log('🎨 الأنماط:', window.getComputedStyle(logoElement).animation);
+        console.log('🎯 data-shake:', logoElement.getAttribute('data-shake'));
+        console.log('🎨 border:', logoElement.style.border);
+      } else {
+        console.log('❌ العنصر غير موجود!');
+      }
+    }, 100);
+  }, [shouldShakeLogo]);
 
   // إدارة الوضع المظلم (نفس الكود الحالي)
   useEffect(() => {
@@ -167,29 +204,50 @@ function AppAppBar() {
     setIsVisible(!isVisible);
   };
 
+  const handleLogoClick = () => {
+    console.log('🖱️ تم النقر على اللوجو - المستخدم سيرى القائمة');
+
+    // إيقاف الاهتزاز نهائياً لهذا التاب
+    setShouldShakeLogo(false);
+
+    // حفظ أن المستخدم رأى القائمة في هذا التاب (يُمسح عند إغلاق التاب)
+    sessionStorage.setItem('hasSeenMenuInThisTab', 'true');
+
+    // فتح/إغلاق المنيو
+    toggleSidebar();
+  };
+
   if (!mounted) return null;
 
   return (
     <>
       {/* زر الهمبرجر الثابت */}
-      <button 
-        className="hamburger-button"
-        onClick={toggleSidebar}
-        aria-label={isVisible ? 'إغلاق القائمة' : 'فتح القائمة'}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          fontSize: '24px',
-          cursor: 'pointer',
-          border: 'none',
-          outline: 'none',
-          background:   isDarkMode ? "#151515"  : '#363636 ' ,     
-          color: 'white ',
-        }}
-      >
-        {isVisible ? <CloseIcon /> : <MenuIcon />}
-      </button>
+      <div className={`logo-menu-button ${shouldShakeLogo ? 'shake-active' : ''}`}>
+        {isVisible ? (
+          <div
+            className="close-icon-wrapper"
+            onClick={toggleSidebar}
+            role="button"
+            tabIndex={0}
+            aria-label="إغلاق القائمة"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleSidebar();
+              }
+            }}
+          >
+            <CloseIcon />
+          </div>
+        ) : (
+          <div onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
+            <Logo size={70} />
+          </div>
+        )}
+      </div>
+
+
+
 
       {/* الشريط الجانبي الثابت */}
       <div 
@@ -284,36 +342,179 @@ function AppAppBar() {
 
       {/* الأنماط المحسنة - إزالة الحركة مع التمرير وإزالة مؤشر الإخفاء */}
       <style jsx global>{`
-        /* زر الهمبرجر الثابت */
-        .hamburger-button {
+        /* زر اللوجو الثابت */
+        .logo-menu-button {
           position: fixed;
           top: 20px;
           right: 20px;
           z-index: 1001;
+          cursor: pointer;
+          outline: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          border-radius: 30%;
+        }
+
+
+
+
+
+
+
+
+
+
+
+        /* أنيميشن سريع مع توقف 4 ثوانٍ */
+        .logo-menu-button.shake-active {
+          animation: fastIntervalShake 5s infinite ease-in-out !important;
+        }
+
+        @keyframes fastIntervalShake {
+          /* الاهتزاز السريع جداً لمدة ثانية واحدة (20% من 5 ثوانٍ) */
+          0% {
+            transform: scale(1) translateX(0);
+            box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.6);
+            border-radius: 45%;
+          }
+          1% {
+            transform: scale(1.03) translateX(-1px);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          2% {
+            transform: scale(1.05) translateX(1px);
+            box-shadow: 0 0 0 5px rgba(25, 118, 210, 0.3);
+            border-radius: 45%;
+          }
+          3% {
+            transform: scale(1.04) translateX(-1px);
+            box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          4% {
+            transform: scale(1.06) translateX(1px);
+            box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.2);
+            border-radius: 45%;
+          }
+          5% {
+            transform: scale(1.03) translateX(-1px);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          6% {
+            transform: scale(1.05) translateX(1px);
+            box-shadow: 0 0 0 5px rgba(25, 118, 210, 0.3);
+            border-radius: 45%;
+          }
+          7% {
+            transform: scale(1.04) translateX(-1px);
+            box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          8% {
+            transform: scale(1.06) translateX(1px);
+            box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.2);
+            border-radius: 45%;
+          }
+          9% {
+            transform: scale(1.03) translateX(-1px);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          10% {
+            transform: scale(1.05) translateX(1px);
+            box-shadow: 0 0 0 5px rgba(25, 118, 210, 0.3);
+            border-radius: 45%;
+          }
+          11% {
+            transform: scale(1.04) translateX(-1px);
+            box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          12% {
+            transform: scale(1.06) translateX(1px);
+            box-shadow: 0 0 0 6px rgba(25, 118, 210, 0.2);
+            border-radius: 45%;
+          }
+          13% {
+            transform: scale(1.03) translateX(-1px);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          14% {
+            transform: scale(1.05) translateX(1px);
+            box-shadow: 0 0 0 5px rgba(25, 118, 210, 0.3);
+            border-radius: 45%;
+          }
+          15% {
+            transform: scale(1.04) translateX(-1px);
+            box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4);
+            border-radius: 45%;
+          }
+          16% {
+            transform: scale(1.03) translateX(1px);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.5);
+            border-radius: 45%;
+          }
+          17% {
+            transform: scale(1.02) translateX(-1px);
+            box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.6);
+            border-radius: 45%;
+          }
+          18% {
+            transform: scale(1.01) translateX(1px);
+            box-shadow: 0 0 0 1px rgba(25, 118, 210, 0.7);
+            border-radius: 45%;
+          }
+          20% {
+            transform: scale(1) translateX(0);
+            box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.6);
+            border-radius: 45%;
+          }
+          /* توقف لمدة 4 ثوانٍ (80% من 5 ثوانٍ) */
+          21%, 100% {
+            transform: scale(1) translateX(0);
+            box-shadow: 0 0 0 0 rgba(25, 118, 210, 0.2);
+            border-radius: 45%;
+          }
+        }
+
+        @keyframes shakeMotion {
+          0% { transform: translateX(0); }
+          25% { transform: translateX(-1px); }
+          50% { transform: translateX(1px); }
+          75% { transform: translateX(-1px); }
+          100% { transform: translateX(0); }
+        }
+
+        .logo-menu-button:hover {
+          transform: scale(1.05);
+        }
+
+        .logo-menu-button:active {
+          transform: scale(0.95);
+        }
+
+        .close-icon-wrapper {
           width: 56px;
           height: 56px;
-          border: none;
           border-radius: 50%;
-          background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
           color: white;
           display: flex;
           align-items: center;
           justify-content: center;
-          cursor: pointer;
-          /* تم تغيير لون البوكس شدو الى أبيض وخفف ضيائه */
-          box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 16px rgba(220, 38, 38, 0.3);
           font-size: 24px;
+          transition: all 0.3s ease;
         }
 
-        .hamburger-button:hover {
-          background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-          transform: scale(1.05);
-          box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
-        }
-
-        .hamburger-button:active {
-          transform: scale(0.95);
+        .close-icon-wrapper:hover {
+          background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+          box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
         }
 
         /* الشريط الجانبي الثابت */
@@ -678,11 +879,15 @@ function AppAppBar() {
             right: 80px;
           }
           
-          .hamburger-button {
+          .logo-menu-button {
             top: 15px;
             right: 15px;
+          }
+
+          .close-icon-wrapper {
             width: 48px;
             height: 48px;
+            font-size: 20px;
           }
           
           .nav-item,
@@ -699,6 +904,20 @@ function AppAppBar() {
           }
         }
 
+        /* الشاشات الصغيرة جداً */
+        @media (max-width: 360px) {
+          .logo-menu-button {
+            top: 10px;
+            right: 10px;
+          }
+
+          .close-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            font-size: 18px;
+          }
+        }
+
         @media (min-width: 768px) and (max-width: 1024px) {
           .search-form-overlay {
             width: 350px;
@@ -708,7 +927,7 @@ function AppAppBar() {
 
         /* تحسينات الأداء */
         .fixed-sidebar,
-        .hamburger-button {
+        .logo-menu-button {
           contain: layout style paint;
         }
 
