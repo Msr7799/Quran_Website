@@ -9,11 +9,9 @@ import SimpleAudioPlayer from '../../components/AudioPlayer/SimpleAudioPlayer';
 import TafseerPopup from '../../components/AudioPlayer/tafseer_popup';
 import { getPageInfo, getMainSurahForPage } from '../../utils/pageMapping';
 import { getSurahPage } from '../../utils/surahPageMapping';
-import PageLoader from '../../components/PageLoader';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import { useAsyncLoading } from '../../hooks/useLoading';
 import { Box, Container, Typography, IconButton } from '@mui/material';
 import { VolumeUp, VolumeOff } from '@mui/icons-material';
+import { useAsyncLoading } from '../../hooks/useLoading';
 
 /**
  * صفحة تصفح المصحف مع تصميم responsive
@@ -46,8 +44,14 @@ const QuranPageView = () => {
   // بيانات الصفحة
   const [pageData, setPageData] = useState(null);
   const [surahsInPage, setSurahsInPage] = useState([]);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [metadata, setMetadata] = useState(null);
+
   const [svgLoading, setSvgLoading] = useState(false);
+  const [audioPlayerReady, setAudioPlayerReady] = useState(false);
+  const [isContentLoading, setIsContentLoading] = useState(true);
+
+  // هوك اللودر للمحتوى الداخلي
+  const { loading: contentLoading, Loader: ContentLoader } = useAsyncLoading(isContentLoading, 800);
 
   // إعدادات المصحف
   const totalPages = 604; // إجمالي صفحات المصحف
@@ -62,6 +66,16 @@ const QuranPageView = () => {
       const pageNum = parseInt(page);
       if (pageNum >= 1 && pageNum <= totalPages) {
         setCurrentPage(pageNum);
+
+        // مسح السورة المختارة من المشغل عند تغيير الصفحة يدوياً
+        // (ليس عند الانتقال من المشغل)
+        const isFromPlayer = sessionStorage.getItem('navigatingFromPlayer');
+        if (!isFromPlayer) {
+          sessionStorage.removeItem('selectedSurahFromPlayer');
+        } else {
+          // إزالة العلامة بعد الاستخدام
+          sessionStorage.removeItem('navigatingFromPlayer');
+        }
       } else {
         router.replace('/quran-pages/1');
       }
@@ -85,6 +99,21 @@ const QuranPageView = () => {
     });
 
     return () => observer.disconnect();
+  }, []);
+
+  // تحميل metadata
+  useEffect(() => {
+    const loadMetadata = async () => {
+      try {
+        const response = await fetch('/json/metadata.json');
+        const data = await response.json();
+        setMetadata(data);
+      } catch (error) {
+        console.error('خطأ في تحميل metadata:', error);
+      }
+    };
+
+    loadMetadata();
   }, []);
 
   // التنقل بين الصفحات
@@ -173,7 +202,13 @@ const QuranPageView = () => {
   useEffect(() => {
     const loadPageData = async () => {
       try {
-        setIsPageLoading(true);
+        // بدء التحميل
+        setIsContentLoading(true);
+        setAudioPlayerReady(false);
+        setSvgLoading(true);
+
+        // تأخير قصير لضمان ظهور اللودر
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // استخدام pageMapping للحصول على معلومات الصفحة
         const pageInfo = await getPageInfo(currentPage);
@@ -191,19 +226,33 @@ const QuranPageView = () => {
 
           if (mainSurah) {
             setSurahsInPage([mainSurah]);
+            setSelectedSurah(mainSurah);
+            console.log('🎯 تم تحديد السورة الرئيسية:', mainSurah.name.ar);
             // تحميل التوقيتات للسورة الرئيسية
             loadAyahTimings(mainSurahNumber);
           }
         } else if (pageInfo.surahs.length > 0) {
-          // تحميل التوقيتات للسورة الأولى في الصفحة
-          setSelectedSurah(pageInfo.surahs[0]);
-          loadAyahTimings(pageInfo.surahs[0].number);
+          // تحديد السورة الرئيسية للصفحة
+          const mainSurah = getMainSurahForPage(currentPage);
+          const selectedSurahForPage = mainSurah ?
+            pageInfo.surahs.find(s => s.number === mainSurah) || pageInfo.surahs[0] :
+            pageInfo.surahs[0];
+
+          setSelectedSurah(selectedSurahForPage);
+          console.log('🎯 تم تحديد السورة للصفحة:', selectedSurahForPage.name.ar);
+          // تحميل التوقيتات للسورة المحددة
+          loadAyahTimings(selectedSurahForPage.number);
         }
 
-        // تأخير لإظهار التحميل الانسيابي
+        // تم تحميل البيانات بنجاح - إنهاء اللودر وتفعيل المشغل
         setTimeout(() => {
-          setIsPageLoading(false);
-        }, 800);
+          setIsContentLoading(false);
+          setSvgLoading(false);
+          // تأخير قصير لتفعيل المشغل بعد إخفاء اللودر
+          setTimeout(() => {
+            setAudioPlayerReady(true);
+          }, 300);
+        }, 500);
 
       } catch (error) {
         console.error('خطأ في تحميل بيانات الصفحة:', error);
@@ -214,7 +263,9 @@ const QuranPageView = () => {
           surahs: []
         });
         setSurahsInPage([]);
-        setIsPageLoading(false);
+        setAudioPlayerReady(false);
+        setIsContentLoading(false);
+        setSvgLoading(false);
       }
     };
 
@@ -247,12 +298,9 @@ const QuranPageView = () => {
   }
 
   return (
-    <PageLoader
-      isLoading={isPageLoading}
-      loadingText="جاري تحميل صفحة المصحف الشريف..."
-      animationType="fade"
-      minLoadingTime={1200}
-    >
+    <>
+      {/* لودر المحتوى الداخلي */}
+      <ContentLoader text="جاري تحميل صفحة المصحف الشريف..." />
       <SeoHead
         title={`صفحة ${currentPage} - تصفح المصحف الشريف`}
         description={`تصفح صفحة ${currentPage} من المصحف الشريف. ${pageInfo.displayName || `صفحة ${currentPage}`}`}
@@ -275,63 +323,147 @@ const QuranPageView = () => {
       />
 
       <Container maxWidth="sm" className={`quran-page-container ${isFullscreen ? 'fullscreen' : ''}`}>
-        {/* شريط التحكم المدمج - مخفي مؤقتاً لتجنب التداخل */}
+        {/* شريط التحكم العلوي المحسن */}
         <Box
           className="compact-header"
           sx={{
             position: 'fixed',
-            top: '10px',
+            top: '20px',
             left: '50%',
             transform: 'translateX(-50%)',
-            zIndex: 1100,
+            zIndex: 1200,
             width: 'auto',
-            maxWidth: '90%',
-            background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)',
-            borderRadius: '12px',
-            padding: '8px 16px',
-            boxShadow: isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.5)' : '0 4px 20px rgba(0, 0, 0, 0.15)'
+            maxWidth: '95%',
+            background: isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(15px)',
+            borderRadius: '16px',
+            padding: '12px 20px',
+            boxShadow: isDarkMode
+              ? '0 8px 32px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+              : '0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+            border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.05)'
           }}
         >
-          <Box className="header-controls" sx={{ gap: '8px' }}>
-            <IconButton size="small" onClick={toggleAudioPlayer} color={showAudioPlayer ? 'primary' : 'default'}>
+          <Box className="header-controls" sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            flexWrap: 'nowrap'
+          }}>
+            {/* زر تشغيل/إيقاف الصوت */}
+            <IconButton
+              onClick={toggleAudioPlayer}
+              sx={{
+                width: '44px',
+                height: '44px',
+                background: showAudioPlayer
+                  ? (isDarkMode ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.1)')
+                  : (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'),
+                border: showAudioPlayer
+                  ? '2px solid rgba(76, 175, 80, 0.5)'
+                  : `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                color: showAudioPlayer ? '#4CAF50' : (isDarkMode ? '#ffffff' : '#333333'),
+                '&:hover': {
+                  background: showAudioPlayer
+                    ? (isDarkMode ? 'rgba(76, 175, 80, 0.3)' : 'rgba(76, 175, 80, 0.2)')
+                    : (isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'),
+                  transform: 'translateY(-1px)'
+                }
+              }}
+            >
               {showAudioPlayer ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
             </IconButton>
 
+            {/* زر التصغير */}
             <IconButton
               onClick={zoomOut}
               disabled={zoomLevel <= minZoom}
-              sx={{ width: '36px', height: '36px', fontSize: '16px' }}
+              sx={{
+                width: '44px',
+                height: '44px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                color: isDarkMode ? '#ffffff' : '#333333',
+                '&:hover': {
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                  transform: 'translateY(-1px)'
+                },
+                '&:disabled': {
+                  opacity: 0.5,
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)'
+                }
+              }}
             >
-              <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 'bold' }}>-</Typography>
+              <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold' }}>-</Typography>
             </IconButton>
 
-            <Typography variant="body2" sx={{
-              fontSize: '12px',
-              fontWeight: 'bold',
-              minWidth: '50px',
+            {/* عرض نسبة الزوم */}
+            <Box sx={{
+              minWidth: '70px',
               textAlign: 'center',
-              background: isDarkMode ? 'rgba(50, 50, 50, 0.8)' : 'rgba(255, 255, 255, 0.8)',
-              color: isDarkMode ? '#ffffff' : '#333333',
-              padding: '4px 8px',
-              borderRadius: '6px'
+              background: isDarkMode ? 'rgba(50, 50, 50, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+              border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+              borderRadius: '12px',
+              padding: '8px 12px',
+              boxShadow: isDarkMode
+                ? '0 2px 8px rgba(0, 0, 0, 0.3)'
+                : '0 2px 8px rgba(0, 0, 0, 0.1)'
             }}>
-              {Math.round(zoomLevel * 100)}%
-            </Typography>
+              <Typography variant="body2" sx={{
+                fontSize: '14px',
+                fontWeight: 'bold',
+                color: isDarkMode ? '#ffffff' : '#333333',
+                lineHeight: 1
+              }}>
+                {Math.round(zoomLevel * 100)}%
+              </Typography>
+            </Box>
 
+            {/* زر التكبير */}
             <IconButton
               onClick={zoomIn}
               disabled={zoomLevel >= maxZoom}
-              sx={{ width: '36px', height: '36px', fontSize: '16px' }}
+              sx={{
+                width: '44px',
+                height: '44px',
+                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
+                border: `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                color: isDarkMode ? '#ffffff' : '#333333',
+                '&:hover': {
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
+                  transform: 'translateY(-1px)'
+                },
+                '&:disabled': {
+                  opacity: 0.5,
+                  background: isDarkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)'
+                }
+              }}
             >
-              <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 'bold' }}>+</Typography>
+              <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold' }}>+</Typography>
             </IconButton>
 
+            {/* زر الشاشة الكاملة */}
             <IconButton
               onClick={() => setIsFullscreen(!isFullscreen)}
-              sx={{ width: '36px', height: '36px', fontSize: '14px' }}
+              sx={{
+                width: '44px',
+                height: '44px',
+                background: isFullscreen
+                  ? (isDarkMode ? 'rgba(33, 150, 243, 0.2)' : 'rgba(33, 150, 243, 0.1)')
+                  : (isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'),
+                border: isFullscreen
+                  ? '2px solid rgba(33, 150, 243, 0.5)'
+                  : `2px solid ${isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
+                color: isFullscreen ? '#2196F3' : (isDarkMode ? '#ffffff' : '#333333'),
+                '&:hover': {
+                  background: isFullscreen
+                    ? (isDarkMode ? 'rgba(33, 150, 243, 0.3)' : 'rgba(33, 150, 243, 0.2)')
+                    : (isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'),
+                  transform: 'translateY(-1px)'
+                }
+              }}
             >
-              <Typography variant="h6" sx={{ fontSize: '14px' }}>
+              <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 'bold' }}>
                 {isFullscreen ? '⛶' : '⛶'}
               </Typography>
             </IconButton>
@@ -339,7 +471,7 @@ const QuranPageView = () => {
         </Box>
 
       {/* مشغل الصوت الثابت في الأسفل */}
-      {showAudioPlayer && surahsInPage.length > 0 && (
+      {showAudioPlayer && surahsInPage.length > 0 && audioPlayerReady && pageData && !svgLoading && (
         <Box
           sx={{
             position: 'fixed',
@@ -363,10 +495,32 @@ const QuranPageView = () => {
           }}
         >
           <SimpleAudioPlayer
-            surahNumber={selectedSurah?.number || surahsInPage[0]?.number || 1}
+            surahNumber={(() => {
+              // أولاً: التحقق من السورة المختارة من المشغل
+              const selectedFromPlayer = sessionStorage.getItem('selectedSurahFromPlayer');
+              if (selectedFromPlayer && metadata) {
+                const surahNum = parseInt(selectedFromPlayer);
+                const selectedSurahFromPlayer = metadata.find(s => s.number === surahNum);
+                console.log('🎵 المشغل يستخدم السورة المختارة:', surahNum, 'اسم السورة:', selectedSurahFromPlayer?.name?.ar || 'غير محدد');
+                return surahNum;
+              }
+
+              // ثانياً: استخدام السورة المحددة أو الأولى في الصفحة
+              const surahNum = selectedSurah?.number || surahsInPage[0]?.number || 1;
+              console.log('🎵 المشغل يستخدم السورة الافتراضية:', surahNum, 'اسم السورة:', selectedSurah?.name?.ar || 'غير محدد');
+              return surahNum;
+            })()}
             reciterId={selectedReciter}
             onReciterChange={setSelectedReciter}
             onSurahChange={(surahNumber) => {
+              console.log('🎯 تم اختيار السورة رقم:', surahNumber, 'من المشغل');
+
+              // حفظ السورة المختارة في sessionStorage
+              sessionStorage.setItem('selectedSurahFromPlayer', surahNumber.toString());
+
+              // إضافة علامة أن الانتقال من المشغل
+              sessionStorage.setItem('navigatingFromPlayer', 'true');
+
               // الانتقال إلى صفحة المصحف التي تحتوي على بداية السورة
               const targetPage = getSurahPage(surahNumber);
               router.push(`/quran-pages/${targetPage}`);
@@ -383,8 +537,9 @@ const QuranPageView = () => {
         <Box
           className="compact-viewer"
           sx={{
-            marginTop: '80px', // إضافة مساحة في الأعلى لتجنب التداخل مع شريط التحكم
-            marginBottom: '20px'
+            marginTop: '100px', // مساحة أكبر لتجنب التداخل مع شريط التحكم المحسن
+            marginBottom: '20px',
+            position: 'relative'
           }}
         >
 
@@ -462,73 +617,93 @@ const QuranPageView = () => {
           </Box>
         </Box>
 
-        {/* أزرار التنقل في الزوايا */}
-        {/* زر الرجوع في الزاوية السفلى اليمنى */}
+        {/* أزرار التنقل المحسنة في الزوايا */}
+        {/* زر الصفحة السابقة في الزاوية السفلى اليمنى */}
         <Box
+          className="navigation-buttons"
           sx={{
             position: 'fixed',
-            bottom: '70px', // فوق المشغل
+            bottom: '80px', // مساحة أكبر فوق المشغل
             right: '20px',
-            zIndex: 999
+            zIndex: 1000
           }}
         >
           <IconButton
             onClick={() => navigateToPage(currentPage - 1)}
             disabled={currentPage <= 1}
             sx={{
-              width: '60px',
-              height: '60px',
-              background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
-              fontSize: '24px',
+              width: '64px',
+              height: '64px',
+              background: isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+              border: isDarkMode ? '3px solid rgba(255, 255, 255, 0.3)' : '3px solid rgba(0, 0, 0, 0.15)',
+              borderRadius: '50%',
+              fontSize: '28px',
               fontWeight: 'bold',
               color: isDarkMode ? '#ffffff' : '#333',
-              boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+              boxShadow: isDarkMode
+                ? '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+                : '0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+              backdropFilter: 'blur(10px)',
               '&:hover': {
                 background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
-                transform: 'translateY(-2px)',
-                boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
+                transform: 'translateY(-3px) scale(1.05)',
+                boxShadow: isDarkMode
+                  ? '0 12px 32px rgba(0, 0, 0, 0.8)'
+                  : '0 12px 32px rgba(0, 0, 0, 0.3)',
+                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.2)'
               },
               '&:disabled': {
-                opacity: 0.5,
-                background: isDarkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(200, 200, 200, 0.5)'
-              }
+                opacity: 0.4,
+                background: isDarkMode ? 'rgba(50, 50, 50, 0.3)' : 'rgba(200, 200, 200, 0.3)',
+                transform: 'none'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             ▶
           </IconButton>
         </Box>
 
-        {/* زر التالي في الزاوية السفلى اليسرى */}
+        {/* زر الصفحة التالية في الزاوية السفلى اليسرى */}
         <Box
+          className="navigation-buttons"
           sx={{
             position: 'fixed',
-            bottom: '70px', // فوق المشغل
+            bottom: '80px', // مساحة أكبر فوق المشغل
             left: '20px',
-            zIndex: 999
+            zIndex: 1000
           }}
         >
           <IconButton
             onClick={() => navigateToPage(currentPage + 1)}
             disabled={currentPage >= totalPages}
             sx={{
-              width: '60px',
-              height: '60px',
-              background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
-              fontSize: '24px',
+              width: '64px',
+              height: '64px',
+              background: isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+              border: isDarkMode ? '3px solid rgba(255, 255, 255, 0.3)' : '3px solid rgba(0, 0, 0, 0.15)',
+              borderRadius: '50%',
+              fontSize: '28px',
               fontWeight: 'bold',
               color: isDarkMode ? '#ffffff' : '#333',
-              boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+              boxShadow: isDarkMode
+                ? '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+                : '0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+              backdropFilter: 'blur(10px)',
               '&:hover': {
                 background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
-                transform: 'translateY(-2px)',
-                boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
+                transform: 'translateY(-3px) scale(1.05)',
+                boxShadow: isDarkMode
+                  ? '0 12px 32px rgba(0, 0, 0, 0.8)'
+                  : '0 12px 32px rgba(0, 0, 0, 0.3)',
+                borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.2)'
               },
               '&:disabled': {
-                opacity: 0.5,
-                background: isDarkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(200, 200, 200, 0.5)'
-              }
+                opacity: 0.4,
+                background: isDarkMode ? 'rgba(50, 50, 50, 0.3)' : 'rgba(200, 200, 200, 0.3)',
+                transform: 'none'
+              },
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             ◀
@@ -624,42 +799,94 @@ const QuranPageView = () => {
           )}
         </Box>
 
-        {/* روابط سريعة مدمجة */}
-        <Box className="quick-access">
-          <Link href="/">🏠</Link>
-          <Link href="/quran-pages/1">📖</Link>
-          <Link href="/quran-pages/50">📝</Link>
-          <Link href="/quran-pages/582">🌅</Link>
-        </Box>
-
-        {/* زر قائمة السور */}
+        {/* روابط سريعة محسنة */}
         <Box
+          className="quick-access"
           sx={{
             position: 'fixed',
             top: '50%',
-            right: '10px',
+            left: '15px',
             transform: 'translateY(-50%)',
-            zIndex: 1000
+            zIndex: 1100,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px'
+          }}
+        >
+          {[
+            { href: '/', icon: '🏠', label: 'الرئيسية' },
+            { href: '/quran-pages/1', icon: '📖', label: 'الفاتحة' },
+            { href: '/quran-pages/50', icon: '📝', label: 'ق' },
+            { href: '/quran-pages/582', icon: '🌅', label: 'الناس' }
+          ].map((item, index) => (
+            <Link key={index} href={item.href} passHref>
+              <IconButton
+                sx={{
+                  width: '48px',
+                  height: '48px',
+                  background: isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                  border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+                  borderRadius: '12px',
+                  fontSize: '20px',
+                  boxShadow: isDarkMode
+                    ? '0 4px 16px rgba(0, 0, 0, 0.5)'
+                    : '0 4px 16px rgba(0, 0, 0, 0.15)',
+                  backdropFilter: 'blur(10px)',
+                  '&:hover': {
+                    background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
+                    transform: 'translateX(-3px) scale(1.1)',
+                    boxShadow: isDarkMode
+                      ? '0 8px 24px rgba(0, 0, 0, 0.7)'
+                      : '0 8px 24px rgba(0, 0, 0, 0.25)',
+                    borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.15)'
+                  },
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}
+                title={item.label}
+              >
+                {item.icon}
+              </IconButton>
+            </Link>
+          ))}
+        </Box>
+
+        {/* زر قائمة السور المحسن */}
+        <Box
+          className="surah-list-button"
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            right: '15px',
+            transform: 'translateY(-50%)',
+            zIndex: 1100
           }}
         >
           <Link href="/" passHref>
             <IconButton
               sx={{
-                width: '50px',
-                height: '50px',
-                background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-                border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
-                fontSize: '12px',
+                width: '60px',
+                height: '80px',
+                background: isDarkMode ? 'rgba(30, 30, 30, 0.98)' : 'rgba(255, 255, 255, 0.98)',
+                border: isDarkMode ? '3px solid rgba(255, 255, 255, 0.3)' : '3px solid rgba(0, 0, 0, 0.15)',
+                borderRadius: '16px',
+                fontSize: '11px',
                 fontWeight: 'bold',
                 color: isDarkMode ? '#ffffff' : '#333',
-                boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+                boxShadow: isDarkMode
+                  ? '0 8px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)'
+                  : '0 8px 24px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)',
+                backdropFilter: 'blur(10px)',
                 flexDirection: 'column',
-                gap: '2px',
+                gap: '4px',
                 '&:hover': {
                   background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
-                }
+                  transform: 'translateY(-3px) scale(1.05)',
+                  boxShadow: isDarkMode
+                    ? '0 12px 32px rgba(0, 0, 0, 0.8)'
+                    : '0 12px 32px rgba(0, 0, 0, 0.3)',
+                  borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.2)'
+                },
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
               }}
             >
               <Typography variant="caption" sx={{ fontSize: '16px' }}>📋</Typography>
@@ -875,51 +1102,108 @@ const QuranPageView = () => {
             max-width: 100%;
           }
 
+          /* تحسين شريط التحكم العلوي للشاشات الصغيرة */
           .compact-header {
-            padding: 3px 6px;
-            font-size: 12px;
+            top: 10px !important;
+            padding: 8px 12px !important;
+            max-width: 98% !important;
           }
 
           .header-controls {
-            gap: 1px;
+            gap: 8px !important;
           }
 
-          .compact-viewer {
-            height: 400px;
-            max-width: 320px;
-            margin: 10px auto;
+          .header-controls .MuiIconButton-root {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 14px !important;
           }
 
-          .compact-navigation {
-            gap: 4px;
-            padding: 3px;
+          /* تحسين أزرار التنقل للشاشات الصغيرة */
+          .navigation-buttons .MuiIconButton-root {
+            width: 52px !important;
+            height: 52px !important;
+            font-size: 24px !important;
+            bottom: 60px !important;
           }
 
+          /* تحسين الروابط السريعة للشاشات الصغيرة */
           .quick-access {
-            gap: 4px;
+            left: 8px !important;
+            gap: 8px !important;
           }
 
-          .quick-access a {
-            width: 24px;
-            height: 24px;
-            font-size: 12px;
+          .quick-access .MuiIconButton-root {
+            width: 40px !important;
+            height: 40px !important;
+            font-size: 16px !important;
+          }
+
+          /* تحسين زر قائمة السور للشاشات الصغيرة */
+          .surah-list-button {
+            right: 8px !important;
+            width: 48px !important;
+            height: 64px !important;
+          }
+
+          /* تحسين المساحة العلوية للصفحة */
+          .compact-viewer {
+            margin-top: 80px !important;
           }
         }
 
         @media (max-width: 480px) {
+          .compact-header {
+            padding: 6px 10px !important;
+            top: 5px !important;
+            max-width: 99% !important;
+          }
+
           .header-controls {
-            flex-wrap: wrap;
+            flex-wrap: nowrap !important;
+            gap: 4px !important;
+          }
+
+          .header-controls .MuiIconButton-root {
+            width: 32px !important;
+            height: 32px !important;
+            font-size: 12px !important;
+          }
+
+          .navigation-buttons .MuiIconButton-root {
+            width: 48px !important;
+            height: 48px !important;
+            font-size: 20px !important;
+            bottom: 50px !important;
+          }
+
+          .quick-access {
+            left: 5px !important;
+            gap: 6px !important;
+          }
+
+          .quick-access .MuiIconButton-root {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 14px !important;
+          }
+
+          .surah-list-button {
+            right: 5px !important;
+            width: 44px !important;
+            height: 56px !important;
           }
 
           .compact-viewer {
+            margin-top: 70px !important;
             height: 350px;
             max-width: 280px;
-            margin: 8px auto;
           }
 
           .zoom-display {
-            min-width: 25px;
-            font-size: 9px;
+            min-width: 50px !important;
+            font-size: 11px !important;
+            padding: 4px 6px !important;
           }
 
           .compact-select {
@@ -982,7 +1266,7 @@ const QuranPageView = () => {
           }
         }
       `}</style>
-    </PageLoader>
+    </>
   );
 };
 

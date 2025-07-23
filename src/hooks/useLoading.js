@@ -1,124 +1,40 @@
-// src/hooks/useLoading.js - Hook لإدارة حالات التحميل
-
 import { useState, useEffect } from 'react';
 
 /**
- * Hook لإدارة حالات التحميل مع تأخير اختياري
- * @param {number} minLoadingTime - الحد الأدنى لوقت التحميل بالميلي ثانية
- * @returns {object} - كائن يحتوي على حالة التحميل والدوال للتحكم بها
+ * هوك لعرض لودر دائري متحرك للمحتوى الداخلي
+ * يمكنك استخدامه في أي مكون هكذا:
+ * const { loading, Loader } = useAsyncLoading(isLoading);
  */
-export const useLoading = (minLoadingTime = 1000) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingStartTime, setLoadingStartTime] = useState(null);
-
-  const startLoading = () => {
-    setIsLoading(true);
-    setLoadingStartTime(Date.now());
-  };
-
-  const stopLoading = () => {
-    if (loadingStartTime) {
-      const elapsedTime = Date.now() - loadingStartTime;
-      const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-      
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingStartTime(null);
-      }, remainingTime);
-    } else {
-      setIsLoading(false);
-    }
-  };
-
-  return {
-    isLoading,
-    startLoading,
-    stopLoading
-  };
-};
-
-/**
- * Hook للتحميل التلقائي عند تحميل المكون
- * @param {Function} loadFunction - دالة التحميل
- * @param {Array} dependencies - المتغيرات التي تؤثر على التحميل
- * @param {number} minLoadingTime - الحد الأدنى لوقت التحميل
- * @returns {object} - حالة التحميل والبيانات والأخطاء
- */
-export const useAsyncLoading = (loadFunction, dependencies = [], minLoadingTime = 1000) => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
+export function useAsyncLoading(isLoading, minLoadingTime = 1500) {
+  const [loading, setLoading] = useState(isLoading);
+  const [showLoader, setShowLoader] = useState(isLoading);
 
   useEffect(() => {
-    let isMounted = true;
-    const startTime = Date.now();
+    if (isLoading) {
+      setLoading(true);
+      setShowLoader(true);
+    } else {
+      // تأخير إخفاء اللودر لضمان التحميل السلس
+      const timer = setTimeout(() => {
+        setLoading(false);
+        setShowLoader(false);
+      }, minLoadingTime);
 
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const result = await loadFunction();
-        
-        if (isMounted) {
-          const elapsedTime = Date.now() - startTime;
-          const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-          
-          setTimeout(() => {
-            if (isMounted) {
-              setData(result);
-              setIsLoading(false);
-            }
-          }, remainingTime);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(err);
-          setIsLoading(false);
-        }
-      }
-    };
-
-    load();
-
-    return () => {
-      isMounted = false;
-    };
-  }, dependencies);
-
-  return { isLoading, data, error };
-};
-
-/**
- * Hook لإدارة التحميل مع إظهار تدريجي للمحتوى
- * @param {number} staggerDelay - التأخير بين العناصر بالميلي ثانية
- * @returns {object} - دوال للتحكم في الإظهار التدريجي
- */
-export const useStaggeredLoading = (staggerDelay = 100) => {
-  const [visibleItems, setVisibleItems] = useState(new Set());
-
-  const showItem = (index) => {
-    setTimeout(() => {
-      setVisibleItems(prev => new Set([...prev, index]));
-    }, index * staggerDelay);
-  };
-
-  const showItems = (count) => {
-    for (let i = 0; i < count; i++) {
-      showItem(i);
+      return () => clearTimeout(timer);
     }
-  };
+  }, [isLoading, minLoadingTime]);
 
-  const isItemVisible = (index) => visibleItems.has(index);
+  // مكون اللودر الدائري المحسن
+  const Loader = ({ text = "جاري التحميل..." }) => (
+    showLoader && (
+      <div className="content-loader-overlay">
+        <div className="content-loader-container">
+          <div className="loader"></div>
+          <p className="loader-text">{text}</p>
+        </div>
+      </div>
+    )
+  );
 
-  const reset = () => setVisibleItems(new Set());
-
-  return {
-    showItem,
-    showItems,
-    isItemVisible,
-    reset
-  };
-};
-
-export default useLoading;
+  return { loading, Loader, showLoader };
+}

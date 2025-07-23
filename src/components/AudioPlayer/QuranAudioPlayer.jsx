@@ -1,4 +1,3 @@
-  
 // src/components/AudioPlayer/QuranAudioPlayer.jsx - مشغل القرآن الصوتي المتقدم
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -9,7 +8,6 @@ import {
   Slider,
   Card,
   CardContent,
-  LinearProgress,
   Tooltip,
   Select,
   MenuItem,
@@ -17,15 +15,14 @@ import {
   InputLabel,
   Grid
 } from '@mui/material';
-import { 
-  PlayArrow, 
-  Pause, 
-  SkipNext, 
-  SkipPrevious, 
-  VolumeUp, 
+import {
+  PlayArrow,
+  Pause,
+  SkipNext,
+  SkipPrevious,
+  VolumeUp,
   VolumeDown,
-  Repeat,
-  Shuffle
+  Repeat
 } from '@mui/icons-material';
 import { styled } from '@mui/material/styles';
 import AyahHighlight from './AyahHighlight';
@@ -74,7 +71,6 @@ const QuranAudioPlayer = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.8);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentAyah, setCurrentAyah] = useState(0);
   const [ayahTimings, setAyahTimings] = useState([]);
   const [audioData, setAudioData] = useState(null);
@@ -109,7 +105,6 @@ const QuranAudioPlayer = ({
   useEffect(() => {
     const loadSurahData = async () => {
       try {
-        setIsLoading(true);
         setError(null);
 
         // تحميل معلومات السورة
@@ -148,7 +143,6 @@ const QuranAudioPlayer = ({
         setError(`خطأ في تحميل البيانات: ${err.message}`);
         console.error('Error loading surah data:', err);
       } finally {
-        setIsLoading(false);
       }
     };
 
@@ -352,7 +346,6 @@ const QuranAudioPlayer = ({
         <Tooltip title={isPlaying ? 'إيقاف' : 'تشغيل'}>
           <IconButton 
             onClick={togglePlayPause} 
-            disabled={!audioData || isLoading}
             size="large"
             sx={{ 
               backgroundColor: 'primary.main',
@@ -360,9 +353,8 @@ const QuranAudioPlayer = ({
               '&:hover': { backgroundColor: 'primary.dark' }
             }}
           >
-            {isLoading ? (
-              <LinearProgress size={24} />
-            ) : isPlaying ? (
+            {/* إزالة اللودر */}
+            {isPlaying ? (
               <Pause />
             ) : (
               <PlayArrow />

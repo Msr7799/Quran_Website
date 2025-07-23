@@ -47,14 +47,15 @@ const HomePage = () => {
       title: 'تلاوة القرآن الكريم'
     },
     {
-      src: 'aqra1.svg',
+      src: 'img/hero1.png',
       alt: 'المصحف الشريف',
       title: 'المصحف الشريف'
     },
     {
-      src: ' liner.svg',
+      src: 'img/hero.png',
       alt: 'الاستماع للقرآن',
-      title: 'الاستماع للقرآن'
+      title: 'الاستماع للقرآن',
+    
     }
   ];
 
@@ -182,15 +183,16 @@ const HomePage = () => {
           
           <div className="hero-content">
             <h1 className="hero-title">
-              بسم الله الرحمن الرحيم
+         بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ 
             </h1>
             <h2 className="hero-subtitle">
-              {heroImages[currentImageIndex].title}
+              
             </h2>
             <p className="hero-description">
-              موقع شامل لتلاوة وتصفح واستماع القرآن الكريم بأفضل جودة وأسهل طريقة.
-              استمتع بتجربة روحانية فريدة مع كلام الله عز وجل.
+
+              {heroImages[currentImageIndex].title}
             </p>
+   
             
             <div className="hero-actions">
               <Link href="/quran-pages/1" className="btn btn-primary hero-btn">
@@ -297,28 +299,32 @@ const HomePage = () => {
         /* Hero Section */
         .hero {
           position: relative;
-          height: 100vh;
+          height: 110vh;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
           color: white;
           overflow: hidden;
+          border-radius: 12px !important;
+        
+
         }
 
         .hero-background {
           position: absolute;
-          top: 0;
+          top: 0px;
           left: 0;
           right: 0;
           bottom: 0;
           z-index: 1;
+          
         }
 
         .hero-image-container {
           position: relative;
           width: 100%;
-          height: 100%;
+          height: 120%;
         }
 
         .hero-overlay {
@@ -335,22 +341,27 @@ const HomePage = () => {
           position: relative;
           z-index: 3;
           text-align: center;
-          color: white;
-          max-width: 800px;
+          color: white; 
+          height: 160px;
+          width:500px;
+          max-width: 1000px;
           margin: 0 auto;
+          left:300px;
+          Top:100px !important;
           padding: var(--spacing-xl);
-          background: rgba(0, 0, 0, 0.4);
+          background: rgba(0, 0, 0, 0.3);
           border-radius: var(--border-radius-2xl);
-          backdrop-filter: blur(10px);
+          backdrop-filter: blur(12px);
+
         }
 
         .hero-title {
-          font-size: clamp(2rem, 6vw, 4rem);
-          font-weight: 700;
+          font-size: clamp(3rem, 3vw, 5rem);
+          font-weight: 600;
           margin-bottom: var(--spacing-md);
           font-family: var(--font-family-arabic);
-          text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
-          color: #ffffff;
+          text-shadow: 2px 2px 8px rgba(22, 22, 22, 0.9);
+          color:#e0e1dd ;
         }
 
         .hero-subtitle {
@@ -364,7 +375,7 @@ const HomePage = () => {
         }
 
         .hero-description {
-          font-size: clamp(1rem, 2.5vw, 1.25rem);
+          font-size: clamp(1rem, 1.5vw, 1.25rem);
           line-height: 1.8;
           margin-bottom: var(--spacing-2xl);
           font-family: var(--font-family-arabic);
@@ -412,7 +423,7 @@ const HomePage = () => {
           height: 12px;
           border-radius: var(--border-radius-full);
           border: 2px solid white;
-          background: transparent;
+          background: rgba(255, 255, 255, 0.9);
           cursor: pointer;
           transition: all var(--transition-base);
         }

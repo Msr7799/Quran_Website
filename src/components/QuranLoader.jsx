@@ -173,7 +173,7 @@ const QuranLoader = ({
             position: 'absolute'
           }}
         >
-          ﷲ
+          . . .
         </Typography>
       </Box>
       

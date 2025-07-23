@@ -594,8 +594,8 @@ export default function QuranSoundContainer() {
                   />
                   <StatusChip
                     icon={<AccessTimeIcon />}
-                    label="تزامن دقيق"
-                    size="small"
+                    label="مرتل"
+                                      size="small"
                     variant="filled"
                   />
                 </ListItemStyled>
@@ -681,7 +681,7 @@ export default function QuranSoundContainer() {
       </VerseDisplayContainer>
 
       {/* المشغل الصوتي المحسن - أسفل الحاوية مباشرة بدون marginTop أو position */}
-      <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'flex-start' }}>
+      <Box sx={{ width: '80%', maxWidth: '550px', margin: '0 auto' }}>
         {currentAudio && (
           <EnhancedAudioPlayer
             ref={audioRef}

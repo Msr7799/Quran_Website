@@ -14,6 +14,7 @@ const SVGPageViewer = forwardRef(({
 }, ref) => {
   const [error, setError] = useState(null);
   const [mounted, setMounted] = useState(false);
+  const [svgLoaded, setSvgLoaded] = useState(false);
   const objectRef = useRef(null);
   const containerRef = useRef(null);
 
@@ -21,6 +22,12 @@ const SVGPageViewer = forwardRef(({
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // إعادة تعيين حالة التحميل عند تغيير الصفحة
+  useEffect(() => {
+    setSvgLoaded(false);
+    setError(null);
+  }, [pageNumber]);
 
   // إضافة التظليل للآية الحالية
   const addHighlight = useCallback(() => {
@@ -151,9 +158,10 @@ const SVGPageViewer = forwardRef(({
           className="svg-object"
           onLoad={() => {
             setError(null);
-            // إضافة التظليل بعد التحميل
+            setSvgLoaded(true);
+            // إضافة التظليل بعد التحميل مع تأخير أطول
             if (currentAyah && currentAyah.polygon) {
-              setTimeout(addHighlight, 100);
+              setTimeout(addHighlight, 300);
             }
           }}
           onError={() => {

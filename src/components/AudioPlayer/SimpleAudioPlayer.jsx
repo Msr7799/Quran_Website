@@ -19,6 +19,7 @@ const SimpleAudioPlayer = ({
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [error, setError] = useState(null);
   const [surahsData, setSurahsData] = useState([]);
   const [recitersData, setRecitersData] = useState([]);
@@ -27,6 +28,7 @@ const SimpleAudioPlayer = ({
   useEffect(() => {
     const loadData = async () => {
       try {
+        setIsPlayerReady(false);
         // تحميل بيانات السور
         const surahsResponse = await fetch('/json/metadata.json');
         const surahs = await surahsResponse.json();
@@ -36,8 +38,14 @@ const SimpleAudioPlayer = ({
         const recitersResponse = await fetch('/json/quranMp3.json');
         const reciters = await recitersResponse.json();
         setRecitersData(reciters); // جميع القراء الـ 158
+
+        // تفعيل المشغل بعد تحميل البيانات
+        setTimeout(() => {
+          setIsPlayerReady(true);
+        }, 600);
       } catch (error) {
         console.error('خطأ في تحميل البيانات:', error);
+        setIsPlayerReady(true); // تفعيل حتى لو فشل التحميل
       }
     };
     loadData();
@@ -56,11 +64,12 @@ const SimpleAudioPlayer = ({
   useEffect(() => {
     if (audioRef.current && surahNumber) {
       const audioUrl = getAudioUrl(surahNumber, reciterId);
+      console.log('🔄 تحديث مصدر الصوت للسورة رقم:', surahNumber);
       audioRef.current.src = audioUrl;
       setError(null);
       setCurrentTime(0);
       setDuration(0);
-      
+
       // إيقاف التشغيل عند تغيير السورة
       if (isPlaying) {
         setIsPlaying(false);
@@ -164,6 +173,26 @@ const SimpleAudioPlayer = ({
   // الحصول على اسم السورة والقارئ الحاليين
   const currentSurah = surahsData.find(s => s.number === surahNumber);
   const currentReciter = recitersData.find(r => r.id === reciterId);
+
+  // عرض لودر بسيط إذا لم يكن المشغل جاهزاً
+  if (!isPlayerReady) {
+    return (
+      <Box sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: '400px',
+        height: '52px',
+        '@media (max-width: 600px)': {
+          minWidth: '300px'
+        }
+      }}>
+        <Typography variant="caption" sx={{ color: '#666', fontSize: '12px' }}>
+          جاري تحضير المشغل...
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box

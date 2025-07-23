@@ -5,6 +5,7 @@ import React, { useEffect } from 'react';
 // استيراد ملفات CSS الموحدة
 import '../styles/variables.css';
 import '../styles/globals.css';
+import '../styles/loaders.css';
 
 // استيراد المكونات
 import AppAppBar from '../components/AppAppBar';
