@@ -17,15 +17,21 @@ import Footer from '../components/Footer';
  * بدلاً من Material-UI theme
  */
 export default function MyApp({ Component, pageProps }) {
-  // إعداد الوضع المظلم عند تحميل التطبيق
+  // إعداد الوضع المظلم عند تحميل التطبيق ومنع الوميض
   useEffect(() => {
+    // إظهار المحتوى فوراً عند تحميل React
+    const nextDiv = document.getElementById('__next');
+    if (nextDiv) {
+      nextDiv.classList.add('loaded');
+    }
+
     // التحقق من الإعدادات المحفوظة أو تفضيلات النظام
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     const theme = savedTheme || (prefersDark ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', theme);
-    
+
     // حفظ الإعداد إذا لم يكن محفوظاً
     if (!savedTheme) {
       localStorage.setItem('theme', theme);

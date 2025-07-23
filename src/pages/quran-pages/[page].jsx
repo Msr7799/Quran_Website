@@ -1,10 +1,19 @@
-// src/pages/quran-pages/[page].jsx - صفحة تصفح المصحف
-import React, { useState, useEffect, useCallback } from 'react';
+// src/pages/quran-pages/[page].jsx - صفحة تصفح المصحف المحسنة
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import Image from 'next/image';
 import Link from 'next/link';
 import SeoHead from '../../components/SeoHead';
+import SVGPageViewer from '../../components/QuranPage/SVGPageViewer';
+import SimpleAudioPlayer from '../../components/AudioPlayer/SimpleAudioPlayer';
+import TafseerPopup from '../../components/AudioPlayer/tafseer_popup';
+import { getPageInfo, getMainSurahForPage } from '../../utils/pageMapping';
+import { getSurahPage } from '../../utils/surahPageMapping';
+import PageLoader from '../../components/PageLoader';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { useAsyncLoading } from '../../hooks/useLoading';
+import { Box, Container, Typography, IconButton } from '@mui/material';
+import { VolumeUp, VolumeOff } from '@mui/icons-material';
 
 /**
  * صفحة تصفح المصحف مع تصميم responsive
@@ -13,15 +22,32 @@ import SeoHead from '../../components/SeoHead';
 const QuranPageView = () => {
   const router = useRouter();
   const { page } = router.query;
-  
+
   const [currentPage, setCurrentPage] = useState(1);
-  const [imageLoaded, setImageLoaded] = useState(false);
-  const [imageError, setImageError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [mounted, setMounted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+  // حالات مشغل الصوت
+  const [showAudioPlayer, setShowAudioPlayer] = useState(true); // إظهار المشغل افتراضياً
+  const [currentAyah, setCurrentAyah] = useState(null);
+  const [ayahTimings, setAyahTimings] = useState([]);
+  const [selectedReciter, setSelectedReciter] = useState(1); // أول قارئ كافتراضي
+  const [selectedSurah, setSelectedSurah] = useState(null); // السورة المختارة
+  const svgRef = useRef(null); // مرجع لعنصر SVG للتظليل
+
+  // حالات التفسير
+  const [tafseerOpen, setTafseerOpen] = useState(false);
+  const [selectedAyahForTafseer, setSelectedAyahForTafseer] = useState(null);
+
+  // بيانات الصفحة
+  const [pageData, setPageData] = useState(null);
+  const [surahsInPage, setSurahsInPage] = useState([]);
+  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [svgLoading, setSvgLoading] = useState(false);
 
   // إعدادات المصحف
   const totalPages = 604; // إجمالي صفحات المصحف
@@ -36,13 +62,30 @@ const QuranPageView = () => {
       const pageNum = parseInt(page);
       if (pageNum >= 1 && pageNum <= totalPages) {
         setCurrentPage(pageNum);
-        setImageLoaded(false);
-        setImageError(false);
       } else {
         router.replace('/quran-pages/1');
       }
     }
   }, [page, router]);
+
+  // تتبع الوضع المظلم
+  useEffect(() => {
+    const checkDarkMode = () => {
+      const theme = document.documentElement.getAttribute('data-theme');
+      setIsDarkMode(theme === 'dark');
+    };
+
+    checkDarkMode();
+
+    // مراقبة تغييرات الثيم
+    const observer = new MutationObserver(checkDarkMode);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   // التنقل بين الصفحات
   const navigateToPage = useCallback((pageNumber) => {
@@ -102,50 +145,126 @@ const QuranPageView = () => {
     setZoomLevel(prev => Math.max(prev - zoomStep, minZoom));
   };
 
-  const resetZoom = () => {
-    setZoomLevel(1);
+  // دالة تحميل التوقيتات
+  const loadAyahTimings = async (surahNumber) => {
+    try {
+      const response = await fetch(`https://mp3quran.net/api/v3/ayat_timing?surah=${surahNumber}&read=${selectedReciter}`);
+      if (response.ok) {
+        const timings = await response.json();
+        setAyahTimings(timings);
+        console.log(`تم تحميل ${timings.length} توقيت للسورة ${surahNumber}`);
+      }
+    } catch (error) {
+      console.error('خطأ في تحميل التوقيتات:', error);
+    }
   };
 
-  // تحديد معلومات الصفحة الحالية
-  const getPageInfo = (pageNum) => {
-    // هذا مجرد مثال - يجب استبداله ببيانات حقيقية من API
-    const surahs = {
-      1: { name: 'الفاتحة', ayahStart: 1, ayahEnd: 7 },
-      2: { name: 'البقرة', ayahStart: 1, ayahEnd: 286 },
-      // ... باقي السور
-    };
-    
-    // منطق تحديد السورة والآيات حسب رقم الصفحة
-    // هذا يحتاج إلى بيانات دقيقة من مصدر موثوق
-    
-    return {
-      surah: 'الفاتحة',
-      ayahRange: '1-7',
-      juz: 1,
-      hizb: 1
-    };
-  };
+  // إعادة تحميل التوقيتات عند تغيير القارئ أو السورة
+  useEffect(() => {
+    const surahToLoad = selectedSurah || (surahsInPage.length > 0 ? surahsInPage[0] : null);
+    if (surahToLoad) {
+      loadAyahTimings(surahToLoad.number);
+    }
+  }, [selectedReciter, selectedSurah, surahsInPage]);
 
-  const pageInfo = getPageInfo(currentPage);
+
+
+  // تحميل بيانات الصفحة من البيانات المحلية
+  useEffect(() => {
+    const loadPageData = async () => {
+      try {
+        setIsPageLoading(true);
+
+        // استخدام pageMapping للحصول على معلومات الصفحة
+        const pageInfo = await getPageInfo(currentPage);
+        setPageData(pageInfo);
+        setSurahsInPage(pageInfo.surahs || []);
+
+        // إذا لم توجد سور محددة، نحاول الحصول على السورة الرئيسية
+        if (pageInfo.surahs.length === 0) {
+          const mainSurahNumber = getMainSurahForPage(currentPage);
+
+          // تحميل بيانات السورة الرئيسية
+          const metadataResponse = await fetch('/json/metadata.json');
+          const metadata = await metadataResponse.json();
+          const mainSurah = metadata.find(s => s.number === mainSurahNumber);
+
+          if (mainSurah) {
+            setSurahsInPage([mainSurah]);
+            // تحميل التوقيتات للسورة الرئيسية
+            loadAyahTimings(mainSurahNumber);
+          }
+        } else if (pageInfo.surahs.length > 0) {
+          // تحميل التوقيتات للسورة الأولى في الصفحة
+          setSelectedSurah(pageInfo.surahs[0]);
+          loadAyahTimings(pageInfo.surahs[0].number);
+        }
+
+        // تأخير لإظهار التحميل الانسيابي
+        setTimeout(() => {
+          setIsPageLoading(false);
+        }, 800);
+
+      } catch (error) {
+        console.error('خطأ في تحميل بيانات الصفحة:', error);
+        // بيانات افتراضية في حالة الخطأ
+        setPageData({
+          displayName: `صفحة ${currentPage}`,
+          pageNumber: currentPage,
+          surahs: []
+        });
+        setSurahsInPage([]);
+        setIsPageLoading(false);
+      }
+    };
+
+    if (currentPage) {
+      loadPageData();
+    }
+  }, [currentPage]);
+
+  // معالجة النقر على الآية لعرض التفسير
+  const handleAyahClick = useCallback((ayahData) => {
+    setSelectedAyahForTafseer(ayahData);
+    setTafseerOpen(true);
+  }, []);
+
+  // تبديل عرض مشغل الصوت
+  const toggleAudioPlayer = useCallback(() => {
+    setShowAudioPlayer(prev => !prev);
+  }, []);
+
+  const pageInfo = pageData || {
+    displayName: `صفحة ${currentPage}`,
+    pageNumber: currentPage,
+    surahs: [],
+    juz: 1,
+    hizb: 1
+  };
 
   if (!mounted) {
     return null;
   }
 
   return (
-    <>
+    <PageLoader
+      isLoading={isPageLoading}
+      loadingText="جاري تحميل صفحة المصحف الشريف..."
+      animationType="fade"
+      minLoadingTime={1200}
+    >
       <SeoHead
         title={`صفحة ${currentPage} - تصفح المصحف الشريف`}
-        description={`تصفح صفحة ${currentPage} من المصحف الشريف. سورة ${pageInfo.surah} - الآيات ${pageInfo.ayahRange}`}
-        keywords={`المصحف الشريف, صفحة ${currentPage}, ${pageInfo.surah}, القرآن الكريم, تصفح المصحف`}
+        description={`تصفح صفحة ${currentPage} من المصحف الشريف. ${pageInfo.displayName || `صفحة ${currentPage}`}`}
+        keywords={`المصحف الشريف, صفحة ${currentPage}, ${pageInfo.displayName || ''}, القرآن الكريم, تصفح المصحف`}
         canonical={`${process.env.NEXT_PUBLIC_BASE_URL}/quran-pages/${currentPage}`}
         type="article"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "Article",
           "headline": `صفحة ${currentPage} من المصحف الشريف`,
-          "description": `تصفح صفحة ${currentPage} من المصحف الشريف - ${pageInfo.surah}`,
-          "image": `/images/pages/${String(currentPage).padStart(3, '0')}.png`,
+          "description": `تصفح صفحة ${currentPage} من المصحف الشريف - ${pageInfo.displayName || ''}`,
+          "image": `https://www.mp3quran.net/api/quran_pages_svg/${String(currentPage).padStart(3, '0')}.svg`,
           "datePublished": "2024-01-01T00:00:00Z",
           "dateModified": new Date().toISOString(),
           "author": {
@@ -155,174 +274,426 @@ const QuranPageView = () => {
         }}
       />
 
-      <div className={`quran-page-container ${isFullscreen ? 'fullscreen' : ''}`}>
-        {/* شريط التحكم العلوي */}
-        <div className="page-header">
-          <div className="page-info">
-            <h1 className="page-title">صفحة {currentPage}</h1>
-            <div className="page-details">
-              <span className="detail-item">
-                <span className="detail-icon">📖</span>
-                سورة {pageInfo.surah}
-              </span>
-              <span className="detail-item">
-                <span className="detail-icon">🔢</span>
-                الآيات {pageInfo.ayahRange}
-              </span>
-              <span className="detail-item">
-                <span className="detail-icon">📚</span>
-                الجزء {pageInfo.juz}
-              </span>
-            </div>
-          </div>
-          
-          <div className="page-controls">
-            <button className="control-btn" onClick={zoomOut} disabled={zoomLevel <= minZoom} title="تصغير">
-              <span className="control-icon">🔍-</span>
-            </button>
-            <button className="control-btn" onClick={resetZoom} title="إعادة تعيين التكبير">
-              <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
-            </button>
-            <button className="control-btn" onClick={zoomIn} disabled={zoomLevel >= maxZoom} title="تكبير">
-              <span className="control-icon">🔍+</span>
-            </button>
-            <button className="control-btn" onClick={() => setIsFullscreen(!isFullscreen)} title="ملء الشاشة">
-              <span className="control-icon">{isFullscreen ? '🗗' : '🗖'}</span>
-            </button>
-          </div>
-        </div>
+      <Container maxWidth="sm" className={`quran-page-container ${isFullscreen ? 'fullscreen' : ''}`}>
+        {/* شريط التحكم المدمج - مخفي مؤقتاً لتجنب التداخل */}
+        <Box
+          className="compact-header"
+          sx={{
+            position: 'fixed',
+            top: '10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1100,
+            width: 'auto',
+            maxWidth: '90%',
+            background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            borderRadius: '12px',
+            padding: '8px 16px',
+            boxShadow: isDarkMode ? '0 4px 20px rgba(0, 0, 0, 0.5)' : '0 4px 20px rgba(0, 0, 0, 0.15)'
+          }}
+        >
+          <Box className="header-controls" sx={{ gap: '8px' }}>
+            <IconButton size="small" onClick={toggleAudioPlayer} color={showAudioPlayer ? 'primary' : 'default'}>
+              {showAudioPlayer ? <VolumeOff fontSize="small" /> : <VolumeUp fontSize="small" />}
+            </IconButton>
 
-        {/* منطقة عرض الصفحة */}
-        <div className="page-viewer">
-          <div 
-            className="page-image-container"
-            style={{ transform: `scale(${zoomLevel})` }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
+            <IconButton
+              onClick={zoomOut}
+              disabled={zoomLevel <= minZoom}
+              sx={{ width: '36px', height: '36px', fontSize: '16px' }}
+            >
+              <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 'bold' }}>-</Typography>
+            </IconButton>
+
+            <Typography variant="body2" sx={{
+              fontSize: '12px',
+              fontWeight: 'bold',
+              minWidth: '50px',
+              textAlign: 'center',
+              background: isDarkMode ? 'rgba(50, 50, 50, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+              color: isDarkMode ? '#ffffff' : '#333333',
+              padding: '4px 8px',
+              borderRadius: '6px'
+            }}>
+              {Math.round(zoomLevel * 100)}%
+            </Typography>
+
+            <IconButton
+              onClick={zoomIn}
+              disabled={zoomLevel >= maxZoom}
+              sx={{ width: '36px', height: '36px', fontSize: '16px' }}
+            >
+              <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 'bold' }}>+</Typography>
+            </IconButton>
+
+            <IconButton
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              sx={{ width: '36px', height: '36px', fontSize: '14px' }}
+            >
+              <Typography variant="h6" sx={{ fontSize: '14px' }}>
+                {isFullscreen ? '⛶' : '⛶'}
+              </Typography>
+            </IconButton>
+          </Box>
+        </Box>
+
+      {/* مشغل الصوت الثابت في الأسفل */}
+      {showAudioPlayer && surahsInPage.length > 0 && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '60px',
+            background: isDarkMode
+              ? 'linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(20, 20, 20, 0.95) 100%)'
+              : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
+            boxShadow: isDarkMode
+              ? '0 -4px 20px rgba(0, 0, 0, 0.5), 0 -1px 4px rgba(0, 0, 0, 0.3)'
+              : '0 -4px 20px rgba(0, 0, 0, 0.15), 0 -1px 4px rgba(0, 0, 0, 0.1)',
+            backdropFilter: 'blur(20px)',
+            borderTop: isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(255, 255, 255, 0.3)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '4px 8px'
+          }}
+        >
+          <SimpleAudioPlayer
+            surahNumber={selectedSurah?.number || surahsInPage[0]?.number || 1}
+            reciterId={selectedReciter}
+            onReciterChange={setSelectedReciter}
+            onSurahChange={(surahNumber) => {
+              // الانتقال إلى صفحة المصحف التي تحتوي على بداية السورة
+              const targetPage = getSurahPage(surahNumber);
+              router.push(`/quran-pages/${targetPage}`);
+            }}
+            onTimeUpdate={(currentTime) => {
+              // يمكن إضافة منطق تتبع الآيات هنا لاحقاً
+              console.log('Current time:', currentTime);
+            }}
+          />
+        </Box>
+        )}
+
+        {/* منطقة عرض الصفحة المدمجة */}
+        <Box
+          className="compact-viewer"
+          sx={{
+            marginTop: '80px', // إضافة مساحة في الأعلى لتجنب التداخل مع شريط التحكم
+            marginBottom: '20px'
+          }}
+        >
+
+          {/* رقم الصفحة في الأعلى */}
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '-30px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 10,
+              background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              padding: '6px 16px',
+              borderRadius: '20px',
+              border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+              boxShadow: isDarkMode ? '0 2px 8px rgba(0, 0, 0, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.15)',
+              backdropFilter: 'blur(10px)'
+            }}
           >
-            {!imageError ? (
-              <Image
-                src={`/images/pages/${String(currentPage).padStart(3, '0')}.png`}
-                alt={`صفحة ${currentPage} من المصحف الشريف`}
-                fill
-                style={{ objectFit: 'contain' }}
-                onLoad={() => setImageLoaded(true)}
-                onError={() => setImageError(true)}
-                priority={true}
-                quality={95}
-              />
-            ) : (
-              <div className="image-fallback">
-                <div className="fallback-icon">📖</div>
-                <h3>صفحة {currentPage}</h3>
-                <p>لم يتم العثور على صورة هذه الصفحة</p>
-                <p className="fallback-info">سورة {pageInfo.surah} - الآيات {pageInfo.ayahRange}</p>
-              </div>
-            )}
-            
-            {!imageLoaded && !imageError && (
-              <div className="loading-overlay">
-                <div className="loading-spinner"></div>
-                <p>جاري تحميل الصفحة...</p>
-              </div>
-            )}
-          </div>
-        </div>
+            <Typography variant="body2" sx={{
+              fontWeight: 'bold',
+              color: isDarkMode ? '#ffffff' : '#333',
+              fontSize: '14px'
+            }}>
+              صفحة {currentPage}
+            </Typography>
+          </Box>
 
-        {/* أزرار التنقل */}
-        <div className="navigation-controls">
-          <button 
-            className={`nav-btn prev ${currentPage <= 1 ? 'disabled' : ''}`}
+          {/* إطار الصفحة */}
+          <Box
+            sx={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)',
+              bottom: '20px',
+              padding: '20px',
+              border: '25px double #363636',
+              borderRadius: '16px',
+              paddingBottom: '20px',
+              boxShadow: `
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.05)
+              `,
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+          >
+            {/* تأثير الإضاءة */}
+            <Box
+              sx={{
+                position: 'absolute',
+                zIndex: 1,
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '40px',
+                background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, transparent 100%)',
+                borderRadius: '16px 16px 0 0'
+              }}
+            />
+
+            <SVGPageViewer
+              pageNumber={currentPage}
+              currentAyah={currentAyah}
+              ayahTimings={ayahTimings}
+              zoomLevel={zoomLevel}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onAyahClick={handleAyahClick}
+              className="svg-viewer"
+              ref={svgRef}
+            />
+          </Box>
+        </Box>
+
+        {/* أزرار التنقل في الزوايا */}
+        {/* زر الرجوع في الزاوية السفلى اليمنى */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: '70px', // فوق المشغل
+            right: '20px',
+            zIndex: 999
+          }}
+        >
+          <IconButton
             onClick={() => navigateToPage(currentPage - 1)}
             disabled={currentPage <= 1}
+            sx={{
+              width: '60px',
+              height: '60px',
+              background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: isDarkMode ? '#ffffff' : '#333',
+              boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
+                transform: 'translateY(-2px)',
+                boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
+              },
+              '&:disabled': {
+                opacity: 0.5,
+                background: isDarkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(200, 200, 200, 0.5)'
+              }
+            }}
           >
-            <span className="nav-icon">◀</span>
-            <span className="nav-text">الصفحة السابقة</span>
-          </button>
+            ▶
+          </IconButton>
+        </Box>
 
-          <div className="page-selector">
-            <select 
-              value={currentPage} 
+        {/* زر التالي في الزاوية السفلى اليسرى */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: '70px', // فوق المشغل
+            left: '20px',
+            zIndex: 999
+          }}
+        >
+          <IconButton
+            onClick={() => navigateToPage(currentPage + 1)}
+            disabled={currentPage >= totalPages}
+            sx={{
+              width: '60px',
+              height: '60px',
+              background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+              border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+              fontSize: '24px',
+              fontWeight: 'bold',
+              color: isDarkMode ? '#ffffff' : '#333',
+              boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+              '&:hover': {
+                background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
+                transform: 'translateY(-2px)',
+                boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
+              },
+              '&:disabled': {
+                opacity: 0.5,
+                background: isDarkMode ? 'rgba(50, 50, 50, 0.5)' : 'rgba(200, 200, 200, 0.5)'
+              }
+            }}
+          >
+            ◀
+          </IconButton>
+        </Box>
+
+        {/* اختيار الصفحة والسورة في الوسط السفلي */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: '70px', // فوق المشغل
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 999,
+            background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+            padding: '8px 16px',
+            borderRadius: '20px',
+            border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+            boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}
+        >
+          {/* اختيار الصفحة */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <Typography variant="body2" sx={{
+              fontWeight: 'bold',
+              color: isDarkMode ? '#ffffff' : '#333',
+              fontSize: '12px'
+            }}>
+              صفحة
+            </Typography>
+            <select
+              value={currentPage}
               onChange={(e) => navigateToPage(parseInt(e.target.value))}
-              className="page-select"
+              style={{
+                padding: '4px 8px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(0, 0, 0, 0.2)',
+                borderRadius: '6px',
+                background: isDarkMode ? '#2d2d2d' : 'white',
+                color: isDarkMode ? '#ffffff' : '#333',
+                minWidth: '60px'
+              }}
             >
               {Array.from({ length: totalPages }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
-                  صفحة {i + 1}
+                  {i + 1}
                 </option>
               ))}
             </select>
-            <span className="total-pages">من {totalPages}</span>
-          </div>
+          </Box>
 
-          <button 
-            className={`nav-btn next ${currentPage >= totalPages ? 'disabled' : ''}`}
-            onClick={() => navigateToPage(currentPage + 1)}
-            disabled={currentPage >= totalPages}
-          >
-            <span className="nav-text">الصفحة التالية</span>
-            <span className="nav-icon">▶</span>
-          </button>
-        </div>
+          {/* اختيار السورة */}
+          {surahsInPage.length > 1 && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <Typography variant="body2" sx={{
+                fontWeight: 'bold',
+                color: isDarkMode ? '#ffffff' : '#333',
+                fontSize: '12px'
+              }}>
+                السورة
+              </Typography>
+              <select
+                value={selectedSurah?.number || surahsInPage[0]?.number || 1}
+                onChange={(e) => {
+                  const surahNumber = parseInt(e.target.value);
+                  const surah = surahsInPage.find(s => s.number === surahNumber);
+                  setSelectedSurah(surah);
+                }}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  border: isDarkMode ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(0, 0, 0, 0.2)',
+                  borderRadius: '6px',
+                  background: isDarkMode ? '#2d2d2d' : 'white',
+                  color: isDarkMode ? '#ffffff' : '#333',
+                  minWidth: '100px'
+                }}
+              >
+                {surahsInPage.map((surah) => (
+                  <option key={surah.number} value={surah.number}>
+                    {surah.name?.ar || `سورة ${surah.number}`}
+                  </option>
+                ))}
+              </select>
+            </Box>
+          )}
+        </Box>
 
-        {/* روابط سريعة */}
-        <div className="quick-links">
-          <h3 className="quick-links-title">انتقال سريع</h3>
-          <div className="quick-links-grid">
-            <Link href="/quran-pages/1" className="quick-link">
-              <span className="quick-link-icon">🏠</span>
-              <span className="quick-link-text">الفاتحة</span>
-            </Link>
-            <Link href="/quran-pages/2" className="quick-link">
-              <span className="quick-link-icon">📝</span>
-              <span className="quick-link-text">البقرة</span>
-            </Link>
-            <Link href="/quran-pages/50" className="quick-link">
-              <span className="quick-link-icon">👤</span>
-              <span className="quick-link-text">ق</span>
-            </Link>
-            <Link href="/quran-pages/582" className="quick-link">
-              <span className="quick-link-icon">🌅</span>
-              <span className="quick-link-text">الملك</span>
-            </Link>
-          </div>
-        </div>
+        {/* روابط سريعة مدمجة */}
+        <Box className="quick-access">
+          <Link href="/">🏠</Link>
+          <Link href="/quran-pages/1">📖</Link>
+          <Link href="/quran-pages/50">📝</Link>
+          <Link href="/quran-pages/582">🌅</Link>
+        </Box>
 
-        {/* تعليمات الاستخدام */}
-        <div className="usage-instructions">
-          <h4 className="instructions-title">تعليمات الاستخدام</h4>
-          <div className="instructions-grid">
-            <div className="instruction-item">
-              <span className="instruction-icon">⌨️</span>
-              <span className="instruction-text">استخدم الأسهم للتنقل</span>
-            </div>
-            <div className="instruction-item">
-              <span className="instruction-icon">👆</span>
-              <span className="instruction-text">اسحب لليمين أو اليسار</span>
-            </div>
-            <div className="instruction-item">
-              <span className="instruction-icon">🔍</span>
-              <span className="instruction-text">اضغط + أو - للتكبير</span>
-            </div>
-            <div className="instruction-item">
-              <span className="instruction-icon">🖥️</span>
-              <span className="instruction-text">اضغط F لملء الشاشة</span>
-            </div>
-          </div>
-        </div>
-      </div>
+        {/* زر قائمة السور */}
+        <Box
+          sx={{
+            position: 'fixed',
+            top: '50%',
+            right: '10px',
+            transform: 'translateY(-50%)',
+            zIndex: 1000
+          }}
+        >
+          <Link href="/" passHref>
+            <IconButton
+              sx={{
+                width: '50px',
+                height: '50px',
+                background: isDarkMode ? 'rgba(30, 30, 30, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                border: isDarkMode ? '2px solid rgba(255, 255, 255, 0.2)' : '2px solid rgba(0, 0, 0, 0.1)',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: isDarkMode ? '#ffffff' : '#333',
+                boxShadow: isDarkMode ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+                flexDirection: 'column',
+                gap: '2px',
+                '&:hover': {
+                  background: isDarkMode ? 'rgba(50, 50, 50, 1)' : 'rgba(255, 255, 255, 1)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: isDarkMode ? '0 6px 20px rgba(0, 0, 0, 0.7)' : '0 6px 20px rgba(0, 0, 0, 0.25)'
+                }
+              }}
+            >
+              <Typography variant="caption" sx={{ fontSize: '16px' }}>📋</Typography>
+              <Typography variant="caption" sx={{
+                fontSize: '8px',
+                lineHeight: 1,
+                color: isDarkMode ? '#ffffff' : 'inherit'
+              }}>قائمة السور</Typography>
+            </IconButton>
+          </Link>
+        </Box>
 
-      {/* الأنماط */}
+        {/* نافذة التفسير */}
+        <TafseerPopup
+          open={tafseerOpen}
+          onClose={() => setTafseerOpen(false)}
+          surahNumber={selectedAyahForTafseer?.surah || 1}
+          ayahNumber={selectedAyahForTafseer?.ayah || 1}
+          ayahText={selectedAyahForTafseer?.text || ''}
+          surahName={pageInfo.surahs?.[0]?.name?.ar || pageInfo.displayName || ''}
+        />
+      </Container>
+
+      {/* الأنماط المدمجة */}
       <style jsx>{`
         .quran-page-container {
           width: 100%;
           min-height: 100vh;
-          background: var(--background-color);
+          padding: 80px 4px 70px 4px; /* إضافة مساحة في الأعلى والأسفل */
+          gap: 4px;
           display: flex;
           flex-direction: column;
-          padding: var(--spacing-lg);
-          gap: var(--spacing-lg);
+          max-width: 500px;
+          margin: 0 auto;
         }
 
         .quran-page-container.fullscreen {
@@ -331,395 +702,268 @@ const QuranPageView = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          z-index: var(--z-modal);
-          background: var(--background-paper);
-          padding: var(--spacing-md);
+          z-index: 1300;
+          padding: 4px;
         }
 
-        .page-header {
+        .compact-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          background: var(--background-paper);
-          padding: var(--spacing-lg);
-          border-radius: var(--border-radius-xl);
-          box-shadow: var(--shadow-md);
-          border: 1px solid var(--border-color);
+          padding: 4px 8px;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 6px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          font-size: 14px;
         }
 
-        .page-info {
-          flex: 1;
+        .header-left {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
         .page-title {
-          font-size: var(--font-size-2xl);
-          font-weight: 700;
-          color: var(--primary-color);
-          margin: 0 0 var(--spacing-sm) 0;
           font-family: var(--font-family-arabic);
+          margin: 0;
         }
 
-        .page-details {
-          display: flex;
-          gap: var(--spacing-lg);
-          flex-wrap: wrap;
-        }
-
-        .detail-item {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-xs);
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
+        .page-subtitle {
           font-family: var(--font-family-arabic);
+          opacity: 0.7;
+          margin: 0;
         }
 
-        .detail-icon {
-          font-size: 1rem;
-        }
-
-        .page-controls {
+        .header-controls {
           display: flex;
-          gap: var(--spacing-sm);
+          gap: 8px;
           align-items: center;
         }
 
-        .control-btn {
+        .header-controls .MuiIconButton-root {
+          background: rgba(255, 255, 255, 0.95);
+          border: 2px solid rgba(0, 0, 0, 0.1);
+          width: 48px;
+          height: 48px;
+          font-size: 20px;
+          font-weight: bold;
+          color: #333;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          transition: all 0.2s ease;
+          margin: 0 4px;
+        }
+
+        .header-controls .MuiIconButton-root:hover {
+          background: rgba(255, 255, 255, 1);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .zoom-display {
+          min-width: 70px;
+          text-align: center;
+          font-size: 16px;
+          font-weight: bold;
+          color: #333;
+          background: rgba(255, 255, 255, 0.95);
+          padding: 12px 16px;
+          border-radius: 12px;
+          border: 2px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .compact-viewer {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 44px;
-          height: 44px;
-          border: 1px solid var(--border-color);
-          background: var(--background-color);
-          border-radius: var(--border-radius-md);
-          cursor: pointer;
-          transition: all var(--transition-base);
-          color: var(--text-primary);
-        }
-
-        .control-btn:hover:not(:disabled) {
-          background: var(--primary-color);
-          color: white;
-          border-color: var(--primary-color);
-        }
-
-        .control-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .control-icon {
-          font-size: 1.1rem;
-        }
-
-        .zoom-level {
-          font-size: var(--font-size-xs);
-          font-weight: 600;
-        }
-
-        .page-viewer {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--background-paper);
-          border-radius: var(--border-radius-xl);
-          box-shadow: var(--shadow-lg);
-          border: 1px solid var(--border-color);
-          position: relative;
-          overflow: auto;
-          min-height: 500px;
-        }
-
-        .page-image-container {
           position: relative;
           width: 100%;
-          max-width: 600px;
-          aspect-ratio: 3/4;
-          transition: transform var(--transition-base);
-          cursor: grab;
+          max-width: 450px;
+          height: 550px;
+          margin: 0 auto;
+          background: transparent;
         }
 
-        .page-image-container:active {
-          cursor: grabbing;
-        }
-
-        .image-fallback {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
+        .svg-viewer {
+          width: 100%;
           height: 100%;
-          text-align: center;
-          color: var(--text-secondary);
-          padding: var(--spacing-2xl);
         }
 
-        .fallback-icon {
-          font-size: 4rem;
-          margin-bottom: var(--spacing-lg);
+
+
+        .compact-navigation {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 16px;
+          padding: 16px;
+          margin: 20px auto;
+          max-width: 500px;
+          background: rgba(255, 255, 255, 0.95);
+          border-radius: 16px;
+          box-shadow:
+            0 6px 24px rgba(0,0,0,0.12),
+            0 2px 8px rgba(0,0,0,0.08);
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        .fallback-info {
-          color: var(--primary-color);
-          font-weight: 600;
+        .compact-navigation .MuiIconButton-root {
+          background: rgba(255, 255, 255, 0.9);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          width: 48px;
+          height: 48px;
+          font-size: 20px;
+          font-weight: bold;
+          color: #333;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: all 0.2s ease;
+        }
+
+        .compact-navigation .MuiIconButton-root:hover {
+          background: rgba(255, 255, 255, 1);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        .page-info-compact {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .compact-select {
+          padding: 4px 8px;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          font-size: 14px;
           font-family: var(--font-family-arabic);
         }
 
-        .loading-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(255, 255, 255, 0.9);
+        .quick-access {
           display: flex;
-          flex-direction: column;
+          justify-content: center;
+          gap: 8px;
+          padding: 4px;
+        }
+
+        .quick-access a {
+          display: flex;
           align-items: center;
           justify-content: center;
-          gap: var(--spacing-md);
-          z-index: 2;
-        }
-
-        .loading-spinner {
-          width: 40px;
-          height: 40px;
-          border: 3px solid var(--border-color);
-          border-top: 3px solid var(--primary-color);
+          width: 28px;
+          height: 28px;
+          background: rgba(255, 255, 255, 0.9);
           border-radius: 50%;
-          animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-
-        .navigation-controls {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: var(--background-paper);
-          padding: var(--spacing-lg);
-          border-radius: var(--border-radius-xl);
-          box-shadow: var(--shadow-md);
-          border: 1px solid var(--border-color);
-        }
-
-        .nav-btn {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          padding: var(--spacing-md) var(--spacing-lg);
-          background: var(--primary-color);
-          color: white;
-          border: none;
-          border-radius: var(--border-radius-lg);
-          cursor: pointer;
-          font-size: var(--font-size-base);
-          font-weight: 600;
-          transition: all var(--transition-base);
-          font-family: var(--font-family-arabic);
-        }
-
-        .nav-btn:hover:not(.disabled) {
-          background: var(--primary-dark);
-          transform: translateY(-2px);
-        }
-
-        .nav-btn.disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .nav-icon {
-          font-size: 1.2rem;
-        }
-
-        .page-selector {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          font-family: var(--font-family-arabic);
-        }
-
-        .page-select {
-          padding: var(--spacing-sm) var(--spacing-md);
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius-md);
-          font-size: var(--font-size-base);
-          font-family: var(--font-family-arabic);
-          background: var(--background-color);
-          color: var(--text-primary);
-        }
-
-        .total-pages {
-          color: var(--text-secondary);
-          font-size: var(--font-size-sm);
-        }
-
-        .quick-links {
-          background: var(--background-paper);
-          padding: var(--spacing-lg);
-          border-radius: var(--border-radius-xl);
-          box-shadow: var(--shadow-md);
-          border: 1px solid var(--border-color);
-        }
-
-        .quick-links-title {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin: 0 0 var(--spacing-md) 0;
-          font-family: var(--font-family-arabic);
-        }
-
-        .quick-links-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-          gap: var(--spacing-md);
-        }
-
-        .quick-link {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          padding: var(--spacing-md);
-          background: var(--background-color);
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius-lg);
           text-decoration: none;
-          color: var(--text-primary);
-          transition: all var(--transition-base);
-          font-family: var(--font-family-arabic);
+          font-size: 14px;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+          transition: transform 0.2s ease;
         }
 
-        .quick-link:hover {
-          background: var(--primary-color);
-          color: white;
-          border-color: var(--primary-color);
-          transform: translateY(-2px);
+        .quick-access a:hover {
+          transform: scale(1.05);
         }
 
-        .quick-link-icon {
-          font-size: 1.2rem;
-        }
 
-        .usage-instructions {
-          background: var(--background-paper);
-          padding: var(--spacing-lg);
-          border-radius: var(--border-radius-xl);
-          box-shadow: var(--shadow-md);
-          border: 1px solid var(--border-color);
-        }
-
-        .instructions-title {
-          font-size: var(--font-size-lg);
-          font-weight: 600;
-          color: var(--text-primary);
-          margin: 0 0 var(--spacing-md) 0;
-          font-family: var(--font-family-arabic);
-        }
-
-        .instructions-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: var(--spacing-md);
-        }
-
-        .instruction-item {
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-sm);
-          font-size: var(--font-size-sm);
-          color: var(--text-secondary);
-          font-family: var(--font-family-arabic);
-        }
-
-        .instruction-icon {
-          font-size: 1.1rem;
-          width: 24px;
-          text-align: center;
-        }
 
         /* Responsive Design */
         @media (max-width: 768px) {
           .quran-page-container {
-            padding: var(--spacing-md);
-            gap: var(--spacing-md);
+            padding: 2px;
+            gap: 2px;
+            max-width: 100%;
           }
 
-          .page-header {
-            flex-direction: column;
-            gap: var(--spacing-md);
-            align-items: stretch;
+          .compact-header {
+            padding: 3px 6px;
+            font-size: 12px;
           }
 
-          .page-controls {
-            justify-content: center;
+          .header-controls {
+            gap: 1px;
           }
 
-          .page-details {
-            justify-content: center;
-            text-align: center;
+          .compact-viewer {
+            height: 400px;
+            max-width: 320px;
+            margin: 10px auto;
           }
 
-          .navigation-controls {
-            flex-direction: column;
-            gap: var(--spacing-md);
+          .compact-navigation {
+            gap: 4px;
+            padding: 3px;
           }
 
-          .nav-btn {
-            width: 100%;
-            justify-content: center;
+          .quick-access {
+            gap: 4px;
           }
 
-          .quick-links-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-
-          .instructions-grid {
-            grid-template-columns: 1fr;
+          .quick-access a {
+            width: 24px;
+            height: 24px;
+            font-size: 12px;
           }
         }
 
         @media (max-width: 480px) {
-          .page-controls {
+          .header-controls {
             flex-wrap: wrap;
           }
 
-          .control-btn {
-            width: 40px;
-            height: 40px;
+          .compact-viewer {
+            height: 350px;
+            max-width: 280px;
+            margin: 8px auto;
           }
 
-          .quick-links-grid {
-            grid-template-columns: 1fr;
+          .zoom-display {
+            min-width: 25px;
+            font-size: 9px;
           }
 
-          .page-viewer {
-            min-height: 400px;
+          .compact-select {
+            padding: 2px 4px;
+            font-size: 12px;
           }
         }
 
-        /* تحسين الأداء */
-        .page-image-container {
-          will-change: transform;
-          contain: layout style paint;
+        /* الوضع المظلم */
+        [data-theme="dark"] .header-controls .MuiIconButton-root {
+          background: rgba(30, 30, 30, 0.95) !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          color: #ffffff !important;
         }
 
-        .loading-overlay {
-          will-change: opacity;
+        [data-theme="dark"] .header-controls .MuiIconButton-root:hover {
+          background: rgba(50, 50, 50, 1) !important;
+          border-color: rgba(255, 255, 255, 0.3) !important;
         }
 
-        /* تحسين إمكانية الوصول */
-        .nav-btn:focus,
-        .control-btn:focus,
-        .page-select:focus {
-          outline: 2px solid var(--primary-color);
-          outline-offset: 2px;
+        [data-theme="dark"] .zoom-display {
+          background: rgba(30, 30, 30, 0.95) !important;
+          border: 2px solid rgba(255, 255, 255, 0.2) !important;
+          color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .compact-navigation .MuiIconButton-root {
+          background: rgba(30, 30, 30, 0.9) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+          color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .compact-navigation .MuiIconButton-root:hover {
+          background: rgba(50, 50, 50, 1) !important;
+        }
+
+        [data-theme="dark"] .compact-header {
+          background: rgba(30, 30, 30, 0.9) !important;
+          color: #ffffff !important;
+        }
+
+        [data-theme="dark"] .page-info-compact {
+          background: rgba(30, 30, 30, 0.9) !important;
+          color: #ffffff !important;
         }
 
         /* تحسين للطباعة */
@@ -727,7 +971,8 @@ const QuranPageView = () => {
           .page-header,
           .navigation-controls,
           .quick-links,
-          .usage-instructions {
+          .usage-instructions,
+          .audio-player-container {
             display: none;
           }
 
@@ -737,7 +982,7 @@ const QuranPageView = () => {
           }
         }
       `}</style>
-    </>
+    </PageLoader>
   );
 };
 

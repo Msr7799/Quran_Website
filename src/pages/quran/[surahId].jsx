@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTheme } from '@mui/material/styles';
-import { useMediaQuery } from '@mui/material';  
+import { useMediaQuery } from '@mui/material';
 import fs from 'fs';
 import path from 'path';
 import Link from 'next/link';
 import { FaCopy, FaShareAlt } from 'react-icons/fa';
+import { MdMenuBook } from 'react-icons/md';
 import SeoHead from '../../components/SeoHead';
 import styles from '../../styles/Surah.module.css';
 import convertToArabicNumerals from '../../utils/convertToArabicNumerals';
@@ -12,6 +13,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { useRouter } from 'next/router';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import TafseerPopup from '../../components/AudioPlayer/tafseer_popup.js';
 
 export default function SurahPage({ surah, prevSurah, nextSurah }) {
     if (!surah) {
@@ -51,8 +53,22 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
         }
     };
 
+    const openTafseer = (verse, verseIndex) => {
+        setSelectedVerse({
+            surahNumber: surah.number,
+            ayahNumber: verseIndex + 1,
+            ayahText: verse.text.ar,
+            surahName: surah.name.ar
+        });
+        setTafseerOpen(true);
+    };
+
     // 1. حالة لعدد الآيات المعروضة
     const [visibleCount, setVisibleCount] = React.useState(10);
+
+    // حالة التفسير
+    const [tafseerOpen, setTafseerOpen] = useState(false);
+    const [selectedVerse, setSelectedVerse] = useState(null);
 
     return (
         <>
@@ -161,7 +177,12 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
 
                         return (
                             <div key={index} className={styles.verseContainer}>
-                                <div className={styles.verseBox}>
+                                <div
+                                    className={styles.verseBox}
+                                    onClick={() => openTafseer(verse, index)}
+                                    style={{ cursor: 'pointer' }}
+                                    title="اضغط لعرض التفسير"
+                                >
                                     <p className={styles.verseText} title={verse.text.ar} aria-label={verse.text.ar.split(" ").join("_")}>{verse.text.ar}</p>
                                     <p className={styles.verseTextEn} title={verse.text.en} aria-label={verse.text.en.split(" ").join("_")}>{verse.text.en}</p>
                                 </div>
@@ -169,13 +190,20 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
                                     {convertToArabicNumerals(index + 1)}
                                 </span>
                                 <div className={styles.actions}>
+                                    <MdMenuBook
+                                        className={styles.icon}
+                                        onClick={() => openTafseer(verse, index)}
+                                        title="عرض التفسير"
+                                    />
                                     <FaCopy
                                         className={styles.icon}
                                         onClick={() => copyToClipboard(formattedText)}
+                                        title="نسخ الآية"
                                     />
                                     <FaShareAlt
                                         className={styles.icon}
                                         onClick={() => shareVerse(formattedText)}
+                                        title="مشاركة الآية"
                                     />
                                 </div>
                             </div>
@@ -202,6 +230,18 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
                     )}
                 </div>
             </main>
+
+            {/* مكون التفسير */}
+            {selectedVerse && (
+                <TafseerPopup
+                    open={tafseerOpen}
+                    onClose={() => setTafseerOpen(false)}
+                    surahNumber={selectedVerse.surahNumber}
+                    ayahNumber={selectedVerse.ayahNumber}
+                    ayahText={selectedVerse.ayahText}
+                    surahName={selectedVerse.surahName}
+                />
+            )}
         </>
     );
 }

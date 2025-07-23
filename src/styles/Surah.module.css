@@ -115,6 +115,15 @@
 .verseBox {
   flex: 1;
   margin-right: 10px;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+.verseBox:hover {
+  background-color: rgba(25, 118, 210, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .verseText {
@@ -151,13 +160,18 @@
 
 .icon {
   cursor: pointer;
-  color: #333;
-  transition: color 0.3s ease;
-  font-size: 16px;
+  color: #666;
+  transition: all 0.3s ease;
+  font-size: 18px;
+  margin: 0 4px;
+  padding: 4px;
+  border-radius: 4px;
 }
 
 .icon:hover {
   color: var(--primary-color);
+  background-color: rgba(25, 118, 210, 0.1);
+  transform: scale(1.1);
 }
 
 .navigation {

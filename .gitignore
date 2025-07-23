@@ -37,3 +37,10 @@ next-env.d.ts
 
 
 .wrangler
+
+#.vscode + .augment
+.vscode/
+.augment/   
+
+#folder scripte
+/scripts/

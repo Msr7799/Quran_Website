@@ -17,7 +17,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 
 function Copyright() {
   return (
-    <Typography variant="body2" sx={{ color: 'text.secondary', mt: 1 }}>
+    <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 1 }}>
       جميع الحقوق محفوظة لـ حمد عارف المران &nbsp;|&nbsp; ساهم في تطوير الموقع المطور : محمد الرميحي
     </Typography>
   );
@@ -38,7 +38,7 @@ export default function Footer() {
 
   return (
     <React.Fragment>
-      <Divider />
+      <Divider sx={{ borderColor: 'var(--border-color)' }} />
       <Container
         sx={{
           display: 'flex',
@@ -47,6 +47,8 @@ export default function Footer() {
           gap: { xs: 4, sm: 8 },
           py: { xs: 8, sm: 10 },
           textAlign: { sm: 'center', md: 'left' },
+          backgroundColor: 'var(--background-color)',
+          color: 'var(--text-primary)',
         }}
       >
         <Box
@@ -66,18 +68,28 @@ export default function Footer() {
             }}
           >
             <Box sx={{ width: { xs: '70%', sm: '60%' } }}>
-              <img src="./logo.svg"  alt="Quran Logo"  style={{ width: "100 px" , height: "100px" , border:"1px solid white" , borderRadius:"10px" }} />
+              <img
+                src="./logo.svg"
+                alt="Quran Logo"
+                style={{
+                  width: "100px",
+                  height: "100px",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "10px",
+                  backgroundColor: "var(--background-paper)"
+                }}
+              />
               <Typography
                 variant="body2"
                 gutterBottom
-                sx={{ fontWeight: 600, mt: 2,color: 'text.secondary', }}
+                sx={{ fontWeight: 600, mt: 2, color: 'var(--text-primary)' }}
               >
                 اشترك معنا ليصلك كل جديد
               </Typography>
-              <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
+              <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 2 }}>
                 أكتب ايميلك لتصلك التحديثات والأخبار الجديدة عن الموقع
               </Typography>
-              <InputLabel htmlFor="email-newsletter">البريد الإلكتروني</InputLabel>
+              <InputLabel htmlFor="email-newsletter" sx={{ color: 'var(--text-primary)', mb: 1 }}>البريد الإلكتروني</InputLabel>
               <form onSubmit={handleSend}>
                 <Stack direction="row" spacing={1} useFlexGap>
                   <TextField
@@ -87,7 +99,7 @@ export default function Footer() {
                     variant="outlined"
                     fullWidth
                     aria-label="Enter your email address"
-                    placeholder="Your email address"
+                    placeholder="أدخل بريدك الإلكتروني"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     slotProps={{
@@ -96,14 +108,40 @@ export default function Footer() {
                         'aria-label': 'Enter your email address',
                       },
                     }}
-                    sx={{ width: '250px' }}
+                    sx={{
+                      width: '250px',
+                      '& .MuiOutlinedInput-root': {
+                        color: 'var(--text-primary)',
+                        backgroundColor: 'var(--background-paper)',
+                        '& fieldset': {
+                          borderColor: 'var(--border-color)',
+                        },
+                        '&:hover fieldset': {
+                          borderColor: 'var(--primary-color)',
+                        },
+                        '&.Mui-focused fieldset': {
+                          borderColor: 'var(--primary-color)',
+                        },
+                      },
+                      '& .MuiInputBase-input::placeholder': {
+                        color: 'var(--text-muted)',
+                        opacity: 1,
+                      },
+                    }}
                   />
                   <Button
                     type="submit"
                     variant="contained"
                     color="primary"
                     size="small"
-                    sx={{ flexShrink: 0 }}
+                    sx={{
+                      flexShrink: 0,
+                      backgroundColor: 'var(--primary-color)',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'var(--primary-dark)',
+                      },
+                    }}
                   >
                     Send
                   </Button>
@@ -134,8 +172,8 @@ export default function Footer() {
               <Box
                 key={idx}
                 sx={{
-                  border: '1px solid #f9a825',
-                  color: '#f9a825',
+                  border: '1px solid var(--secondary-color)',
+                  color: 'var(--secondary-color)',
                   borderRadius: '20px',
                   px: 1.5,
                   py: 0.2,
@@ -143,7 +181,12 @@ export default function Footer() {
                   m: 0.3,
                   background: 'transparent',
                   textAlign: 'center',
-                  width: 'fit-content'
+                  width: 'fit-content',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'var(--secondary-color)',
+                    color: 'white',
+                  }
                 }}
               >
                 {word}
@@ -172,8 +215,8 @@ export default function Footer() {
               <Box
                 key={idx}
                 sx={{
-                  border: '1px solid #f9a825',
-                  color: '#f9a825',
+                  border: '1px solid var(--secondary-color)',
+                  color: 'var(--secondary-color)',
                   borderRadius: '20px',
                   px: 1.5,
                   py: 0.2,
@@ -181,7 +224,12 @@ export default function Footer() {
                   m: 0.3,
                   background: 'transparent',
                   textAlign: 'center',
-                  width: 'fit-content'
+                  width: 'fit-content',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'var(--secondary-color)',
+                    color: 'white',
+                  }
                 }}
               >
                 {word}
@@ -210,8 +258,8 @@ export default function Footer() {
               <Box
                 key={idx}
                 sx={{
-                  border: '1px solid #f9a825',
-                  color: '#f9a825',
+                  border: '1px solid var(--secondary-color)',
+                  color: 'var(--secondary-color)',
                   borderRadius: '20px',
                   px: 1.5,
                   py: 0.2,
@@ -219,7 +267,12 @@ export default function Footer() {
                   m: 0.3,
                   background: 'transparent',
                   textAlign: 'center',
-                  width: 'fit-content'
+                  width: 'fit-content',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: 'var(--secondary-color)',
+                    color: 'white',
+                  }
                 }}
               >
                 {word}
@@ -234,7 +287,7 @@ export default function Footer() {
             pt: { xs: 4, sm: 8 },
             width: '100%',
             borderTop: '1px solid',
-            borderColor: 'divider',
+            borderColor: 'var(--border-color)',
           }}
         >
           <div>
@@ -244,14 +297,21 @@ export default function Footer() {
             direction="row"
             spacing={1}
             useFlexGap
-            sx={{ justifyContent: 'left', color: 'text.secondary' }}
+            sx={{ justifyContent: 'left', color: 'var(--text-secondary)' }}
           >
             <IconButton
               color="inherit"
               size="small"
               href="https://github.com/Msr7799"
               aria-label="GitHub"
-              sx={{ alignSelf: 'center' }}
+              sx={{
+                alignSelf: 'center',
+                color: 'var(--text-secondary)',
+                '&:hover': {
+                  color: 'var(--primary-color)',
+                  backgroundColor: 'rgba(52, 73, 94, 0.1)',
+                }
+              }}
               target="_blank"
               rel="noopener"
             >
@@ -262,7 +322,14 @@ export default function Footer() {
               size="small"
               href="https://x.com/msr_99"
               aria-label="X"
-              sx={{ alignSelf: 'center' }}
+              sx={{
+                alignSelf: 'center',
+                color: 'var(--text-secondary)',
+                '&:hover': {
+                  color: 'var(--primary-color)',
+                  backgroundColor: 'rgba(52, 73, 94, 0.1)',
+                }
+              }}
               target="_blank"
               rel="noopener"
             >
@@ -273,7 +340,14 @@ export default function Footer() {
               size="small"
               href="https://quran-api-qklj.onrender.com/docs#/paths/~1surah/get"
               aria-label="Website"
-              sx={{ alignSelf: 'center' }}
+              sx={{
+                alignSelf: 'center',
+                color: 'var(--text-secondary)',
+                '&:hover': {
+                  color: 'var(--primary-color)',
+                  backgroundColor: 'rgba(52, 73, 94, 0.1)',
+                }
+              }}
               target="_blank"
               rel="noopener"
             >

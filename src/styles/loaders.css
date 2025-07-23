@@ -1,0 +1,269 @@
+/* src/styles/loaders.css - أنماط مكونات التحميل */
+
+/* متغيرات الألوان للـ loaders */
+:root {
+  --loader-primary: #1976d2;
+  --loader-secondary: #C3C8DE;
+  --loader-text: #414856;
+  --loader-bg: linear-gradient(184deg, rgba(134, 134, 134, 0.49), rgba(39, 39, 39, 0.88));
+}
+
+/* الـ loader الرئيسي للقرآن */
+.quran-loader {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+}
+
+/* تأثيرات الانتقال الانسيابي */
+.fade-enter {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.fade-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.fade-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.fade-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 400ms ease, transform 400ms ease;
+}
+
+/* تأثيرات الانزلاق */
+.slide-enter {
+  transform: translateY(100%);
+}
+
+.slide-enter-active {
+  transform: translateY(0);
+  transition: transform 800ms cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.slide-exit {
+  transform: translateY(0);
+}
+
+.slide-exit-active {
+  transform: translateY(-100%);
+  transition: transform 600ms cubic-bezier(0.55, 0.055, 0.675, 0.19);
+}
+
+/* تأثيرات التكبير */
+.zoom-enter {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+.zoom-enter-active {
+  transform: scale(1);
+  opacity: 1;
+  transition: transform 600ms ease, opacity 600ms ease;
+}
+
+.zoom-exit {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.zoom-exit-active {
+  transform: scale(0.8);
+  opacity: 0;
+  transition: transform 400ms ease, opacity 400ms ease;
+}
+
+/* تأثيرات الإظهار التدريجي للعناصر */
+.stagger-item {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 600ms ease, transform 600ms ease;
+}
+
+.stagger-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* تأثيرات خاصة للنصوص العربية */
+.arabic-text-loader {
+  font-family: 'Amiri', 'Traditional Arabic', serif;
+  text-align: center;
+  direction: rtl;
+}
+
+/* تأثيرات الخلفية للـ loaders */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--loader-bg);
+  backdrop-filter: blur(10px);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* تأثيرات النبضة للنصوص */
+.pulse-text {
+  animation: pulse-fade 2s ease-in-out infinite;
+}
+
+@keyframes pulse-fade {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+/* تأثيرات الدوران للأيقونات */
+.rotate-icon {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* تأثيرات النقاط المتحركة */
+.dots-loader {
+  display: flex;
+  gap: 4px;
+}
+
+.dots-loader .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--loader-primary);
+  animation: dot-bounce 1.4s ease-in-out infinite both;
+}
+
+.dots-loader .dot:nth-child(1) { animation-delay: -0.32s; }
+.dots-loader .dot:nth-child(2) { animation-delay: -0.16s; }
+.dots-loader .dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
+}
+
+/* تأثيرات الموجات */
+.wave-loader {
+  display: flex;
+  gap: 2px;
+}
+
+.wave-loader .bar {
+  width: 4px;
+  height: 20px;
+  background-color: var(--loader-primary);
+  animation: wave 1.2s ease-in-out infinite;
+}
+
+.wave-loader .bar:nth-child(1) { animation-delay: -1.2s; }
+.wave-loader .bar:nth-child(2) { animation-delay: -1.1s; }
+.wave-loader .bar:nth-child(3) { animation-delay: -1.0s; }
+.wave-loader .bar:nth-child(4) { animation-delay: -0.9s; }
+.wave-loader .bar:nth-child(5) { animation-delay: -0.8s; }
+
+@keyframes wave {
+  0%, 40%, 100% {
+    transform: scaleY(0.4);
+  }
+  20% {
+    transform: scaleY(1);
+  }
+}
+
+/* تأثيرات خاصة للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .quran-loader {
+    gap: 12px;
+  }
+  
+  .loader-overlay {
+    padding: 20px;
+  }
+  
+  .stagger-item {
+    transform: translateY(20px);
+  }
+}
+
+/* تأثيرات الوضع المظلم */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --loader-primary: #90caf9;
+    --loader-secondary: #424242;
+    --loader-text: #e0e0e0;
+    --loader-bg: linear-gradient(184deg, rgba(33, 33, 33, 0.95), rgba(0, 0, 0, 0.9));
+  }
+}
+
+/* تأثيرات الحركة المخفضة للمستخدمين الذين يفضلون ذلك */
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-exit-active,
+  .slide-enter-active,
+  .slide-exit-active,
+  .zoom-enter-active,
+  .zoom-exit-active,
+  .stagger-item {
+    transition: none;
+  }
+  
+  .pulse-text,
+  .rotate-icon,
+  .dots-loader .dot,
+  .wave-loader .bar {
+    animation: none;
+  }
+}
+
+/* تأثيرات إضافية للتفاعل */
+.loader-interactive:hover {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
+.loader-interactive:active {
+  transform: scale(0.95);
+}
+
+/* تأثيرات الشفافية التدريجية */
+.gradient-fade {
+  background: linear-gradient(
+    45deg,
+    rgba(25, 118, 210, 0.1) 0%,
+    rgba(25, 118, 210, 0.3) 50%,
+    rgba(25, 118, 210, 0.1) 100%
+  );
+  animation: gradient-shift 3s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}

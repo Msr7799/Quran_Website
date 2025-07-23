@@ -276,33 +276,7 @@ export default function QuranSoundContainer() {
   const audioRef = useRef(null);
   const verseTimeoutRef = useRef(null);
 
-  // خريطة ربط محسنة مع أوقات البسملة - مُحدثة حسب المطلوب
-  const supportedReciters = {
-    68: { // عبدالرحمن السديس
-      filename: 'sudais.json',
-      name: 'السديس',
-      displayName: 'Sudais_128kbps',
-      basmalaOffset: 5.0 // البسملة 5 ثوان
-    },
-    46: { // سعود الشريم
-      filename: 'Shuraym.json', 
-      name: 'الشريم',
-      displayName: 'Saud_Ash_Shuraym',
-      basmalaOffset: 3.0 // البسملة 3 ثوان
-    },
-    90: { // علي الحذيفي
-      filename: 'Hudhaify.json',
-      name: 'الحذيفي', 
-      displayName: 'Hudhaify_128kbps_Timings',
-      basmalaOffset: 5.0 // البسملة 5 ثوان
-    },
-    82: { // عبدالله عواد الجهني
-      filename: 'Al-Juhaynee.json',
-      name: 'الجهني',
-      displayName: 'Abdullaah_3awwaad_Al-Juhaynee_128kbps',
-      basmalaOffset: 5.0 // البسملة 5 ثوان
-    }
-  };
+  // جميع القراء يدعمون التوقيت الآن من خلال API
 
   // فلترة القراء
   useEffect(() => {
@@ -330,88 +304,62 @@ export default function QuranSoundContainer() {
     }
   }, [surahSearch]);
 
-  // دالة جلب بيانات التوقيت المحلية - مع إصلاح التوقيتات
-  const fetchLocalTimingData = async (surahNumber, reciterInfo, basmalaOffset) => {
-    if (!reciterInfo) {
-      console.log('لا يوجد ملف توقيت لهذا الشيخ');
-      setTimingAvailable(false);
-      return;
-    }
-
+  // دالة جلب بيانات التوقيت من API
+  const fetchTimingData = async (surahNumber, reciterId) => {
     try {
-      console.log(`جلب التوقيت المحلي للشيخ: ${reciterInfo.name} السورة: ${surahNumber} مع إزاحة البسملة: ${basmalaOffset}s`);
-      const response = await fetch(`/json/ayat_Timming/${reciterInfo.filename}`);
+      console.log(`🎵 جلب توقيتات السورة ${surahNumber} للقارئ ${reciterId}`);
+
+      const response = await fetch(`https://mp3quran.net/api/v3/ayat_timing?surah=${surahNumber}&read=${reciterId}`);
       if (!response.ok) {
-        throw new Error(`فشل في جلب الملف: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       const timingData = await response.json();
 
-      // استخدم مصفوفة السور من الكائن
-      const surahsArray = timingData.surahs;
-      if (!Array.isArray(surahsArray)) {
-        console.error('البيانات المجلبة ليست في شكل array:', timingData);
+      if (!Array.isArray(timingData) || timingData.length === 0) {
+        console.error('بيانات التوقيت غير صحيحة:', timingData);
         setTimingAvailable(false);
         return;
       }
 
-      // البحث عن السورة في البيانات
-      const surahData = surahsArray.find(surah => surah.number === surahNumber.toString());
-      
-      if (surahData && surahData.Timing) {
-        console.log(`تم العثور على السورة ${surahData.name} مع ${surahData.verses_count} آية`);
-        
-        // تحويل بيانات التوقيت مع إضافة إزاحة البسملة بشكل صحيح
-        const verses = Object.entries(surahData.Timing).map(([verseNumber, timing], index) => {
-          const verseNum = parseInt(verseNumber);
-          const end_time = parseFloat(timing);
-          
-          let start_time;
-          if (index === 0) {
-            // الآية الأولى تبدأ بعد البسملة
-            start_time = basmalaOffset;
-          } else {
-            // باقي الآيات تبدأ من نهاية الآية السابقة
-            const prevVerseTiming = Object.entries(surahData.Timing)[index - 1];
-            start_time = parseFloat(prevVerseTiming[1]);
-          }
-          
-          return {
-            verse_number: verseNum,
-            start_time,
-            end_time,
-            duration: end_time - start_time,
-            original_timing: end_time,
-          };
-        });
-        
-        // ترتيب الآيات حسب الرقم
-        const sortedVerses = verses.sort((a, b) => a.verse_number - b.verse_number);
-        
-        setVersesTimingData(sortedVerses);
-        
-        // حساب المدة الكلية
-        const lastVerse = sortedVerses[sortedVerses.length - 1];
-        const totalDuration = lastVerse ? lastVerse.end_time : 0;
-        setTotalDuration(totalDuration);
-        
-        setTimingAvailable(true);
-        
-        console.log('تم جلب بيانات التوقيت المحلية بنجاح:', {
-          reciter: reciterInfo.name,
-          surah: surahData.name,
-          verses_count: sortedVerses.length,
-          total_duration: totalDuration,
-          basmala_offset: basmalaOffset,
-          first_verse: sortedVerses[0],
-          sample_verses: sortedVerses.slice(0, 3)
-        });
-      } else {
-        console.error(`لم يتم العثور على السورة رقم ${surahNumber} في ملف ${reciterInfo.filename}`);
-        setTimingAvailable(false);
-      }
+      console.log(`✅ تم جلب ${timingData.length} توقيت للسورة ${surahNumber}`);
+
+      // تحويل بيانات API إلى التنسيق المطلوب
+      const verses = timingData
+        .filter(timing => timing.ayah > 0) // تجاهل الآية 0 (البسملة)
+        .map(timing => ({
+          verse_number: timing.ayah,
+          start_time: timing.start_time / 1000, // تحويل من ميلي ثانية إلى ثواني
+          end_time: timing.end_time / 1000,
+          duration: (timing.end_time - timing.start_time) / 1000,
+          polygon: timing.polygon,
+          x: timing.x,
+          y: timing.y,
+          page: timing.page
+        }))
+        .sort((a, b) => a.verse_number - b.verse_number);
+
+      setVersesTimingData(verses);
+
+      // حساب المدة الكلية
+      const lastVerse = verses[verses.length - 1];
+      const totalDuration = lastVerse ? lastVerse.end_time : 0;
+      setTotalDuration(totalDuration);
+
+      setTimingAvailable(true);
+
+      console.log('✅ تم جلب بيانات التوقيت من API بنجاح:', {
+        surah: surahNumber,
+        reciter: reciterId,
+        verses_count: verses.length,
+        total_duration: totalDuration,
+        first_verse: verses[0],
+        last_verse: verses[verses.length - 1]
+      });
     } catch (error) {
-      console.error('خطأ في جلب بيانات التوقيت المحلية:', error);
+      console.error('❌ خطأ في جلب بيانات التوقيت من API:', error);
       setTimingAvailable(false);
+      setVersesTimingData([]);
     }
   };
 
@@ -509,17 +457,8 @@ export default function QuranSoundContainer() {
     console.log('تم اختيار السورة:', surah.name.ar);
     console.log('رابط الصوت:', audioUrl);
 
-    // جلب بيانات التوقيت المحلية إذا كان القارئ مدعوماً
-    if (supportedReciters[selectedReciter.id]) {
-      const reciterInfo = supportedReciters[selectedReciter.id];
-      // حساب إزاحة البسملة - السورة 9 (التوبة) لا تحتوي على بسملة
-      const basmalaOffset = surah.number === 9 ? 0 : reciterInfo.basmalaOffset;
-      
-      fetchLocalTimingData(surah.number, reciterInfo, basmalaOffset);
-    } else {
-      console.log('هذا القارئ لا يدعم التوقيت الدقيق');
-      setTimingAvailable(false);
-    }
+    // جلب بيانات التوقيت من API
+    fetchTimingData(surah.number, selectedReciter.id);
   };
 
   const handleClosePlayer = () => {
@@ -653,14 +592,12 @@ export default function QuranSoundContainer() {
                       direction: 'rtl',
                     }}
                   />
-                  {supportedReciters[reciter.id] && (
-                    <StatusChip
-                      icon={<AccessTimeIcon />}
-                      label="تزامن دقيق"
-                      size="small"
-                      variant="filled"
-                    />
-                  )}
+                  <StatusChip
+                    icon={<AccessTimeIcon />}
+                    label="تزامن دقيق"
+                    size="small"
+                    variant="filled"
+                  />
                 </ListItemStyled>
               ))}
             </ScrollableList>
@@ -721,9 +658,8 @@ export default function QuranSoundContainer() {
                 fontWeight: 'bold'
               }}
             >
-              تزامن دقيق محلي لـ {versesTimingData.length} آية | 
-              المدة: {Math.floor(totalDuration / 60)}:{Math.floor(totalDuration % 60).toString().padStart(2, '0')} |
-              {selectedSurah?.number === 9 ? ' بدون بسملة' : ` إزاحة البسملة: ${supportedReciters[selectedReciter?.id]?.basmalaOffset}s`}
+              تزامن دقيق لـ {versesTimingData.length} آية |
+              المدة: {Math.floor(totalDuration / 60)}:{Math.floor(totalDuration % 60).toString().padStart(2, '0')} دقيقة
             </Typography>
           </TimingInfo>
         )}

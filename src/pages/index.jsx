@@ -3,6 +3,20 @@ import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
+import QuranLoader from '../components/QuranLoader';
+import {
+  BookOpen,
+  Volume2,
+  FileText,
+  Radio,
+  Search,
+  Zap,
+  BookMarked,
+  Sparkles,
+  Book,
+  Mic,
+  ArrowLeft
+} from 'lucide-react';
 
 /**
  * الصفحة الرئيسية المحدثة باستخدام النظام الجديد
@@ -11,26 +25,34 @@ import Image from 'next/image';
 const HomePage = () => {
   const [mounted, setMounted] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // تأكد من تحميل المكون قبل العرض
   useEffect(() => {
     setMounted(true);
+
+    // إخفاء loader بعد تحميل الصفحة
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // قائمة الصور للعرض المتناوب
   const heroImages = [
     {
-      src: '/images/hero-1.jpg',
+      src: 'alf.gif',
       alt: 'القرآن الكريم - التلاوة المباركة',
       title: 'تلاوة القرآن الكريم'
     },
     {
-      src: '/images/hero-2.jpg',
+      src: 'aqra1.svg',
       alt: 'المصحف الشريف',
       title: 'المصحف الشريف'
     },
     {
-      src: '/images/hero-3.jpg',
+      src: ' liner.svg',
       alt: 'الاستماع للقرآن',
       title: 'الاستماع للقرآن'
     }
@@ -44,7 +66,8 @@ const HomePage = () => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % heroImages.length
       );
-    }, 5000); // تغيير كل 5 ثواني
+    }, 
+    10000); // تغيير كل 5 ثواني
 
     return () => clearInterval(interval);
   }, [mounted, heroImages.length]);
@@ -52,75 +75,95 @@ const HomePage = () => {
   // الميزات الرئيسية للموقع
   const features = [
     {
-      icon: '📖',
+      icon: BookOpen,
       title: 'تصفح المصحف',
       description: 'تصفح القرآن الكريم صفحة بصفحة بتصميم جميل وواضح',
       href: '/quran-pages/1',
-      color: 'var(--primary-color)'
+      color: '#34495e'
     },
     {
-      icon: '🎵',
+      icon: Volume2,
       title: 'الصوتيات',
       description: 'استمع للقرآن الكريم بأصوات أشهر القراء',
       href: '/quran-sound',
-      color: 'var(--success-color)'
+      color: '#27ae60'
     },
     {
-      icon: '📄',
+      icon: FileText,
       title: 'المصحف PDF',
       description: 'حمل المصحف الشريف بصيغة PDF لتصفحه في أي وقت',
       href: '/quran-pdf',
-      color: 'var(--warning-color)'
+      color: '#f39c12'
     },
     {
-      icon: '📻',
+      icon: Radio,
       title: 'الإذاعة المباشرة',
       description: 'استمع للبث المباشر من إذاعة القرآن الكريم',
       href: '/live',
-      color: 'var(--error-color)'
+      color: '#e74c3c'
     },
     {
-      icon: '🔍',
+      icon: Search,
       title: 'البحث في القرآن',
       description: 'ابحث في آيات القرآن الكريم بسهولة ويسر',
       href: '/search',
-      color: 'var(--info-color)'
+      color: '#3498db'
     },
     {
-      icon: '⚡',
+      icon: Zap,
       title: 'API للمطورين',
       description: 'استخدم API القرآن الكريم في تطبيقاتك',
       href: 'https://quran-api-qklj.onrender.com/docs',
-      color: 'var(--secondary-color)'
+      color: '#9b59b6'
     }
   ];
 
   // إحصائيات الموقع
   const stats = [
-    { number: '114', label: 'سورة', icon: '📚' },
-    { number: '6236', label: 'آية', icon: '✨' },
-    { number: '30', label: 'جزء', icon: '📖' },
-    { number: '50+', label: 'قارئ', icon: '🎙️' }
+    { number: '114', label: 'سورة', icon: BookMarked },
+    { number: '6236', label: 'آية', icon: Sparkles },
+    { number: '30', label: 'جزء', icon: Book },
+    { number: '50+', label: 'قارئ', icon: Mic }
   ];
 
-  if (!mounted) {
-    return null;
+  // عرض loader بسيط أثناء التحميل
+  if (!mounted || isLoading) {
+    return (
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        background: '#fafafa',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+        opacity: isLoading ? 1 : 0,
+        transition: 'opacity 0.5s ease-out'
+      }}>
+        <QuranLoader
+          size={80}
+          text="مرحباً بك في موقع القرآن الكريم..."
+          showText={true}
+        />
+      </div>
+    );
   }
 
   return (
     <>
       <Head>
-        <title>القرآن الكريم - الموقع الشامل لتلاوة واستماع وتصفح القرآن</title>
-        <meta name="description" content="موقع القرآن الكريم الشامل يوفر تلاوة وتصفح واستماع القرآن الكريم بأفضل جودة وأسهل طريقة. استمع لأشهر القراء وحمل المصحف PDF." />
-        <meta name="keywords" content="القرآن الكريم, تلاوة القرآن, استماع القرآن, مصحف PDF, قراء القرآن, تفسير القرآن" />
-        <meta property="og:title" content="القرآن الكريم - الموقع الشامل" />
-        <meta property="og:description" content="موقع شامل لتلاوة وتصفح واستماع القرآن الكريم" />
-        <meta property="og:image" content="/images/og-image.jpg" />
-        <meta property="og:url" content={process.env.NEXT_PUBLIC_BASE_URL} />
-        <link rel="canonical" href={process.env.NEXT_PUBLIC_BASE_URL} />
-      </Head>
+        <title>القرآن الكريم - القرآن الإلكتروني</title>
+        <meta name="description" content="موقع شامل لتلاوة وتصفح واستماع القرآن الكريم بأفضل جودة وأسهل طريقة." />
+        <meta name="keywords" content="القرآن الكريم, تلاوة القرآن, تصفح القرآن, استماع القرآن, القرآن الإلكتروني, القرآن الكريم الإلكتروني" />
+      </Head> 
 
-      <div className="homepage">
+      <div className="homepage" style={{
+        opacity: mounted && !isLoading ? 1 : 0,
+        transition: 'opacity 0.8s ease-in-out'
+      }}>
         {/* Hero Section */}
         <section className="hero">
           <div className="hero-background">
@@ -176,13 +219,18 @@ const HomePage = () => {
         <section className="stats-section">
           <div className="container">
             <div className="stats-grid">
-              {stats.map((stat, index) => (
-                <div key={index} className="stat-card">
-                  <div className="stat-icon">{stat.icon}</div>
-                  <div className="stat-number">{stat.number}</div>
-                  <div className="stat-label">{stat.label}</div>
-                </div>
-              ))}
+              {stats.map((stat, index) => {
+                const IconComponent = stat.icon;
+                return (
+                  <div key={index} className="stat-card">
+                    <div className="stat-icon">
+                      <IconComponent size={40} strokeWidth={1.5} />
+                    </div>
+                    <div className="stat-number">{stat.number}</div>
+                    <div className="stat-label">{stat.label}</div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -198,16 +246,21 @@ const HomePage = () => {
             </div>
             
             <div className="features-grid">
-              {features.map((feature, index) => (
-                <Link key={index} href={feature.href} className="feature-card">
-                  <div className="feature-icon" style={{ color: feature.color }}>
-                    {feature.icon}
-                  </div>
-                  <h3 className="feature-title">{feature.title}</h3>
-                  <p className="feature-description">{feature.description}</p>
-                  <div className="feature-arrow">←</div>
-                </Link>
-              ))}
+              {features.map((feature, index) => {
+                const IconComponent = feature.icon;
+                return (
+                  <Link key={index} href={feature.href} className="feature-card">
+                    <div className="feature-icon" style={{ color: feature.color }}>
+                      <IconComponent size={48} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="feature-title">{feature.title}</h3>
+                    <p className="feature-description">{feature.description}</p>
+                    <div className="feature-arrow">
+                      <ArrowLeft size={20} strokeWidth={2} />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -238,6 +291,7 @@ const HomePage = () => {
         .homepage {
           width: 100%;
           min-height: 100vh;
+          background-color: var(--background-color);
         }
 
         /* Hero Section */
@@ -273,19 +327,21 @@ const HomePage = () => {
           left: 0;
           right: 0;
           bottom: 0;
-          background: linear-gradient(
-            135deg,
-            rgba(25, 118, 210, 0.8) 0%,
-            rgba(21, 101, 192, 0.9) 100%
-          );
+          background: transparent;
           z-index: 2;
         }
 
         .hero-content {
           position: relative;
           z-index: 3;
+          text-align: center;
+          color: white;
           max-width: 800px;
-          padding: 0 var(--spacing-lg);
+          margin: 0 auto;
+          padding: var(--spacing-xl);
+          background: rgba(0, 0, 0, 0.4);
+          border-radius: var(--border-radius-2xl);
+          backdrop-filter: blur(10px);
         }
 
         .hero-title {
@@ -293,7 +349,8 @@ const HomePage = () => {
           font-weight: 700;
           margin-bottom: var(--spacing-md);
           font-family: var(--font-family-arabic);
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+          text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+          color: #ffffff;
         }
 
         .hero-subtitle {
@@ -301,7 +358,9 @@ const HomePage = () => {
           font-weight: 600;
           margin-bottom: var(--spacing-lg);
           font-family: var(--font-family-arabic);
-          opacity: 0.9;
+          color: #ffffff;
+          text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
+          opacity: 0.95;
         }
 
         .hero-description {
@@ -309,7 +368,9 @@ const HomePage = () => {
           line-height: 1.8;
           margin-bottom: var(--spacing-2xl);
           font-family: var(--font-family-arabic);
-          opacity: 0.9;
+          color: #ffffff;
+          text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+          opacity: 0.95;
         }
 
         .hero-actions {
@@ -390,9 +451,18 @@ const HomePage = () => {
           box-shadow: var(--shadow-lg);
         }
 
+        .stat-card:hover .stat-icon {
+          transform: scale(1.2);
+          color: var(--primary-dark);
+        }
+
         .stat-icon {
-          font-size: 3rem;
           margin-bottom: var(--spacing-md);
+          color: var(--primary-color);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          transition: all var(--transition-base);
         }
 
         .stat-number {
@@ -474,9 +544,21 @@ const HomePage = () => {
           box-shadow: var(--shadow-2xl);
         }
 
+        .feature-card:hover .feature-icon {
+          background: rgba(255, 255, 255, 0.2);
+          transform: scale(1.1);
+        }
+
         .feature-icon {
-          font-size: 3rem;
           margin-bottom: var(--spacing-md);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          width: 80px;
+          height: 80px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: var(--border-radius-xl);
+          transition: all var(--transition-base);
         }
 
         .feature-title {
@@ -498,19 +580,26 @@ const HomePage = () => {
           position: absolute;
           bottom: var(--spacing-lg);
           left: var(--spacing-lg);
-          font-size: var(--font-size-xl);
           color: var(--primary-color);
           transition: all var(--transition-base);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 32px;
+          height: 32px;
+          border-radius: var(--border-radius-full);
+          background: rgba(52, 73, 94, 0.1);
         }
 
         .feature-card:hover .feature-arrow {
           transform: translateX(-4px);
+          background: rgba(52, 73, 94, 0.2);
         }
 
         /* CTA Section */
         .cta-section {
           padding: var(--spacing-3xl) 0;
-          background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+          background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
           color: white;
         }
 

@@ -59,9 +59,13 @@ export default function SearchResults() {
 
   useEffect(() => {
     if (!router.isReady) return;
+    console.log('Router query:', query);
     const searchQuery = Array.isArray(query) ? query[0] : query;
+    console.log('Extracted search query:', searchQuery);
     if (searchQuery) {
-      fetchSearchResults(decodeURIComponent(searchQuery));
+      const decodedQuery = decodeURIComponent(searchQuery);
+      console.log('Decoded search query:', decodedQuery);
+      fetchSearchResults(decodedQuery);
       setCurrentPage(1); // Reset to first page on new search
     }
   }, [query, router.isReady]);
@@ -113,7 +117,7 @@ export default function SearchResults() {
   };
 
   const searchQuery = Array.isArray(query) ? query[0] : query || '';
-  const decodedQuery = decodeURIComponent(searchQuery);
+  const decodedQuery = searchQuery ? decodeURIComponent(searchQuery) : '';
 
   const renderResults = () => {
     if (loading && visibleResults.length === 0) {
@@ -141,6 +145,13 @@ export default function SearchResults() {
     }
 
     if (visibleResults.length === 0) {
+      if (!decodedQuery) {
+        return (
+          <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
+            <Typography>أدخل كلمة أو عبارة للبحث في القرآن الكريم</Typography>
+          </Paper>
+        );
+      }
       return (
         <Paper elevation={2} sx={{ p: 3, textAlign: 'center' }}>
           <Typography>لا توجد نتائج للبحث عن: {decodedQuery}</Typography>
@@ -229,8 +240,8 @@ export default function SearchResults() {
   return (
     <Container maxWidth="md" sx={{ py: 4, minHeight: '70vh' }}>
       <Head>
-        <title>{`نتائج البحث: ${decodedQuery} | القرآن الكريم`}</title>
-        <meta name="description" content={`نتائج البحث عن: ${decodedQuery} في القرآن الكريم`} />
+        <title>{decodedQuery ? `نتائج البحث: ${decodedQuery} | القرآن الكريم` : 'البحث في القرآن الكريم'}</title>
+        <meta name="description" content={decodedQuery ? `نتائج البحث عن: ${decodedQuery} في القرآن الكريم` : 'ابحث في آيات القرآن الكريم'} />
       </Head>
       
       {/* Breadcrumb Navigation */}
@@ -262,7 +273,7 @@ export default function SearchResults() {
         </Breadcrumbs>
 
         <Typography variant="h4" component="h1" gutterBottom>
-          نتائج البحث عن: {decodedQuery}
+          {decodedQuery ? `نتائج البحث عن: ${decodedQuery}` : 'البحث في القرآن الكريم'}
           {results.length > 0 && (
             <Typography variant="subtitle1" color="text.secondary">
               ({results.length} نتيجة)

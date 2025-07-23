@@ -19,6 +19,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import CloseIcon from '@mui/icons-material/Close';
 import MenuIcon from '@mui/icons-material/Menu';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 // نفس بيانات التنقل الحالية - لم يتم تغييرها
 const navigationItems = [
@@ -28,15 +29,21 @@ const navigationItems = [
     href: '/',
     color: '#4CAF50'
   },
-  { 
-    text: 'تصفح المصحف', 
-    icon: BookIcon, 
+  {
+    text: 'تصفح المصحف',
+    icon: BookIcon,
     href: '/quran-pages/1',
     color: '#2196F3'
   },
-  { 
-    text: 'الصوتيات', 
-    icon: VolumeUpIcon, 
+  {
+    text: 'السور',
+    icon: MenuBookIcon,
+    href: '/quran/1',
+    color: '#9C27B0'
+  },
+  {
+    text: 'الصوتيات',
+    icon: VolumeUpIcon,
     href: '/quran-sound',
     color: '#FF9800'
   },
@@ -46,11 +53,11 @@ const navigationItems = [
     href: '/quran-pdf',
     color: '#F44336'
   },
-  { 
-    text: 'الإذاعة', 
-    icon: LiveTvIcon, 
+  {
+    text: 'الإذاعة',
+    icon: LiveTvIcon,
     href: '/live',
-    color: '#9C27B0'
+    color: '#E91E63'
   },
   { 
     text: 'API', 
@@ -63,12 +70,6 @@ const navigationItems = [
     icon: InfoIcon, 
     href: '/about',
     color: '#795548'
-  },
-  { 
-    text: 'صفحة الخطأ', 
-    icon: ErrorIcon, 
-    href: '/404',
-    color: '#E91E63'
   },
 ];
 
@@ -115,7 +116,9 @@ function AppAppBar() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const searchPath = `/search/${encodeURIComponent(searchQuery.trim())}`;
+      console.log('Navigating to:', searchPath);
+      router.push(searchPath);
       setIsSearchExpanded(false);
       setSearchQuery('');
     }
@@ -131,6 +134,18 @@ function AppAppBar() {
       }, 300);
     }
   };
+
+  // إضافة معالج للـ Escape key
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && isSearchExpanded) {
+        setIsSearchExpanded(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isSearchExpanded]);
 
   const isActive = (href) => {
     if (href === '/') {
@@ -161,6 +176,17 @@ function AppAppBar() {
         className="hamburger-button"
         onClick={toggleSidebar}
         aria-label={isVisible ? 'إغلاق القائمة' : 'فتح القائمة'}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '24px',
+          cursor: 'pointer',
+          border: 'none',
+          outline: 'none',
+          background:   isDarkMode ? "#151515"  : '#363636 ' ,     
+          color: 'white ',
+        }}
       >
         {isVisible ? <CloseIcon /> : <MenuIcon />}
       </button>
@@ -173,32 +199,13 @@ function AppAppBar() {
       >
         {/* قسم البحث */}
         <div className="sidebar-search-section">
-          <button 
+          <button
             className={`search-icon-btn ${isSearchExpanded ? 'active' : ''}`}
             onClick={toggleSearch}
             aria-label={isSearchExpanded ? 'إغلاق البحث' : 'فتح البحث'}
           >
             {isSearchExpanded ? <CloseIcon /> : <SearchIcon />}
           </button>
-          
-          <div className={`search-form-overlay ${isSearchExpanded ? 'expanded' : ''}`}>
-            <form onSubmit={handleSearchSubmit} className="search-form">
-              <div className="search-input-container">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="ابحث في القرآن الكريم..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="search-input"
-                  dir="rtl"
-                />
-                <button type="submit" className="search-submit-btn">
-                  <SearchIcon />
-                </button>
-              </div>
-            </form>
-          </div>
         </div>
 
         {/* عناصر التنقل */}
@@ -249,6 +256,32 @@ function AppAppBar() {
         </div>
       </div>
 
+      {/* Search Overlay - خارج الـ sidebar */}
+      {isSearchExpanded && (
+        <div
+          className="search-backdrop"
+          onClick={() => setIsSearchExpanded(false)}
+        />
+      )}
+      <div className={`search-form-overlay ${isSearchExpanded ? 'expanded' : ''}`}>
+        <form onSubmit={handleSearchSubmit} className="search-form">
+          <div className="search-input-container">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="ابحث في القرآن الكريم..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              dir="rtl"
+            />
+            <button type="submit" className="search-submit-btn">
+              <SearchIcon />
+            </button>
+          </div>
+        </form>
+      </div>
+
       {/* الأنماط المحسنة - إزالة الحركة مع التمرير وإزالة مؤشر الإخفاء */}
       <style jsx global>{`
         /* زر الهمبرجر الثابت */
@@ -267,7 +300,8 @@ function AppAppBar() {
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          box-shadow: 0 4px 16px rgba(25, 118, 210, 0.3);
+          /* تم تغيير لون البوكس شدو الى أبيض وخفف ضيائه */
+          box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           font-size: 24px;
         }
@@ -275,7 +309,7 @@ function AppAppBar() {
         .hamburger-button:hover {
           background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
           transform: scale(1.05);
-          box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+          box-shadow: 0 6px 20px rgba(255, 255, 255, 0.18);
         }
 
         .hamburger-button:active {
@@ -289,17 +323,13 @@ function AppAppBar() {
           right: 90px;
           height: calc(100vh - 40px);
           width: 70px;
-          background: linear-gradient(
-            180deg,
-            rgba(25, 118, 210, 0.95) 0%,
-            rgba(21, 101, 192, 0.95) 50%,
-            rgba(13, 71, 161, 0.95) 100%
-          );
+          background: #363636;
           backdrop-filter: blur(20px);
           border-left: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 15px;
+          /* تم تغيير لون البوكس شدو الى أبيض وخفف ضيائه */
           box-shadow: 
-            -4px 0 20px rgba(0, 0, 0, 0.1),
+            -4px 0 20px rgba(255, 255, 255, 0.10),
             inset 1px 0 0 rgba(255, 255, 255, 0.1);
           z-index: 1000;
           display: flex;
@@ -322,7 +352,7 @@ function AppAppBar() {
 
         .sidebar-search-section {
           padding: 16px 0;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+          border-bottom: 1px solid var(--border-color);
           position: relative;
         }
 
@@ -333,53 +363,83 @@ function AppAppBar() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(255, 255, 255, 0.1);
-          border: none;
+          background: var(--background-paper);
+          border: 2px solid var(--primary-color);
           border-radius: 12px;
-          color: rgba(255, 255, 255, 0.9);
+          color: var(--primary-color);
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           backdrop-filter: blur(10px);
+          box-shadow: 0 2px 8px rgba(52, 73, 94, 0.1);
         }
 
         .search-icon-btn:hover {
-          background: rgba(255, 255, 255, 0.2);
+          background: var(--primary-color);
+          color: white;
           transform: scale(1.05);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+        }
+
+        .search-icon-btn.active {
+          background: var(--primary-color);
+          color: white;
+          box-shadow: 0 4px 12px rgba(52, 73, 94, 0.3);
+        }
+
+        .search-backdrop {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background: rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(4px);
+          z-index: 9998;
+          cursor: pointer;
         }
 
         .search-form-overlay {
-          position: absolute;
-          top: 50%;
-          right: 80px;
-          transform: translateY(-50%);
-          width: 300px;
+          position: fixed;
+          top: 20px;
+          left: 50%;
+          transform: translateX(-50%) scale(0.95);
+          width: 500px;
+          max-width: calc(100vw - 40px);
           max-height: 0;
+          opacity: 0;
+          visibility: hidden;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.95);
+          background: var(--background-paper) !important;
           backdrop-filter: blur(20px);
           border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 8px 32px rgba(52, 73, 94, 0.15);
           transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-          z-index: 1001;
+          z-index: 9999;
+          border: 1px solid var(--border-color);
         }
 
         .search-form-overlay.expanded {
-          max-height: 80px;
-          border: 1px solid rgba(25, 118, 210, 0.3);
+          max-height: 200px !important;
+          opacity: 1 !important;
+          visibility: visible !important;
+          border: 2px solid var(--primary-color) !important;
+          box-shadow: 0 8px 32px rgba(52, 73, 94, 0.4) !important;
+          transform: translateX(-50%) scale(1) !important;
         }
 
         .search-form {
-          padding: 12px;
+          padding: 16px;
+          width: 100%;
         }
 
         .search-input-container {
           display: flex;
           align-items: center;
-          background: white;
+          background: var(--background-paper);
           border-radius: 8px;
           overflow: hidden;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 2px 8px rgba(52, 73, 94, 0.1);
+          border: 1px solid var(--border-color);
         }
 
         .search-input {
@@ -388,25 +448,30 @@ function AppAppBar() {
           border: none;
           background: transparent;
           font-size: 14px;
-          color: #333;
-          font-family: 'Cairo', sans-serif;
+          color: var(--text-primary);
+          font-family: var(--font-family-arabic);
           outline: none;
         }
 
         .search-input::placeholder {
-          color: #999;
+          color: var(--text-muted);
         }
 
         .search-submit-btn {
           padding: 12px;
-          background: #1976d2;
+          background: var(--primary-color);
           border: none;
           color: white;
           cursor: pointer;
-          transition: background 0.2s ease;
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
+        }
+
+        .search-submit-btn:hover {
+          background: var(--primary-dark);
+          transform: scale(1.05);
         }
 
         .sidebar-nav {
@@ -442,6 +507,7 @@ function AppAppBar() {
           overflow: hidden;
           background: rgba(255, 255, 255, 0.05);
           backdrop-filter: blur(10px);
+          border: 2px solid white;
         }
 
         .nav-item:hover {
@@ -596,6 +662,15 @@ function AppAppBar() {
           color: #e0e0e0;
         }
 
+        /* إزالة البوردر من الأزرار في الوضع المظلم */
+        [data-theme="dark"] .nav-item {
+          border: none;
+        }
+
+        [data-theme="dark"] .nav-item {
+          border: none;
+        }
+
         /* الاستجابة للشاشات المختلفة */
         @media (max-width: 480px) {
           .fixed-sidebar {
@@ -618,14 +693,16 @@ function AppAppBar() {
           }
           
           .search-form-overlay {
-            width: 250px;
-            right: 70px;
+            width: calc(100vw - 20px);
+            max-width: calc(100vw - 20px);
+            top: 10px;
           }
         }
 
         @media (min-width: 768px) and (max-width: 1024px) {
           .search-form-overlay {
-            width: 280px;
+            width: 350px;
+            right: 60px;
           }
         }
 
