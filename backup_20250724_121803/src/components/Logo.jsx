@@ -41,6 +41,7 @@ const Logo = ({
           text-decoration: none;
           cursor: pointer;
           transition: all 0.3s ease;
+          margin-right: 100px;
         }
 
         .logo-wrapper {

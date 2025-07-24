@@ -8,7 +8,6 @@ import MobileTopBar from '../../components/MobileTopBar';
 import TafseerPopup from '../../components/AudioPlayer/tafseer_popup';
 import NewSVGPageViewer from '../../components/QuranPage/NewSVGPageViewer';
 import { getPageInfo, getMainSurahForPage } from '../../utils/pageMapping';
-import { getSurahPage } from '../../utils/surahPageMapping';
 import { Box, Typography, IconButton } from '@mui/material';
 import { VolumeUp, VolumeOff } from '@mui/icons-material';
 
@@ -160,9 +159,10 @@ const QuranPageView = () => {
 
   // معالجة تغيير السورة من المشغل
   const handleSurahChange = useCallback((surahNumber) => {
-    const targetPage = getSurahPage(surahNumber);
-    router.push(`/quran-pages/${targetPage}`);
-  }, [router]);
+    setSelectedSurah(surahNumber);
+    // لا نقوم بالتوجيه التلقائي - المستخدم يختار السورة للاستماع فقط
+    console.log('تم اختيار السورة:', surahNumber);
+  }, []);
 
   // معالجة تغيير القارئ
   const handleReciterChange = useCallback((reciterId) => {
@@ -630,41 +630,13 @@ const QuranPageView = () => {
 
         {/* مشغل الصوت المحسن */}
         {showAudioPlayer && (
-          <Box
-            sx={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: '60px',
-              background: isFullscreen
-                ? 'rgba(255, 255, 255, 0.95)' /* خلفية واضحة في وضع الشاشة الكاملة */
-                : isDarkMode
-                  ? 'linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(20, 20, 20, 0.95) 100%)'
-                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-              boxShadow: isFullscreen
-                ? '0 -4px 20px rgba(0, 0, 0, 0.2)' /* ظل خفيف في وضع الشاشة الكاملة */
-                : isDarkMode
-                  ? '0 -8px 32px rgba(0, 0, 0, 0.5)'
-                  : '0 -8px 32px rgba(0, 0, 0, 0.15)',
-              backdropFilter: 'blur(20px)',
-              borderTop: isFullscreen
-                ? '1px solid rgba(0, 0, 0, 0.1)' /* حدود خفيفة في وضع الشاشة الكاملة */
-                : isDarkMode ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid rgba(0, 0, 0, 0.1)',
-              zIndex: 1000,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '15px 20px'
-            }}
-          >
-            <CompactAudioPlayer
-              surahNumber={selectedSurah}
-              reciterId={selectedReciter}
-              onReciterChange={handleReciterChange}
-              onSurahChange={handleSurahChange}
-            />
-          </Box>
+          <CompactAudioPlayer
+            surahNumber={selectedSurah}
+            reciterId={selectedReciter}
+            onReciterChange={handleReciterChange}
+            onSurahChange={handleSurahChange}
+            isDarkMode={isDarkMode}
+          />
         )}
 
         {/* نافذة التفسير */}
