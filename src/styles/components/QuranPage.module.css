@@ -1,0 +1,90 @@
+/* أنماط صفحة القرآن الكريم */
+
+.quranPageContainer {
+  width: 100%;
+  min-height: 100vh;
+  padding: 80px 4px 70px 4px;
+  gap: 4px;
+  display: flex;
+  flex-direction: column;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.quranPageContainer.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1300;
+  padding: 4px;
+}
+
+.compactHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  font-size: 14px;
+}
+
+.compactViewer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  height: 550px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.svgViewer {
+  width: 100%;
+  height: 100%;
+}
+
+/* الوضع المظلم */
+[data-theme="dark"] .compactHeader {
+  background: rgba(30, 30, 30, 0.9);
+  color: #ffffff;
+}
+
+/* تحسينات للشاشات الصغيرة */
+@media (max-width: 768px) {
+  .quranPageContainer {
+    padding: 2px;
+    gap: 2px;
+    max-width: 100%;
+  }
+  
+  .compactHeader {
+    top: 10px !important;
+    padding: 8px 12px !important;
+    max-width: 98% !important;
+  }
+  
+  .compactViewer {
+    margin-top: 80px !important;
+  }
+}
+
+/* تحسين للطباعة */
+@media print {
+  .pageHeader,
+  .navigationControls,
+  .quickLinks,
+  .audioPlayerContainer {
+    display: none;
+  }
+  
+  .pageViewer {
+    box-shadow: none;
+    border: none;
+  }
+}

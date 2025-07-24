@@ -3,10 +3,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Box, IconButton, Typography, Slider, Select, MenuItem, FormControl } from '@mui/material';
 import { PlayArrow, Pause, VolumeUp, VolumeOff, Person } from '@mui/icons-material';
+import { keyframes } from '@mui/material/styles';
+
+// أنماط الحركة للتنبيه
+const fadeInOut = keyframes`
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(10px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+`;
 
 const SimpleAudioPlayer = ({
   surahNumber,
-  reciterId = 1,
+  reciterId = null, // تغيير القيمة الافتراضية إلى null
   onTimeUpdate,
   onReciterChange,
   onSurahChange,
@@ -23,6 +44,9 @@ const SimpleAudioPlayer = ({
   const [error, setError] = useState(null);
   const [surahsData, setSurahsData] = useState([]);
   const [recitersData, setRecitersData] = useState([]);
+  const [showReciterAlert, setShowReciterAlert] = useState(false);
+  const [showNoAudioAlert, setShowNoAudioAlert] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
 
   // تحميل بيانات السور والقراء من البيانات المحلية
   useEffect(() => {
@@ -51,30 +75,176 @@ const SimpleAudioPlayer = ({
     loadData();
   }, []);
 
-  // بناء رابط الصوت
-  const getAudioUrl = (surahNum, reciterId) => {
-    const reciter = recitersData.find(r => r.id === reciterId) || recitersData[0];
-    if (!reciter) return '';
-
-    const paddedSurah = surahNum.toString().padStart(3, '0');
-    return `${reciter.server}/${paddedSurah}.mp3`;
+  // بناء رابط الصوت للسورة المحددة فقط من ملفات JSON المحلية
+  const getAudioUrl = async (surahNum, reciterId) => {
+    // 🚫 فحص صارم للغاية - منع التحميل إذا لم يكن القارئ والسورة محددين بوضوح
+    if (!reciterId || !surahNum || reciterId <= 0 || surahNum <= 0) {
+      console.log('🚫 منع التحميل: بيانات غير مكتملة أو غير صحيحة');
+      console.log('  القارئ:', reciterId, 'نوع:', typeof reciterId);
+      console.log('  السورة:', surahNum, 'نوع:', typeof surahNum);
+      return '';
+    }
+    
+    // 🔒 فحص إضافي للتأكد من أن القيم ليست null أو undefined أو false
+    if (reciterId === null || reciterId === undefined || reciterId === false ||
+        surahNum === null || surahNum === undefined || surahNum === false) {
+      console.log('🚫 منع التحميل: قيم null أو undefined');
+      return '';
+    }
+    
+    try {
+      console.log(`🔍 البحث عن الملف الصوتي للسورة ${surahNum} والقارئ ${reciterId}`);
+      
+      // جلب بيانات القراء للسورة المحددة من ملف JSON المحلي
+      // كل ملف audio_surah_X.json يحتوي على روابط السورة X لجميع القراء
+      const response = await fetch(`/json/audio/audio_surah_${surahNum}.json`);
+      
+      if (!response.ok) {
+        console.error(`❌ فشل في جلب ملف audio_surah_${surahNum}.json:`, response.status);
+        return '';
+      }
+      
+      const audioData = await response.json();
+      console.log(`📄 تم تحميل بيانات السورة ${surahNum}، عدد القراء: ${audioData.length}`);
+      
+      // البحث عن القارئ المحدد في البيانات
+      const reciterData = audioData.find(item => item.id === reciterId);
+      
+      if (reciterData && reciterData.link) {
+        console.log(`🎵 ✅ تم العثور على رابط السورة ${surahNum} للقارئ ${reciterId}:`);
+        console.log(`🔗 الرابط: ${reciterData.link}`);
+        console.log(`👤 القارئ: ${reciterData.reciter.ar}`);
+        console.log(`📖 الرواية: ${reciterData.rewaya.ar}`);
+        
+        return reciterData.link;
+      } else {
+        console.warn(`⚠️ لم يتم العثور على القارئ رقم ${reciterId} في ملف السورة ${surahNum}`);
+        console.log('📋 القراء المتاحون:', audioData.map(r => `${r.id}: ${r.reciter.ar}`));
+        return '';
+      }
+    } catch (error) {
+      console.error(`❌ خطأ في جلب بيانات الصوت للسورة ${surahNum}:`, error);
+      return '';
+    }
   };
 
-  // تحديث مصدر الصوت
+  // 🎯 تحديث مصدر الصوت فقط عند توفر القارئ والسورة معاً
   useEffect(() => {
-    if (audioRef.current && surahNumber) {
-      const audioUrl = getAudioUrl(surahNumber, reciterId);
-      console.log('🔄 تحديث مصدر الصوت للسورة رقم:', surahNumber);
-      audioRef.current.src = audioUrl;
-      setError(null);
-      setCurrentTime(0);
-      setDuration(0);
+    const updateAudioSource = async () => {
+      // التأكد من وجود audioRef قبل استخدامه
+      if (!audioRef.current) {
+        console.log('⚠️ audioRef غير متاح بعد');
+        return;
+      }
 
-      // إيقاف التشغيل عند تغيير السورة
+      // إيقاف التشغيل أولاً عند تغيير السورة أو القارئ
       if (isPlaying) {
         setIsPlaying(false);
+        audioRef.current.pause();
       }
-    }
+
+      // 🔥 المنطق المحسن: فحص صارم قبل أي تحميل
+      // تأكيد مزدوج من صحة البيانات ومنع التحميل المبكر
+      const isValidSurah = surahNumber && typeof surahNumber === 'number' && surahNumber > 0 && surahNumber <= 114;
+      const isValidReciter = reciterId && typeof reciterId === 'number' && reciterId > 0;
+      
+      console.log('🔍 فحص البيانات:');
+      console.log('  السورة:', surahNumber, 'نوع:', typeof surahNumber, 'صحيح:', isValidSurah);
+      console.log('  القارئ:', reciterId, 'نوع:', typeof reciterId, 'صحيح:', isValidReciter);
+      
+      if (isValidSurah && isValidReciter) {
+        console.log('🎯 ✅ تم اختيار القارئ والسورة - بدء تحميل الصوت');
+        console.log('  📊 القارئ رقم:', reciterId);
+        console.log('  📖 السورة رقم:', surahNumber);
+        console.log('  🚀 سيتم تحميل ملف السورة المحددة فقط');
+        
+        setIsLoading(true);
+        setError(null);
+        
+        try {
+          const audioUrl = await getAudioUrl(surahNumber, reciterId);
+          
+          if (audioUrl) {
+            console.log('🎵 ✅ تم العثور على رابط الصوت:', audioUrl);
+            
+            // التأكد من وجود audioRef قبل الاستخدام
+            if (!audioRef.current) {
+              console.warn('⚠️ audioRef غير متاح، محاولة الانتظار...');
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            if (audioRef.current) {
+              // التحقق من صحة الرابط
+            const surahInUrl = audioUrl.match(/\/(\d{3})\.mp3$/)?.[1];
+            const expectedSurah = surahNumber.toString().padStart(3, '0');
+            
+            if (surahInUrl === expectedSurah) {
+              console.log('✅ تأكيد: الرابط صحيح للسورة (' + expectedSurah + ')');
+            } else {
+              console.warn('⚠️ تحذير: رقم السورة في الرابط غير متطابق!');
+              console.warn('  المتوقع:', expectedSurah, '، الموجود:', surahInUrl);
+            }
+            
+            // إعادة تعيين القيم
+            setCurrentTime(0);
+            setDuration(0);
+            
+            // تعيين المصدر الجديد
+            audioRef.current.src = audioUrl;
+            audioRef.current.load();
+            
+            console.log('🎵 ✅ تم تحديث مصدر الصوت بنجاح');
+            setError(null);
+            } else {
+              console.error('❌ audioRef غير متاح حتى بعد الانتظار');
+              setError('خطأ في تحضير المشغل');
+            }
+          } else {
+            console.error('❌ لم يتم العثور على رابط الصوت');
+            setError('لم يتم العثور على الملف الصوتي');
+            setShowNoAudioAlert(true);
+            setTimeout(() => setShowNoAudioAlert(false), 4000);
+          }
+        } catch (error) {
+          console.error('❌ خطأ في تحديث مصدر الصوت:', error);
+          setError('خطأ في تحميل الملف الصوتي');
+        }
+        
+        setIsLoading(false);
+      } else {
+        // 🔇 مسح مصدر الصوت إذا لم يكن القارئ والسورة محددين معاً
+        console.log('🔇 مسح مصدر الصوت - في انتظار اختيار القارئ والسورة معاً');
+        if (audioRef.current.src) {
+          audioRef.current.src = '';
+          audioRef.current.load();
+        }
+        setCurrentTime(0);
+        setDuration(0);
+        setError(null);
+        setIsLoading(false);
+        
+        // رسائل توضيحية محسنة
+        if (!reciterId && !surahNumber) {
+          console.log('⏸️ لم يتم اختيار القارئ أو السورة بعد - لا يتم تحميل أي شيء');
+        } else if (!reciterId) {
+          console.log('⏸️ تم اختيار السورة (' + surahNumber + ') ولكن لم يتم اختيار القارئ بعد - لا يتم تحميل ملفات صوتية');
+          console.log('🚫 منع التحميل المبكر: في انتظار اختيار القارئ');
+        } else if (!surahNumber) {
+          console.log('⏸️ تم اختيار القارئ (' + reciterId + ') ولكن لم يتم اختيار السورة بعد - لا يتم تحميل ملفات صوتية');
+          console.log('🚫 منع التحميل المبكر: في انتظار اختيار السورة');
+        } else if (surahNumber <= 0 || reciterId <= 0) {
+          console.log('🚫 بيانات غير صحيحة - منع التحميل');
+          console.log('  السورة:', surahNumber, '/ القارئ:', reciterId);
+        }
+      }
+    };
+
+    // تأخير قصير للتأكد من التزامن
+    const timer = setTimeout(() => {
+      updateAudioSource();
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [surahNumber, reciterId]);
 
   // معالجة أحداث الصوت
@@ -115,9 +285,16 @@ const SimpleAudioPlayer = ({
     };
   }, [onTimeUpdate]);
 
-  // تشغيل/إيقاف
+  // تشغيل/إيقاف - يتطلب اختيار القارئ والسورة معاً
   const togglePlay = async () => {
     if (!audioRef.current) return;
+
+    // التحقق من اختيار القارئ والسورة معاً
+    if (!reciterId || !surahNumber) {
+      setShowReciterAlert(true);
+      setTimeout(() => setShowReciterAlert(false), 4000);
+      return;
+    }
 
     try {
       if (isPlaying) {
@@ -202,13 +379,14 @@ const SimpleAudioPlayer = ({
         alignItems: 'center',
         gap: 1.5,
         padding: '8px 16px',
-        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%)',
-        borderRadius: '20px',
-        boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0, 0, 0, 0.1)',
+        background: 'transparent', // شفاف تماماً
+        borderRadius: '0px', // بدون حواف
+        boxShadow: 'none', // بدون ظلال
         minWidth: '400px',
         maxWidth: '100%',
-        backdropFilter: 'blur(15px)',
-        border: '2px solid rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'none', // بدون تأثير ضبابي
+        border: 'none', // بدون حدود
+        position: 'relative', // للتنبيه المطلق
         '@media (max-width: 600px)': {
           gap: 0.5,
           padding: '4px 8px',
@@ -230,26 +408,28 @@ const SimpleAudioPlayer = ({
         sx={{
           width: 44,
           height: 44,
-          background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.15) 0%, rgba(25, 118, 210, 0.1) 100%)',
-          border: '2px solid rgba(25, 118, 210, 0.2)',
-          boxShadow: '0 2px 8px rgba(25, 118, 210, 0.2)',
+          background: 'transparent', // شفاف
+          border: 'none', // بدون حدود
+          boxShadow: 'none', // بدون ظلال
+          color: 'lime', // لون الأيقونة أخضر
           '&:hover': {
-            background: 'linear-gradient(135deg, rgba(25, 118, 210, 0.25) 0%, rgba(25, 118, 210, 0.15) 100%)',
+            background: 'rgba(50, 205, 50, 0.1)', // خلفية خفيفة عند التمرير
             transform: 'translateY(-1px)',
-            boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)'
+            boxShadow: 'none'
           },
           '&:disabled': {
             opacity: 0.6,
-            background: 'rgba(200, 200, 200, 0.2)'
+            background: 'transparent',
+            color: 'rgba(50, 205, 50, 0.5)'
           }
         }}
       >
         {isLoading ? (
-          <Typography variant="caption" sx={{ fontSize: '10px' }}>...</Typography>
+          <Typography variant="caption" sx={{ fontSize: '10px', color: 'lime' }}>...</Typography>
         ) : isPlaying ? (
-          <Pause sx={{ fontSize: '20px' }} />
+          <Pause sx={{ fontSize: '20px', color: 'lime' }} />
         ) : (
-          <PlayArrow sx={{ fontSize: '20px' }} />
+          <PlayArrow sx={{ fontSize: '20px', color: 'lime' }} />
         )}
       </IconButton>
 
@@ -261,15 +441,19 @@ const SimpleAudioPlayer = ({
           disabled={!duration || isLoading}
           sx={{
             height: 4,
+            color: 'lime', /* لون شريط التقدم أخضر */
             '& .MuiSlider-thumb': {
               width: 12,
-              height: 12
+              height: 12,
+              color: 'lime' /* لون المقبض أخضر */
             },
             '& .MuiSlider-track': {
-              height: 4
+              height: 4,
+              color: 'lime' /* لون المسار أخضر */
             },
             '& .MuiSlider-rail': {
-              height: 4
+              height: 4,
+              color: 'rgba(50, 205, 50, 0.3)' /* لون الخلفية أخضر فاتح */
             }
           }}
         />
@@ -296,19 +480,22 @@ const SimpleAudioPlayer = ({
       {/* اختيار السورة */}
       <FormControl size="small" sx={{ minWidth: 120 }}>
         <Select
-          value={surahNumber}
-          onChange={(e) => onSurahChange && onSurahChange(e.target.value)}
+          value={surahNumber || ''}
+          onChange={(e) => onSurahChange && onSurahChange(parseInt(e.target.value))}
           displayEmpty
           sx={{
             fontSize: '10px',
             height: '32px',
-            background: 'rgba(255, 255, 255, 0.9)',
+            background: 'rgba(255, 255, 255, 0.95)', // خلفية بيضاء شبه شفافة
             borderRadius: '8px',
+            color: 'black', /* لون النص أسود */
+            border: '1px solid rgba(0, 0, 0, 0.2)',
             '& .MuiSelect-select': {
-              padding: '6px 8px'
+              padding: '6px 8px',
+              color: 'black' /* لون النص المحدد أسود */
             },
             '& .MuiOutlinedInput-notchedOutline': {
-              border: '1px solid rgba(0, 0, 0, 0.2)'
+              border: 'none' // إزالة الحدود الافتراضية
             }
           }}
           MenuProps={{
@@ -327,6 +514,7 @@ const SimpleAudioPlayer = ({
               sx={{
                 fontSize: '12px',
                 padding: '8px 12px',
+                color: 'black', /* لون النص أسود */
                 borderBottom: '1px solid rgba(0,0,0,0.1)',
                 '&:hover': {
                   background: 'rgba(25, 118, 210, 0.1)'
@@ -349,19 +537,22 @@ const SimpleAudioPlayer = ({
       {/* اختيار القارئ */}
       <FormControl size="small" sx={{ minWidth: 120 }}>
         <Select
-          value={reciterId}
-          onChange={(e) => onReciterChange && onReciterChange(e.target.value)}
+          value={reciterId || ''}
+          onChange={(e) => onReciterChange && onReciterChange(parseInt(e.target.value))}
           displayEmpty
           sx={{
             fontSize: '10px',
             height: '32px',
-            background: 'rgba(255, 255, 255, 0.9)',
+            background: 'rgba(255, 255, 255, 0.95)', // خلفية بيضاء شبه شفافة
             borderRadius: '8px',
+            color: 'black', /* لون النص أسود */
+            border: '1px solid rgba(0, 0, 0, 0.2)',
             '& .MuiSelect-select': {
-              padding: '6px 8px'
+              padding: '6px 8px',
+              color: 'black' /* لون النص المحدد أسود */
             },
             '& .MuiOutlinedInput-notchedOutline': {
-              border: '1px solid rgba(0, 0, 0, 0.2)'
+              border: 'none' // إزالة الحدود الافتراضية
             }
           }}
           MenuProps={{
@@ -373,6 +564,11 @@ const SimpleAudioPlayer = ({
             },
           }}
         >
+          <MenuItem value="" disabled>
+            <Typography variant="body2" sx={{ fontSize: '12px', color: 'text.secondary' }}>
+              اختر قارئاً
+            </Typography>
+          </MenuItem>
           {recitersData.map((reciter) => (
             <MenuItem
               key={reciter.id}
@@ -380,6 +576,7 @@ const SimpleAudioPlayer = ({
               sx={{
                 fontSize: '12px',
                 padding: '8px 12px',
+                color: 'black', /* لون النص أسود */
                 borderBottom: '1px solid rgba(0,0,0,0.1)',
                 '&:hover': {
                   background: 'rgba(25, 118, 210, 0.1)'
@@ -401,10 +598,10 @@ const SimpleAudioPlayer = ({
 
       {/* تحكم الصوت */}
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, minWidth: 60 }}>
-        <IconButton size="small" onClick={toggleMute} sx={{ width: 28, height: 28 }}>
+        <IconButton size="small" onClick={toggleMute} sx={{ width: 28, height: 28, color: 'lime' }}>
           {isMuted || volume === 0 ?
-            <VolumeOff sx={{ fontSize: '16px' }} /> :
-            <VolumeUp sx={{ fontSize: '16px' }} />
+            <VolumeOff sx={{ fontSize: '16px', color: 'lime' }} /> :
+            <VolumeUp sx={{ fontSize: '16px', color: 'lime' }} />
           }
         </IconButton>
         <Slider
@@ -414,9 +611,17 @@ const SimpleAudioPlayer = ({
           sx={{
             width: 40,
             height: 3,
+            color: 'lime', /* لون الشريط أخضر */
             '& .MuiSlider-thumb': {
               width: 8,
-              height: 8
+              height: 8,
+              color: 'lime' /* لون المقبض أخضر */
+            },
+            '& .MuiSlider-track': {
+              color: 'lime' /* لون المسار أخضر */
+            },
+            '& .MuiSlider-rail': {
+              color: 'rgba(50, 205, 50, 0.3)' /* لون الخلفية أخضر فاتح */
             }
           }}
           size="small"
@@ -428,6 +633,56 @@ const SimpleAudioPlayer = ({
         <Typography variant="caption" color="error" sx={{ fontSize: '8px', maxWidth: '60px', textAlign: 'center' }}>
           خطأ
         </Typography>
+      )}
+
+      {/* تنبيه اختيار القارئ والسورة */}
+      {showReciterAlert && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '-40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(255, 152, 0, 0.95)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            animation: `${fadeInOut} 4s ease-in-out`
+          }}
+        >
+          {!reciterId && !surahNumber ? 'يرجى اختيار قارئ وسورة قبل التشغيل' :
+           !reciterId ? 'يرجى اختيار قارئ قبل التشغيل' :
+           'يرجى اختيار سورة قبل التشغيل'}
+        </Box>
+      )}
+
+      {/* تنبيه عدم وجود الملف الصوتي */}
+      {showNoAudioAlert && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '-40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'rgba(244, 67, 54, 0.95)',
+            color: 'white',
+            padding: '8px 16px',
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
+            fontSize: '12px',
+            fontWeight: 'bold',
+            whiteSpace: 'nowrap',
+            zIndex: 1000,
+            animation: `${fadeInOut} 4s ease-in-out`
+          }}
+        >
+          لم يتم العثور على ملف صوتي لهذا القارئ
+        </Box>
       )}
     </Box>
   );

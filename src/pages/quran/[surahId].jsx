@@ -111,16 +111,16 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
                 </div>
                 <Box>
                     <Button
-                    onClick={() => router.push('/')}
+                    onClick={() => router.push('/quran-pages')}
                     variant="contained"
                     color="warning"
                     sx={{
                         position: 'fixed',
-                        bottom: '20px',
+                        bottom: '10px',
                         right: '20px',
                         zIndex: 9999,
-                        width: '110px', 
-                        height: '55px',
+                        width: '15px', 
+                        height: '40px',
                         fontSize: '16px !important',
                         fontWeight: '900',
                         borderRadius: '5px',
@@ -130,34 +130,9 @@ export default function SurahPage({ surah, prevSurah, nextSurah }) {
                             backgroundColor: '#0A094EFF',
                             transform: 'translateY(-2px)',
                         }, }} >
-                    ↪
-                <br></br>       
-              قائمة السور
+                    ↪       
                 </Button>
-                          <Button 
-                                    variant="text" 
-                                    onClick={() => router.push('/quran-tafseer')}
-                                    sx={{ 
-                                        color:  "red",
-                                        position: 'fixed',
-                                        bottom: '20px',                 
-                                        left: '20px',
-                                        zIndex: 9999,
-                                        width: '110px', 
-                                        height: '55px',
-                                        fontSize: '16px !important',
-                                        fontWeight: '900',
-                                        borderRadius: '5px',
-                                        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                                        transition: 'all 0.3s ease',
-                                        '&:hover': {
-                                            backgroundColor: '#0A094EFF',
-                                            transform: 'translateY(-2px)',
-                                        },
-                                     }}
-                                  >
-                                    التفسير
-                                  </Button>
+                    
                     </Box>
 
                 <div className={styles.surahText}>

@@ -237,11 +237,17 @@ function AppAppBar() {
               }
             }}
           >
-            <CloseIcon />
+            <CloseIcon
+            sx={{
+              color: isDarkMode ? 'white' : 'black',
+              fontSize: '30px',
+            }}
+            
+            />
           </div>
         ) : (
           <div onClick={handleLogoClick} style={{ cursor: 'pointer' }}>
-            <Logo size={70} />
+            <Logo size={85} disableLink={true} />
           </div>
         )}
       </div>
@@ -346,7 +352,7 @@ function AppAppBar() {
         .logo-menu-button {
           position: fixed;
           top: 20px;
-          right: 20px;
+          right: 10px; /* تحريك اللوقو قليلاً إلى اليمين */
           z-index: 1001;
           cursor: pointer;
           outline: none;
@@ -354,7 +360,35 @@ function AppAppBar() {
           align-items: center;
           justify-content: center;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          border-radius: 30%;
+
+          /* الدائرة المحسنة مع الفلاتر */
+          width: 70px;
+          height: 70px;
+          border-radius: 50%; /* شكل دائري مثالي */
+          background: #87a8c1ed; /* خلفية بيضاء نقية */
+          border: 3px solid #000000; /* بوردر أسود أسمك */
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo-menu-button:hover {
+          border-radius: 50%; /* شكل دائري مثالي */
+          background: #8a9ba8; /* لون رمادي فاتح لإبراز اللوقو */
+          border: 3px solid #000000; /* بوردر أسود أسمك */
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+          /* فلاتر لإبراز اللوقو */
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* فلاتر إضافية للوقو لإبرازه */
+        .logo-menu-button :global(.logo-img) {
+          filter: brightness(1.1) contrast(1.2) saturate(1.1);
+          transition: filter 0.3s ease;
+        }
+
+        .logo-menu-button:hover :global(.logo-img) {
+          filter: brightness(1.5) contrast(1.3) saturate(1.2);
         }
 
 
@@ -498,9 +532,22 @@ function AppAppBar() {
           transform: scale(0.95);
         }
 
+        /* ستايل الوضع المظلم للوقو */
+        [data-theme="dark"] .logo-menu-button {
+          background: #9ca3af; /* لون رمادي فاتح أكثر في الوضع المظلم */
+          border-color: #ffffff; /* بوردر أبيض في الوضع المظلم للتباين */
+          box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+        }
+
+        /* فلاتر إضافية في الوضع المظلم */
+        [data-theme="dark"] .logo-menu-button :global(.logo-img) {
+          filter: brightness(1.2) contrast(1.3) saturate(1.2);
+        }
+
         .close-icon-wrapper {
           width: 56px;
           height: 56px;
+    
           border-radius: 50%;
           background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
           color: white;

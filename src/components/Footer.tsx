@@ -14,6 +14,7 @@ import GitHubIcon from '@mui/icons-material/GitHub';
 import TwitterIcon from '@mui/icons-material/X';
 import LanguageIcon from '@mui/icons-material/Language';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import ScrollToTop from './ScrollToTop';
 
 function Copyright() {
   return (
@@ -69,7 +70,7 @@ export default function Footer() {
           >
             <Box sx={{ width: { xs: '70%', sm: '60%' } }}>
               <img
-                src="./logo.svg"
+                src="./logo.png"
                 alt="Quran Logo"
                 style={{
                   width: "100px",
@@ -356,6 +357,16 @@ export default function Footer() {
           </Stack>
         </Box>
       </Container>
+
+      {/* مكون العودة لأعلى الصفحة */}
+      <ScrollToTop
+        showAfter={400}
+        behavior="smooth"
+        position="bottom-right"
+        size="medium"
+        variant="primary"
+        ariaLabel="العودة إلى أعلى الصفحة"
+      />
     </React.Fragment>
   );
 }

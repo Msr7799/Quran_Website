@@ -1,4 +1,9 @@
 export default function convertToArabicNumerals(input) {
+    // التحقق من صحة الإدخال
+    if (input === null || input === undefined) {
+        return '';
+    }
+
     // تحويل الإدخال إلى نص إذا كان رقمًا
     const str = input.toString();
 

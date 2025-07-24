@@ -8,31 +8,45 @@ const Logo = ({
   showText = false,
   className = "",
   href = "/",
-  priority = true
+  priority = true,
+  disableLink = false // خاصية جديدة لإيقاف الرابط
 }) => {
+
+  // محتوى اللوقو
+  const logoContent = (
+    <div className="logo-wrapper">
+      {/* صورة اللوجو */}
+      <div className="logo-image">
+        <Image
+          src="/alf.png"
+          alt="ألم - موقع القرآن الكريم"
+          width={size}
+          height={size}
+          priority={priority}
+          className="logo-img"
+        />
+      </div>
+
+      {/* النص الاختياري */}
+      {showText && (
+        <span className="logo-text">ألم</span>
+      )}
+    </div>
+  );
 
   return (
     <>
-      <Link href={href} className={`logo-container ${className}`}>
-      <div className="logo-wrapper">
-        {/* صورة اللوجو */}
-        <div className="logo-image">
-            <Image
-              src="/alf.png"
-              alt="ألم - موقع القرآن الكريم"
-              width={size}
-              height={size}
-              priority={priority}
-              className="logo-img"
-            />
-          </div>
-
-          {/* النص الاختياري */}
-          {showText && (
-            <span className="logo-text">ألم</span>
-          )}
+      {disableLink ? (
+        // عرض اللوقو بدون رابط (للاستخدام كزر هامبرغر)
+        <div className={`logo-container ${className}`}>
+          {logoContent}
         </div>
-      </Link>
+      ) : (
+        // عرض اللوقو مع رابط (للاستخدام العادي)
+        <Link href={href} className={`logo-container ${className}`}>
+          {logoContent}
+        </Link>
+      )}
 
       <style jsx>{`
         .logo-container {

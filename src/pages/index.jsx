@@ -124,7 +124,7 @@ const HomePage = () => {
     { number: '114', label: 'سورة', icon: BookMarked },
     { number: '6236', label: 'آية', icon: Sparkles },
     { number: '30', label: 'جزء', icon: Book },
-    { number: '50+', label: 'قارئ', icon: Mic }
+    { number: '153', label: 'قارئ', icon: Mic }
   ];
 
   // عرض loader بسيط أثناء التحميل
@@ -296,35 +296,38 @@ const HomePage = () => {
           background-color: var(--background-color);
         }
 
-        /* Hero Section */
+        /* Hero Section - محسن للاستجابة */
         .hero {
           position: relative;
-          height: 110vh;
+          height: 100vh;
+          width: 100%;
           display: flex;
           align-items: center;
           justify-content: center;
           text-align: center;
           color: white;
           overflow: hidden;
-          border-radius: 12px !important;
-        
-
+          border-radius: 12px;
         }
 
         .hero-background {
           position: absolute;
-          top: 0px;
+          top: 0;
           left: 0;
           right: 0;
           bottom: 0;
           z-index: 1;
-          
+          width: 100%;
+          height: 100%;
         }
 
         .hero-image-container {
-          position: relative;
+          position: absolute;
+          top: 0;
+          left: 0;
           width: 100%;
-          height: 120%;
+          height: 100%;
+          overflow: hidden;
         }
 
         .hero-overlay {
@@ -338,30 +341,30 @@ const HomePage = () => {
         }
 
         .hero-content {
-          position: relative;
+          position: absolute;
+          bottom: 80px;
+          right: 40px;
           z-index: 3;
           text-align: center;
-          color: white; 
-          height: 160px;
-          width:500px;
-          max-width: 1000px;
-          margin: 0 auto;
-          left:300px;
-          Top:100px !important;
-          padding: var(--spacing-xl);
-          background: rgba(0, 0, 0, 0.3);
-          border-radius: var(--border-radius-2xl);
-          backdrop-filter: blur(12px);
-
+          color: white;
+          width: 350px;
+          max-width: 90vw;
+          padding: 1.5rem;
+          background: rgba(0, 0, 0, 0.5);
+          border-radius: 16px;
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
         .hero-title {
-          font-size: clamp(3rem, 3vw, 5rem);
+          font-size: clamp(1.2rem, 2.5vw, 1.8rem);
           font-weight: 600;
-          margin-bottom: var(--spacing-md);
+          margin-bottom: 0.8rem;
           font-family: var(--font-family-arabic);
           text-shadow: 2px 2px 8px rgba(22, 22, 22, 0.9);
-          color:#e0e1dd ;
+          color: #e0e1dd;
+          line-height: 1.4;
         }
 
         .hero-subtitle {
@@ -375,9 +378,9 @@ const HomePage = () => {
         }
 
         .hero-description {
-          font-size: clamp(1rem, 1.5vw, 1.25rem);
-          line-height: 1.8;
-          margin-bottom: var(--spacing-2xl);
+          font-size: clamp(0.9rem, 1.8vw, 1.1rem);
+          line-height: 1.6;
+          margin-bottom: 1.2rem;
           font-family: var(--font-family-arabic);
           color: #ffffff;
           text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
@@ -386,16 +389,16 @@ const HomePage = () => {
 
         .hero-actions {
           display: flex;
-          gap: var(--spacing-md);
+          gap: 0.8rem;
           justify-content: center;
           flex-wrap: wrap;
         }
 
         .hero-btn {
-          padding: var(--spacing-md) var(--spacing-2xl);
-          font-size: var(--font-size-lg);
+          padding: 0.7rem 1.2rem;
+          font-size: 0.9rem;
           font-weight: 600;
-          border-radius: var(--border-radius-xl);
+          border-radius: 8px;
           transition: all var(--transition-base);
           text-decoration: none;
           display: inline-flex;
@@ -446,6 +449,9 @@ const HomePage = () => {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
           gap: var(--spacing-xl);
+          border-radius: var(--border-radius-xl);
+          transition: all var(--transition-base);
+        
         }
 
         .stat-card {
@@ -453,7 +459,8 @@ const HomePage = () => {
           padding: var(--spacing-xl);
           background: var(--background-color);
           border-radius: var(--border-radius-xl);
-          border: 1px solid var(--border-color);
+          border: 7px solid rgba( 11, 55, 22, 0.2);
+          box-shadow: var(--shadow-md);
           transition: all var(--transition-base);
         }
 
@@ -469,7 +476,7 @@ const HomePage = () => {
 
         .stat-icon {
           margin-bottom: var(--spacing-md);
-          color: var(--primary-color);
+          color: #96ae73ff;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -484,7 +491,7 @@ const HomePage = () => {
         }
 
         .stat-label {
-          font-size: var(--font-size-lg);
+          font-size: clamp(1.2rem, 3vw, 5rem);
           color: var(--text-secondary);
           font-family: var(--font-family-arabic);
         }
@@ -659,22 +666,42 @@ const HomePage = () => {
           box-shadow: var(--shadow-xl);
         }
 
-        /* Responsive Design */
+        /* Responsive Design - محسن للشاشات الصغيرة */
         @media (max-width: 768px) {
           .hero {
             height: 100vh;
-            padding: 0 var(--spacing-md);
+            padding: 0;
+          }
+
+          .hero-content {
+            width: 95%;
+            margin: 0 auto;
+            padding: clamp(1rem, 3vw, 1.5rem);
+            min-height: auto;
+          }
+
+          .hero-title {
+            font-size: clamp(1.8rem, 5vw, 2.5rem);
+            margin-bottom: 1rem;
+          }
+
+          .hero-description {
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
+            margin-bottom: 1.5rem;
           }
 
           .hero-actions {
             flex-direction: column;
             align-items: center;
+            gap: 1rem;
           }
 
           .hero-btn {
             width: 100%;
-            max-width: 280px;
+            max-width: 250px;
             justify-content: center;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
           }
 
           .stats-grid {
@@ -699,7 +726,55 @@ const HomePage = () => {
           }
         }
 
+        @media (max-width: 768px) {
+          .hero-content {
+            bottom: 60px;
+            right: 20px;
+            width: 280px;
+            padding: 1.2rem;
+          }
+
+          .hero-title {
+            font-size: clamp(1rem, 4vw, 1.4rem);
+            margin-bottom: 0.6rem;
+          }
+
+          .hero-description {
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            margin-bottom: 1rem;
+          }
+
+          .hero-btn {
+            padding: 0.6rem 1rem;
+            font-size: 0.8rem;
+          }
+        }
+
         @media (max-width: 480px) {
+          .hero-content {
+            bottom: 40px;
+            right: 15px;
+            left: 15px;
+            width: auto;
+            max-width: calc(100vw - 30px);
+            padding: 1rem;
+          }
+
+          .hero-title {
+            font-size: clamp(0.9rem, 4vw, 1.2rem);
+          }
+
+          .hero-actions {
+            flex-direction: column;
+            gap: 0.6rem;
+          }
+
+          .hero-btn {
+            width: 100%;
+            padding: 0.7rem;
+            font-size: 0.85rem;
+          }
+
           .stats-grid {
             grid-template-columns: 1fr;
           }

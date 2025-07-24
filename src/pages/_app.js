@@ -82,7 +82,7 @@ export default function MyApp({ Component, pageProps }) {
         
         {/* Favicon */}
         <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
         
         {/* PWA Manifest */}
         <link rel="manifest" href="/manifest.json" />
