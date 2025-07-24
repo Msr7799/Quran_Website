@@ -284,14 +284,16 @@ const QuranPageView = () => {
         url={`/quran-pages/${currentPage}`}
       />
 
-      {/* شريط التحكم العلوي للموبايل */}
-      <MobileTopBar
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
-        currentPage={currentPage}
-        totalPages={604}
-        onPageChange={(newPage) => router.push(`/quran-pages/${newPage}`)}
-      />
+      {/* شريط التحكم العلوي للموبايل - مخفي في وضع الشاشة الكاملة */}
+      {!isFullscreen && (
+        <MobileTopBar
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
+          currentPage={currentPage}
+          totalPages={604}
+          onPageChange={(newPage) => router.push(`/quran-pages/${newPage}`)}
+        />
+      )}
 
       <Box
         sx={{
