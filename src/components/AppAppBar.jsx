@@ -351,9 +351,15 @@ function AppAppBar() {
         /* زر اللوجو الثابت */
         .logo-menu-button {
           position: fixed;
-          top: 20px;
-          right: 10px; /* تحريك اللوقو قليلاً إلى اليمين */
+          top: 95px; /* تحريك اللوقو أسفل 35px أكثر */
+          right: 55px; /* تحريك اللوقو إلى اليسار 40px أكثر */
           z-index: 1001;
+
+          /* تحسينات للشاشات الصغيرة */
+          @media (max-width: 768px) {
+            top: 105px; /* أسفل أكثر في الشاشات الصغيرة */
+            right: 60px; /* مساحة من الحافة */
+          }
           cursor: pointer;
           outline: none;
           display: flex;

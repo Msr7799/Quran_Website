@@ -298,8 +298,8 @@ const QuranPageView = () => {
       <Box
         sx={{
           minHeight: '100vh',
-          /* مساحة إضافية للشريط العلوي في الموبايل */
-          paddingTop: { xs: '40px', md: '0' },
+          /* مساحة إضافية للشريط العلوي في الموبايل - فقط عندما لا يكون في وضع الشاشة الكاملة */
+          paddingTop: isFullscreen ? '0' : { xs: '40px', md: '0' },
           background: isFullscreen
             ? (isDarkMode ? '#1a1a1a' : '#f8f9fa') /* خلفية مناسبة في وضع الشاشة الكاملة */
             : isDarkMode
