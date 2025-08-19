@@ -308,7 +308,7 @@ const SimpleAudioPlayerFixed = ({
       )}
 
       {/* مشغل مضغوط في صف واحد */}
-
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
         {/* زر السورة السابقة */}
         <IconButton
           onClick={goToPreviousSurah}
