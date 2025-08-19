@@ -12,6 +12,18 @@ export default function Document() {
         <link rel="icon" href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="192x192" href="/logo.png" />
         <link rel="apple-touch-icon" href="/logo.png" />
+        
+        {/* تحسين تحميل الخطوط */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link 
+          href="https://fonts.googleapis.com/icon?family=Material+Icons" 
+          rel="stylesheet" 
+        />
         <style
           dangerouslySetInnerHTML={{
             __html: `

@@ -16,11 +16,38 @@ import LanguageIcon from '@mui/icons-material/Language';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ScrollToTop from './ScrollToTop';
 
+
+
+
 function Copyright() {
   return (
-    <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mt: 1 }}>
-      جميع الحقوق محفوظة لـ حمد عارف المران &nbsp;|&nbsp; ساهم في تطوير الموقع المطور : محمد الرميحي
-    </Typography>
+    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+      <Typography 
+        variant="body1" 
+        sx={{ 
+          color: 'var(--text-primary)', 
+          mt: 1,
+          fontSize: '16px',
+          lineHeight: 1.8,
+          fontWeight: 400,
+          textAlign: 'center',
+          letterSpacing: '0.5px',
+          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+        }}
+      >
+        الموقع هذا يعتبر مصدر مفتوع للقراءن الكريم وبجوده
+        <br />
+        هذا الموقع مفتوح المصدر وويمكنك أستعمال الكود في حسابي في قت هاب
+        <br />
+        ويعتبر صدقه جاريه لوالديني ولأخي عبدالله خليفه الرميحي
+        <br />
+        وقريبا سأنشأ تطبيقين ios & android platforms
+        <br />
+        اللهم أني أبتغي وجهك فبارك لنا فيه
+        <br />
+        <strong>مطور الموقع: محمد الرميحي | Msr7799</strong>
+      </Typography>
+    </Box>
   );
 }
 

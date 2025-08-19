@@ -55,7 +55,7 @@ const LivePage = () => {
             {
               id: 4,
               name: "قناة السنة النبوية",
-              url: "https://win.holol.com/live/sunnah/playlist.m3u8"
+              url: "https://https://makkahlive.org/qurantv.aspx"
             }
           ];
           setChannels(fallbackChannels);

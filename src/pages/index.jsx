@@ -4,18 +4,19 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import QuranLoader from '../components/QuranLoader';
-import {
-  BookOpen,
-  Volume2,
-  FileText,
-  Radio,
-  Search,
-  Zap,
-  BookMarked,
-  Sparkles,
-  Book,
-  Mic,
-  ArrowLeft
+// استيراد انتقائي لتحسين الأداء
+import { 
+  BookOpen, 
+  Volume2, 
+  FileText, 
+  Radio, 
+  Search, 
+  Zap, 
+  BookMarked, 
+  Sparkles, 
+  Book, 
+  Mic, 
+  ArrowLeft 
 } from 'lucide-react';
 
 /**
@@ -730,7 +731,9 @@ const HomePage = () => {
           .hero-content {
             bottom: 60px;
             right: 20px;
-            width: 280px;
+            left: 20px;
+            width: auto;
+            max-width: calc(100vw - 40px);
             padding: 1.2rem;
           }
 

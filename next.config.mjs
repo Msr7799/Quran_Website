@@ -10,22 +10,13 @@ const nextConfig = {
     poweredByHeader: false,
     productionBrowserSourceMaps: false,
     
-    async redirects() {
-        return [
-            {
-                source: '/Quran_pdf/index.html',
-                destination: '/quran-pdf',
-                permanent: true, 
-            }
-        ];
-    },
     
     eslint: {
         ignoreDuringBuilds: true,
     },
     
     typescript: {
-        ignoreBuildErrors: true,
+        ignoreBuildErrors: false,
     },
 };
 

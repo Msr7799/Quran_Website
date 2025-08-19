@@ -43,11 +43,6 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        {/* Meta tags أساسية */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
-        <meta name="theme-color" content="#1976d2" />
-        <meta name="color-scheme" content="light dark" />
-        
         {/* تحسين الأداء */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
@@ -64,18 +59,75 @@ export default function MyApp({ Component, pageProps }) {
           rel="stylesheet" 
         />
         
-        {/* معلومات أساسية */}
-        <meta name="description" content="موقع القرآن الكريم - تلاوة وتصفح واستماع القرآن الكريم" />
-        <meta name="author" content="موقع القرآن الكريم" />
-        <meta name="robots" content="index, follow" />
+        {/* Meta tags أساسية */}
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes" />
+        <meta name="theme-color" content="#1976d2" />
+        <meta name="color-scheme" content="light dark" />
         
-        {/* Open Graph للشبكات الاجتماعية */}
+        {/* معلومات أساسية محسنة للـ SEO */}
+        <meta name="description" content="موقع القرآن الكريم الإلكتروني - تلاوة، تصفح، واستماع القرآن الكريم بأصوات أشهر القراء مع تصميم جميل ومتجاوب" />
+        <meta name="keywords" content="القرآن الكريم, تلاوة القرآن, تصفح المصحف, استماع القرآن, القراء, تفسير, إسلام, مسلمون, قرآن إلكتروني" />
+        <meta name="author" content="mohamed alromaihi" />
+        <meta name="creator" content="mohamed alromaihi" />
+        <meta name="publisher" content="موقع القرآن الكريم" />
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="language" content="Arabic" />
+        <meta name="geo.region" content="SA" />
+        <meta name="geo.placename" content="Saudi Arabia" />
+        
+        {/* Open Graph محسن للشبكات الاجتماعية */}
         <meta property="og:type" content="website" />
-        <meta property="og:site_name" content="القرآن الكريم" />
-        <meta property="og:locale" content="ar_AR" />
+        <meta property="og:site_name" content="القرآن الكريم - الموقع الإلكتروني" />
+        <meta property="og:title" content="القرآن الكريم - الموقع الإلكتروني الشامل" />
+        <meta property="og:description" content="موقع شامل لتلاوة وتصفح واستماع القرآن الكريم بأفضل جودة وأسهل طريقة مع تصميم عصري ومتجاوب" />
+        <meta property="og:image" content="/logo.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="شعار موقع القرآن الكريم" />
+        <meta property="og:locale" content="ar_SA" />
+        <meta property="og:locale:alternate" content="ar_AR" />
         
-        {/* Twitter Card */}
+        {/* Twitter Card محسن */}
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="القرآن الكريم - الموقع الإلكتروني" />
+        <meta name="twitter:description" content="موقع شامل لتلاوة وتصفح واستماع القرآن الكريم" />
+        <meta name="twitter:image" content="/logo.png" />
+        <meta name="twitter:image:alt" content="شعار موقع القرآن الكريم" />
+        
+        {/* Schema.org structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebSite",
+              "name": "القرآن الكريم",
+              "alternateName": "الموقع الإلكتروني للقرآن الكريم",
+              "description": "موقع شامل لتلاوة وتصفح واستماع القرآن الكريم",
+              "url": process.env.NEXT_PUBLIC_BASE_URL || "https://msr-quran-app.vercel.app",
+              "inLanguage": "ar",
+              "author": {
+                "@type": "Person",
+                "name": "mohamed alromaihi",
+                "email": "alromaihi2224@gmail.com"
+              },
+              "publisher": {
+                "@type": "Organization",
+                "name": "موقع القرآن الكريم",
+                "logo": {
+                  "@type": "ImageObject",
+                  "url": "/logo.png"
+                }
+              },
+              "potentialAction": {
+                "@type": "SearchAction",
+                "target": "/search/{search_term_string}",
+                "query-input": "required name=search_term_string"
+              }
+            })
+          }}
+        />
         
         {/* رابط canonical */}
         <link rel="canonical" href={process.env.NEXT_PUBLIC_BASE_URL} />
