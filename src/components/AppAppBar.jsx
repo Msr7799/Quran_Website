@@ -351,8 +351,8 @@ function AppAppBar() {
         /* زر اللوجو الثابت */
         .logo-menu-button {
           position: fixed;
-          top: 95px; /* تحريك اللوقو أسفل 35px أكثر */
-          right: 55px; /* تحريك اللوقو إلى اليسار 40px أكثر */
+          top: 20px; /* تحريك اللوقو أكثر للأعلى */
+          right: 100px; /* تحريك اللوقو أكثر لليسار */
           z-index: 1001;
 
           /* تحسينات للشاشات الصغيرة */
@@ -574,7 +574,7 @@ function AppAppBar() {
         .fixed-sidebar {
           position: fixed;
           top: 20px;
-          right: 90px;
+          right: 20px;
           height: calc(100vh - 40px);
           width: 70px;
           background: #363636;
