@@ -14,24 +14,15 @@ import VerseDisplay from './VerseDisplay';
 
 // Styled Components
 const Container = styled(Box)(({ theme }) => ({
-  padding: '20px',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
   width: '100%',
-  maxWidth: '1200px',
-  margin: '0 auto',
+  minHeight: '100vh',
+  background: 'var(--background-color)',
+  padding: '20px',
+  fontFamily: 'Arial, sans-serif',
   position: 'relative',
   overflow: 'hidden',
-  paddingBottom: '180px',
-  paddingTop: '20px',
-  boxSizing: 'border-box',
-  minHeight: '100vh',
-  backgroundColor: theme.palette.mode === 'light' ? '#f8f9fa' : '#121212',
-  '@media (max-width: 768px)': {
-    padding: '15px',
-    paddingTop: '15px',
+  [theme.breakpoints.down('sm')]: {
+    padding: '10px',
     paddingBottom: '200px',
   },
 }));
@@ -46,7 +37,7 @@ const Title = styled(Typography)(({ theme }) => ({
   fontFamily: 'hafs',
   fontSize: '2rem',
   fontWeight: 'bold',
-  color: theme.palette.mode === 'light' ? '#2c3e50' : '#ecf0f1',
+  color: 'var(--text-primary)',
   marginBottom: '10px',
   textShadow: '2px 5px 7px 5px rgba(0,0,0,0.1)',
   '@media (max-width: 768px)': {
@@ -57,7 +48,7 @@ const Title = styled(Typography)(({ theme }) => ({
 const Subtitle = styled(Typography)(({ theme }) => ({
   fontFamily: 'hafs',
   fontSize: '0.9rem',
-  color: theme.palette.mode === 'light' ? '#7f8c8d' : '#bdc3c7',
+  color: 'var(--text-secondary)',
   marginBottom: '20px',
   '@media (max-width: 768px)': {
     fontSize: '0.8rem',
@@ -67,41 +58,151 @@ const Subtitle = styled(Typography)(({ theme }) => ({
 // حاوية الآيات - موضع ثابت بين العنوان والقوائم - محسنة مع z-index
 const VerseDisplayContainer = styled(Box)(({ theme }) => ({
 width: '100%',
-minHeight: '350px', // مساحة أكبر للآيات الطويلة والتفسير
-maxHeight: 'none', // لا يوجد حد أقصى
-marginTop: '30px',
-marginBottom: '40px',
+minHeight: '350px',
+margin: '30px 0 40px 0',
 position: 'relative',
-right: '70%',
 zIndex: 10000,
-top: '50%',
-
-transform: 'translateX(50%)',
 display: 'flex',
 alignItems: 'center',
 justifyContent: 'center',
 overflow: 'visible',
-backgroundColor: theme.palette.mode === 'light' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(30, 30, 30, 0.4)',
+backgroundColor: 'var(--background-paper)',
 borderRadius: '20px',
-border: `2px dashed ${theme.palette.mode === 'light' ? '#e0e0e0' : '#424242'}`,
+border: '2px dashed var(--border-color)',
 transition: 'all 0.3s ease',
 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-// لا يوجد أي تأثير أو حركة عند التحويم
 '@media (max-width: 768px)': {
   minHeight: '250px',
-  marginTop: '20px',
-  marginBottom: '30px',
-  
+  margin: '20px 0 30px 0',
+  padding: '15px',
+},
+'@media (max-width: 480px)': {
+  minHeight: '200px',
+  margin: '15px 0 25px 0',
+  padding: '10px',
+  borderRadius: '15px',
 },
 }));
 
+// مكونات القسم الجديد داخل VerseDisplayContainer
+const ReciterSection = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '20px',
+  backgroundColor: 'var(--background-paper)',
+  borderRadius: '15px',
+  marginBottom: '20px',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid var(--border-color)',
+  '@media (max-width: 768px)': {
+    padding: '15px',
+    marginBottom: '15px',
+  },
+  '@media (max-width: 480px)': {
+    padding: '10px',
+    marginBottom: '10px',
+  },
+}));
+
+const ReciterImage = styled('img')(({ theme }) => ({
+  width: '80px',
+  height: '80px',
+  borderRadius: '50%',
+  border: '3px solid var(--border-color)',
+  boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+  marginBottom: '15px',
+  transition: 'transform 0.3s ease',
+  '&:hover': {
+    transform: 'scale(1.05)',
+  },
+  '@media (max-width: 768px)': {
+    width: '70px',
+    height: '70px',
+    marginBottom: '12px',
+  },
+  '@media (max-width: 480px)': {
+    width: '60px',
+    height: '60px',
+    marginBottom: '10px',
+  },
+}));
+
+const ReciterInfo = styled(Box)(({ theme }) => ({
+  textAlign: 'center',
+  color: 'var(--text-primary)',
+}));
+
+const ReciterName = styled(Typography)(({ theme }) => ({
+  fontFamily: 'hafs',
+  fontSize: '1.4rem',
+  fontWeight: '800',
+  color: 'var(--text-primary)',
+  textShadow: '2px 2px 4px rgba(0, 0, 0, 0.5)',
+  marginBottom: '8px',
+  '@media (max-width: 768px)': {
+    fontSize: '1.2rem',
+  },
+  '@media (max-width: 480px)': {
+    fontSize: '1rem',
+  },
+}));
+
+const SurahName = styled(Typography)(({ theme }) => ({
+  fontFamily: 'uthmanic_hafs_v22',
+  fontSize: '1.1rem',
+  color: 'var(--text-secondary)',
+  textShadow: '1px 1px 2px rgba(0, 0, 0, 0.5)',
+  '@media (max-width: 768px)': {
+    fontSize: '1rem',
+  },
+  '@media (max-width: 480px)': {
+    fontSize: '0.9rem',
+  },
+}));
+
+const VerseSection = styled(Box)(({ theme }) => ({
+  width: '100%',
+  minHeight: '200px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginBottom: '20px',
+  backgroundColor: 'var(--background-paper)',
+  borderRadius: '15px',
+  border: '1px solid var(--border-color)',
+  '@media (max-width: 768px)': {
+    minHeight: '150px',
+    marginBottom: '15px',
+  },
+  '@media (max-width: 480px)': {
+    minHeight: '120px',
+    marginBottom: '10px',
+  },
+}));
+
+const PlayerSection = styled(Box)(({ theme }) => ({
+  width: '100%',
+  backgroundColor: 'var(--background-paper)',
+  borderRadius: '15px',
+  padding: '15px',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid var(--border-color)',
+  '@media (max-width: 768px)': {
+    padding: '12px',
+  },
+  '@media (max-width: 480px)': {
+    padding: '10px',
+  },
+}));
+
 const ListeningSection = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#1e1e1e',
+  backgroundColor: 'var(--background-paper)',
   borderRadius: '20px',
   padding: '30px',
   marginBottom: '30px',
   boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-  border: `2px solid ${theme.palette.mode === 'light' ? '#e3f2fd' : '#424242'}`,
+  border: '2px solid var(--border-color)',
   width: '100%',
   maxWidth: '100%',
   '@media (max-width: 768px)': {
@@ -114,7 +215,7 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
   fontFamily: 'hafs',
   fontSize: '1.8rem',
   fontWeight: 'bold',
-  color: theme.palette.mode === 'light' ? '#2c3e50' : '#ecf0f1',
+  color: 'var(--text-primary)',
   marginBottom: '20px',
   textAlign: 'center',
   display: 'flex',
@@ -140,8 +241,8 @@ const SelectionContainer = styled(Box)(({ theme }) => ({
 const SelectionBox = styled(Paper)(({ theme }) => ({
   padding: '20px',
   borderRadius: '15px',
-  backgroundColor: theme.palette.mode === 'light' ? '#fafafa' : '#2a2a2a',
-  border: `1px solid ${theme.palette.mode === 'light' ? '#e0e0e0' : '#404040'}`,
+  backgroundColor: 'var(--background-color)',
+  border: '1px solid var(--border-color)',
   height: '500px',
   display: 'flex',
   flexDirection: 'column',
@@ -154,7 +255,7 @@ const SectionSubTitle = styled(Typography)(({ theme }) => ({
   fontFamily: 'hafs',
   fontSize: '1.2rem',
   fontWeight: 'bold',
-  color: theme.palette.mode === 'light' ? '#2c3e50' : '#ecf0f1',
+  color: 'var(--text-primary)',
   marginBottom: '15px',
   textAlign: 'center',
   display: 'flex',
@@ -167,20 +268,24 @@ const SearchField = styled(TextField)(({ theme }) => ({
   marginBottom: '15px',
   '& .MuiOutlinedInput-root': {
     borderRadius: '10px',
-    backgroundColor: theme.palette.mode === 'light' ? '#ffffff' : '#333333',
+    backgroundColor: 'var(--background-color)',
     fontFamily: 'hafs',
     '&:hover .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
+      borderColor: 'var(--primary-color)',
     },
     '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-      borderColor: theme.palette.primary.main,
+      borderColor: 'var(--primary-color)',
     },
   },
   '& .MuiInputLabel-root': {
     fontFamily: 'hafs',
+    color: 'var(--text-secondary)',
     '&.Mui-focused': {
-      color: theme.palette.primary.main,
+      color: 'var(--primary-color)',
     },
+  },
+  '& .MuiInputBase-input': {
+    color: 'var(--text-primary)',
   },
 }));
 
@@ -191,14 +296,14 @@ const ScrollableList = styled(List)(({ theme }) => ({
     width: '6px',
   },
   '&::-webkit-scrollbar-track': {
-    background: theme.palette.mode === 'light' ? '#f1f1f1' : '#424242',
+    background: 'var(--border-color)',
     borderRadius: '10px',
   },
   '&::-webkit-scrollbar-thumb': {
-    background: theme.palette.mode === 'light' ? '#c1c1c1' : '#757575',
+    background: 'var(--text-secondary)',
     borderRadius: '10px',
     '&:hover': {
-      background: theme.palette.mode === 'light' ? '#a8a8a8' : '#616161',
+      background: 'var(--text-primary)',
     },
   },
 }));
@@ -206,23 +311,17 @@ const ScrollableList = styled(List)(({ theme }) => ({
 const ListItemStyled = styled(ListItemButton)(({ theme, selected }) => ({
   borderRadius: '10px',
   marginBottom: '8px',
-  backgroundColor: selected ? 
-    (theme.palette.mode === 'light' ? '#e3f2fd' : '#1976d2') : 
-    'transparent',
+  backgroundColor: selected ? 'var(--primary-color)' : 'transparent',
   '&:hover': {
-    backgroundColor: selected ? 
-      (theme.palette.mode === 'light' ? '#bbdefb' : '#1565c0') : 
-      (theme.palette.mode === 'light' ? '#f5f5f5' : '#333333'),
+    backgroundColor: selected ? 'var(--primary-dark)' : 'var(--background-color)',
   },
-  border: selected ? 
-    `2px solid ${theme.palette.mode === 'light' ? '#2196f3' : '#90caf9'}` : 
-    'none',
+  border: selected ? '2px solid var(--primary-light)' : 'none',
   transition: 'all 0.2s ease',
 }));
 
 const StatusChip = styled(Chip)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'light' ? '#e8f5e8' : '#1b5e20',
-  color: theme.palette.mode === 'light' ? '#2e7d32' : '#c8e6c9',
+  backgroundColor: 'var(--background-paper)',
+  color: 'var(--text-primary)',
   fontWeight: 'bold',
   margin: '8px',
   fontFamily: 'hafs',
@@ -239,11 +338,11 @@ const StatusChip = styled(Chip)(({ theme }) => ({
 }));
 
 const TimingInfo = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'light' ? '#f0f8ff' : '#1a2332',
+  backgroundColor: 'var(--background-paper)',
   borderRadius: '12px',
   padding: '16px',
   marginTop: '16px',
-  border: `1px solid ${theme.palette.mode === 'light' ? '#b3d9ff' : '#2d3748'}`,
+  border: '1px solid var(--border-color)',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
@@ -584,10 +683,11 @@ export default function QuranSoundContainer() {
                       fontWeight: selectedReciter?.id === reciter.id ? 'bold' : 'normal',
                       textAlign: 'right',
                       direction: 'rtl',
+                      color: 'var(--text-primary)',
                     }}
                     secondaryTypographyProps={{
                       fontSize: '0.85rem',
-                      color: selectedReciter?.id === reciter.id ? 'inherit' : 'text.secondary',
+                      color: 'var(--text-secondary)',
                       textAlign: 'right',
                       direction: 'rtl',
                     }}
@@ -632,10 +732,11 @@ export default function QuranSoundContainer() {
                       fontWeight: selectedSurah?.number === surah.number ? 'bold' : 'normal',
                       textAlign: 'right',
                       direction: 'rtl',
+                      color: 'var(--text-primary)',
                     }}
                     secondaryTypographyProps={{
                       fontSize: '0.85rem',
-                      color: selectedSurah?.number === surah.number ? 'inherit' : 'text.secondary',
+                      color: 'var(--text-secondary)',
                       textAlign: 'right',
                       direction: 'rtl',
                     }}
@@ -665,51 +766,67 @@ export default function QuranSoundContainer() {
         )}
       </ListeningSection>
 
-      {/* حاوية الآيات - فوق المشغل الصوتي بدون أي position أو zIndex */}
+      {/* حاوية شاملة للمشغل وصورة القارئ والآيات */}
       <VerseDisplayContainer>
         {currentAudio && (
-          <VerseDisplay 
-            isVisible={showVerse && currentVerseIndex >= 0}
-            onTogglePlayPause={handleTogglePlayPause}
-            isPlaying={isPlaying}
-            surahNumber={selectedSurah?.number}
-            verseNumber={getCurrentVerseNumber()}
-            currentTime={currentTime}
-            totalDuration={totalDuration}
-          />
+          <>
+            {/* قسم صورة القارئ ومعلوماته */}
+            <ReciterSection>
+              <ReciterImage 
+                src="/logo.png" 
+                alt={selectedReciter?.reciter.ar}
+              />
+              <ReciterInfo>
+                <ReciterName>{selectedReciter?.reciter.ar}</ReciterName>
+                <SurahName>{selectedSurah?.name.ar}</SurahName>
+              </ReciterInfo>
+            </ReciterSection>
+
+            {/* قسم عرض الآيات */}
+            <VerseSection>
+              <VerseDisplay 
+                isVisible={showVerse && currentVerseIndex >= 0}
+                onTogglePlayPause={handleTogglePlayPause}
+                isPlaying={isPlaying}
+                surahNumber={selectedSurah?.number}
+                verseNumber={getCurrentVerseNumber()}
+                currentTime={currentTime}
+                totalDuration={totalDuration}
+              />
+            </VerseSection>
+
+            {/* قسم المشغل الصوتي */}
+            <PlayerSection>
+              <EnhancedAudioPlayer
+                ref={audioRef}
+                src={currentAudio}
+                surahName={selectedSurah?.name.ar}
+                reciterName={selectedReciter?.reciter.ar}
+                onClose={handleClosePlayer}
+                onNext={handleNext}
+                onPrev={handlePrev}
+                onTogglePlayPause={handleTogglePlayPause}
+                onTimeUpdate={handleTimeUpdate}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                isPlaying={isPlaying}
+                setIsPlaying={setIsPlaying}
+                currentTime={currentTime}
+                totalDuration={totalDuration}
+                canGoPrev={currentSurahIndex > 0}
+                canGoNext={currentSurahIndex < surahsData.length - 1}
+                prevSurah={getPrevSurah()}
+                nextSurah={getNextSurah()}
+                currentSurah={selectedSurah?.name.ar}
+                timingAvailable={timingAvailable}
+                currentVerseNumber={getCurrentVerseNumber()}
+                totalVerses={versesTimingData.length}
+                hideReciterDisplay={true}
+              />
+            </PlayerSection>
+          </>
         )}
       </VerseDisplayContainer>
-
-      {/* المشغل الصوتي المحسن - أسفل الحاوية مباشرة بدون marginTop أو position */}
-      <Box sx={{ width: '80%', maxWidth: '550px', margin: '0 auto' }}>
-        {currentAudio && (
-          <EnhancedAudioPlayer
-            ref={audioRef}
-            src={currentAudio}
-            surahName={selectedSurah?.name.ar}
-            reciterName={selectedReciter?.reciter.ar}
-            onClose={handleClosePlayer}
-            onNext={handleNext}
-            onPrev={handlePrev}
-            onTogglePlayPause={handleTogglePlayPause}
-            onTimeUpdate={handleTimeUpdate}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            isPlaying={isPlaying}
-            setIsPlaying={setIsPlaying}
-            currentTime={currentTime}
-            totalDuration={totalDuration}
-            canGoPrev={currentSurahIndex > 0}
-            canGoNext={currentSurahIndex < surahsData.length - 1}
-            prevSurah={getPrevSurah()}
-            nextSurah={getNextSurah()}
-            currentSurah={selectedSurah?.name.ar}
-            timingAvailable={timingAvailable}
-            currentVerseNumber={getCurrentVerseNumber()}
-            totalVerses={versesTimingData.length}
-          />
-        )}
-      </Box>
     </Container>
   );
 }

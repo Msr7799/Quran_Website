@@ -470,7 +470,7 @@ export default function Footer() {
             <IconButton
               color="inherit"
               size="small"
-              href="https://x.com/msr_99"
+              href="https://x.com"
               aria-label="X"
               sx={{
                 alignSelf: 'center',
@@ -488,7 +488,7 @@ export default function Footer() {
             <IconButton
               color="inherit"
               size="small"
-              href="https://quran-api-qklj.onrender.com/docs#/paths/~1surah/get"
+              href="https://msr-quran-data.vercel.app/"
               aria-label="Website"
               sx={{
                 alignSelf: 'center',

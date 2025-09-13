@@ -1,4 +1,11 @@
 
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  direction: rtl;
+}
+
 .backButton {
   padding: 0.5rem 1rem;
   border: none;
@@ -9,29 +16,184 @@
   font-size: 1rem;
   margin-bottom: 1rem;
   margin-top: 20px;
+  transition: all 0.3s ease;
 }
-
 
 .backButton:hover {
   background-color: var(--primary-color);
+  color: white;
+}
+
+/* قسم معلومات القارئ */
+.reciterInfoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 40px 0;
+  padding: 30px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.reciterImageContainer {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 4px solid var(--primary-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s ease;
+}
+
+.reciterImageContainer:hover {
+  transform: scale(1.05);
+}
+
+.reciterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 
 .reciterName {
-  font-family: hafs;
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 10px;
+  font-family: 'Cairo', Arial, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
   text-align: center;
   line-height: 1.4;
+  color: var(--primary-color);
+}
+
+.reciterNameEn {
+  font-family: 'Arial', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #666;
+  text-align: center;
+  margin-bottom: 15px;
+  font-style: italic;
 }
 
 .recitation {
-  
-  font-family: hafs;
-  font-size: 1.2rem;
+  font-family: 'Cairo', Arial, sans-serif;
+  font-size: 1.1rem;
   margin-top: 0;
   margin-bottom: 20px;
   text-align: center;
+  color: #777;
+  background: rgba(var(--primary-color-rgb), 0.1);
+  padding: 8px 16px;
+  border-radius: 20px;
+}
+
+/* قسم المشغل */
+.playerSection {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  padding: 20px;
+  border-top: 2px solid var(--primary-color);
+}
+
+.playingInfoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 30px;
+  padding: 40px 30px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
+  border-radius: 25px;
+  border: 3px solid #1976d2;
+  box-shadow: 0 12px 40px rgba(25, 118, 210, 0.2);
+  position: relative;
+}
+
+.playingInfoSection::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #1976d2, #42a5f5, #1976d2);
+  border-radius: 27px;
+  z-index: -1;
+  opacity: 0.1;
+}
+
+.playingInfoSection .reciterImageContainer {
+  width: 180px;
+  height: 180px;
+  margin-bottom: 25px;
+  border: 6px solid #1976d2;
+  background: white;
+  box-shadow: 
+    0 15px 45px rgba(25, 118, 210, 0.5),
+    0 5px 15px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  transition: all 0.4s ease;
+  position: relative;
+  isolation: isolate;
+}
+
+.playingInfoSection .reciterImageContainer::before {
+  content: '';
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  right: -8px;
+  bottom: -8px;
+  background: linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5);
+  border-radius: 50%;
+  z-index: -1;
+  animation: rotate 3s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes rotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.playingInfoSection .reciterImageContainer:hover {
+  transform: scale(1.08) translateY(-5px);
+  box-shadow: 
+    0 20px 60px rgba(25, 118, 210, 0.6),
+    0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.playingReciterName {
+  font-family: 'Cairo', Arial, sans-serif;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #1976d2;
+  text-shadow: 0 3px 6px rgba(25, 118, 210, 0.3);
+  letter-spacing: 0.5px;
+}
+
+.playingSurahName {
+  font-family: 'uthmanic_hafs_v22', 'Amiri', serif;
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 15px;
+  text-align: center;
+  color: #1a1a1a;
+  line-height: 1.6;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, #1976d2, #42a5f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .errorMessage {
@@ -39,8 +201,74 @@
   text-align: center;
   margin-top: 20px;
   margin-bottom: 20px;
+  color: var(--primary-color);
+  background: rgba(255, 0, 0, 0.1);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 0, 0, 0.2);
 }
 
-.reciterName, .recitation, .errorMessage {
-  color: var(--primary-color);
+/* استجابة للهواتف */
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .reciterInfoSection {
+    margin: 20px 0;
+    padding: 20px;
+  }
+  
+  .reciterImageContainer {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .reciterName {
+    font-size: 1.8rem;
+  }
+  
+  .playingInfoSection {
+    padding: 30px 20px;
+  }
+  
+  .playingInfoSection .reciterImageContainer {
+    width: 140px;
+    height: 140px;
+    border: 5px solid #1976d2;
+  }
+  
+  .playingInfoSection .reciterImageContainer::before {
+    top: -6px;
+    left: -6px;
+    right: -6px;
+    bottom: -6px;
+  }
+  
+  .playingReciterName {
+    font-size: 1.8rem;
+  }
+  
+  .playingSurahName {
+    font-size: 2rem;
+  }
+  
+  .playerSection {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .reciterName {
+    font-size: 1.6rem;
+  }
+  
+  .reciterImageContainer {
+    width: 90px;
+    height: 90px;
+  }
+  
+  .playingSurahName {
+    font-size: 1.3rem;
+  }
 }

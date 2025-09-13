@@ -253,26 +253,135 @@ const VolumeSlider = styled(Slider)(({ theme }) => ({
   },
 }));
 
+// مكون حاوية صورة القارئ
+const ReciterDisplayContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  marginBottom: '20px',
+  padding: '30px 20px',
+  background: 'linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%)',
+  borderRadius: '20px',
+  border: '3px solid #1976d2',
+  boxShadow: '0 8px 32px rgba(25, 118, 210, 0.2)',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-2px',
+    left: '-2px',
+    right: '-2px',
+    bottom: '-2px',
+    background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2)',
+    borderRadius: '22px',
+    zIndex: -1,
+    opacity: 0.1,
+  },
+  '@media (max-width: 768px)': {
+    padding: '25px 15px',
+    marginBottom: '15px',
+  },
+}));
+
+const ReciterImageContainer = styled(Box)(({ theme }) => ({
+  width: '120px',
+  height: '120px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  marginBottom: '15px',
+  border: '4px solid #1976d2',
+  background: 'white',
+  boxShadow: '0 8px 24px rgba(25, 118, 210, 0.4)',
+  transition: 'all 0.3s ease',
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: '-6px',
+    left: '-6px',
+    right: '-6px',
+    bottom: '-6px',
+    background: 'linear-gradient(45deg, #1976d2, #42a5f5, #1976d2, #42a5f5)',
+    borderRadius: '50%',
+    zIndex: -1,
+    animation: 'rotate 3s linear infinite',
+    opacity: 0.6,
+  },
+  '&:hover': {
+    transform: 'scale(1.05) translateY(-3px)',
+    boxShadow: '0 12px 30px rgba(25, 118, 210, 0.5)',
+  },
+  '@media (max-width: 768px)': {
+    width: '100px',
+    height: '100px',
+  },
+}));
+
+const ReciterImage = styled('img')(({ theme }) => ({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+  objectPosition: 'center',
+}));
+
+const ReciterDisplayName = styled(Typography)(({ theme }) => ({
+  fontFamily: 'Cairo, Arial, sans-serif',
+  fontSize: '1.8rem',
+  fontWeight: 800,
+  marginBottom: '8px',
+  textAlign: 'center',
+  color: '#1976d2',
+  textShadow: '0 2px 4px rgba(25, 118, 210, 0.3)',
+  letterSpacing: '0.5px',
+  '@media (max-width: 768px)': {
+    fontSize: '1.5rem',
+  },
+}));
+
+const SurahDisplayName = styled(Typography)(({ theme }) => ({
+  fontFamily: 'uthmanic_hafs_v22, Amiri, serif',
+  fontSize: '2rem',
+  fontWeight: 500,
+  textAlign: 'center',
+  color: '#1a1a1a',
+  lineHeight: 1.6,
+  background: 'linear-gradient(135deg, #1976d2, #42a5f5)',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+  '@media (max-width: 768px)': {
+    fontSize: '1.6rem',
+  },
+}));
+
 // الجسم الرئيسي للمشغل - تحسين الأداء
 const EnhancedAudioPlayer = forwardRef(({ 
   src, 
   onClose, 
   onNext, 
   onPrev, 
-  onPlay, 
-  onPause, 
+  onTogglePlayPause,
   onTimeUpdate,
-  prevSurah, 
-  nextSurah, 
-  currentSurah, 
-  reciterName,
+  onPlay,
+  onPause,
+  isPlaying = false,
+  setIsPlaying,
+  currentTime = 0,
+  totalDuration = 0,
+  canGoPrev = false,
+  canGoNext = false,
+  prevSurah = null,
+  nextSurah = null,
   timingAvailable = false,
-  currentVerseNumber = 0,
-  totalVerses = 0
+  currentVerseNumber = null,
+  totalVerses = 0,
+  hideReciterDisplay = false,
+  reciterName = 'القارئ',
+  currentSurah = 'السورة',
 }, ref) => {
   const audioRef = useRef(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentTimeLocal, setCurrentTimeLocal] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(70);
   const [isLoading, setIsLoading] = useState(true);
@@ -322,7 +431,7 @@ const EnhancedAudioPlayer = forwardRef(({
     const handleTimeUpdate = () => {
       if (!isDragging) {
         const current = audio.currentTime;
-        setCurrentTime(current);
+        setCurrentTimeLocal(current);
         onTimeUpdate?.(current);
       }
     };
@@ -372,7 +481,7 @@ const EnhancedAudioPlayer = forwardRef(({
     if (audioRef.current && src) {
       audioRef.current.src = src;
       audioRef.current.load();
-      setCurrentTime(0);
+      setCurrentTimeLocal(0);
       setIsPlaying(false);
       setAudioError(false);
       console.log('[AudioPlayer] تم تعيين src جديد:', src);
@@ -401,7 +510,7 @@ const EnhancedAudioPlayer = forwardRef(({
     if (audioRef.current) {
       const newTime = (newValue / 100) * duration;
       audioRef.current.currentTime = newTime;
-      setCurrentTime(newTime);
+      setCurrentTimeLocal(newTime);
     }
   };
 
@@ -439,12 +548,30 @@ const EnhancedAudioPlayer = forwardRef(({
 
   const getProgressPercentage = () => {
     if (duration === 0) return 0;
-    return (currentTime / duration) * 100;
+    return (currentTimeLocal / duration) * 100;
   };
 
   return (
     <Fade in={true} timeout={500}>
       <PlayerContainer>
+        {/* حاوية عرض صورة القارئ - تظهر فقط إذا لم يتم إخفاؤها */}
+        {!hideReciterDisplay && (
+          <ReciterDisplayContainer>
+            <ReciterImageContainer>
+              <ReciterImage 
+                src="/logo.png" 
+                alt={reciterName}
+              />
+            </ReciterImageContainer>
+            <ReciterDisplayName>
+              {reciterName}
+            </ReciterDisplayName>
+            <SurahDisplayName>
+              {currentSurah}
+            </SurahDisplayName>
+          </ReciterDisplayContainer>
+        )}
+
         <PlayerCard elevation={6}>
           <PlayerContent>
             {/* العنوان وزر الإغلاق */}
@@ -488,7 +615,7 @@ const EnhancedAudioPlayer = forwardRef(({
               )}
               <TimeInfo>
                 <Typography variant="caption">
-                  {formatTime(currentTime)}
+                  {formatTime(currentTimeLocal)}
                 </Typography>
                 <Typography variant="caption">
                   {formatTime(duration)}
@@ -599,6 +726,10 @@ const EnhancedAudioPlayer = forwardRef(({
         {/* أنماط CSS للرسوم المتحركة */}
         <style jsx>{`
           @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes rotate {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
           }

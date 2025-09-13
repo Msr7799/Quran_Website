@@ -103,10 +103,24 @@ export default function ReciterPage() {
                         <button onClick={handleBack} className={styles.backButton} title='رجوع إلى قائمة المقرئين' aria-label='رجوع إلى قائمة المقرئين'>
                             رجوع إلى قائمة المقرئين
                         </button>
-                        <h1 className={styles.reciterName} title={selectedReciterData.reciter.ar} aria-label={selectedReciterData.reciter.en}>
-                            {selectedReciterData.reciter.ar} ({selectedReciterData.reciter.en})
-                        </h1>
-                        <p className={styles.recitation} title={selectedReciterData.rewaya.ar} aria-label={selectedReciterData.rewaya.ar}>رواية: {selectedReciterData.rewaya.ar}</p>
+                        
+                        {/* قسم معلومات القارئ مع الصورة */}
+                        <div className={styles.reciterInfoSection}>
+                            <div className={styles.reciterImageContainer}>
+                                <img 
+                                    src="/logo.png" 
+                                    alt={selectedReciterData.reciter.ar}
+                                    className={styles.reciterImage}
+                                />
+                            </div>
+                            <h1 className={styles.reciterName}>
+                                {selectedReciterData.reciter.ar}
+                            </h1>
+                            <p className={styles.reciterNameEn}>
+                                {selectedReciterData.reciter.en}
+                            </p>
+                        </div>
+
                         <SurahsList
                             reciter={selectedReciterData}
                             onPlay={handlePlay}
@@ -116,20 +130,43 @@ export default function ReciterPage() {
                         />
                     </div>
                 )}
+                
                 {currentAudio && (
-                    <QuranPlayer
-                        reciter={selectedReciterData}
-                        surah={quranData[currentSurahIndex]}
-                        currentAudio={currentAudio}
-                        onPlay={handlePlay}
-                        onBack={handleBack}
-                        onClose={handleClosePlayer}
-                        onNext={handleNext}
-                        onPrev={handlePrev}
-                        prevSurah={getPrevSurah()}      
-                        src={currentAudio}
-                        nextSurah={getNextSurah()}
-                    />
+                    <div className={styles.playerSection}>
+                        {/* قسم صورة القارئ وتفاصيل السورة فوق المشغل */}
+                        <div className={styles.playingInfoSection}>
+                            <div className={styles.reciterImageContainer}>
+                                <img 
+                                    src="/logo.png" 
+                                    alt={selectedReciterData.reciter.ar}
+                                    className={styles.reciterImage}
+                                />
+                            </div>
+                            <h2 className={styles.playingReciterName}>
+                                {selectedReciterData.reciter.ar}
+                            </h2>
+                            <p className={styles.playingSurahName}>
+                                {quranData[currentSurahIndex]?.name?.ar || 'القرآن الكريم'}
+                            </p>
+                            <p className={styles.recitation}>
+                                رواية: {selectedReciterData.rewaya.ar}
+                            </p>
+                        </div>
+                        
+                        <QuranPlayer
+                            reciter={selectedReciterData}
+                            surah={quranData[currentSurahIndex]}
+                            currentAudio={currentAudio}
+                            onPlay={handlePlay}
+                            onBack={handleBack}
+                            onClose={handleClosePlayer}
+                            onNext={handleNext}
+                            onPrev={handlePrev}
+                            prevSurah={getPrevSurah()}      
+                            src={currentAudio}
+                            nextSurah={getNextSurah()}
+                        />
+                    </div>
                 )}
             </main>
         </>
