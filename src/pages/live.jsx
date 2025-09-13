@@ -31,36 +31,24 @@ const LivePage = () => {
     const loadChannels = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch('https://mp3quran.net/api/v3/live-tv');
         
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.livetv && Array.isArray(data.livetv)) {
-          setChannels(data.livetv);
-          if (data.livetv.length > 0) {
-            setCurrentChannel(data.livetv[0]);
+        // استخدام YouTube للبث المباشر
+        const youtubeChannels = [
+          {
+            id: 1,
+            name: "البث المباشر - القرآن الكريم",
+            url: "https://www.youtube.com/embed/AdAmNe2OQbI?autoplay=1&mute=0",
+            type: "youtube"
+          },
+          {
+            id: 2,
+            name: "قناة القرآن الكريم - احتياطي",
+            url: "https://win.holol.com/live/quran/playlist.m3u8",
+            type: "hls"
           }
-        } else {
-          // Fallback data
-          const fallbackChannels = [
-            {
-              id: 3,
-              name: "قناة القرآن الكريم",
-              url: "https://win.holol.com/live/quran/playlist.m3u8"
-            },
-            {
-              id: 4,
-              name: "قناة السنة النبوية",
-              url: "https://https://makkahlive.org/qurantv.aspx"
-            }
-          ];
-          setChannels(fallbackChannels);
-          setCurrentChannel(fallbackChannels[0]);
-        }
+        ];
+        setChannels(youtubeChannels);
+        setCurrentChannel(youtubeChannels[0]);
         
         setError(null);
       } catch (err) {
@@ -241,24 +229,43 @@ const LivePage = () => {
         )}
 
         <div className="live-content">
-          {/* Video Player */}
+          {/* YouTube Player */}
           <div className="video-container">
-            <video
-              ref={videoRef}
-              className="video-player"
-              controls={false}
-              autoPlay={false}
-              muted={isMuted}
-              onPlay={() => setIsPlaying(true)}
-              onPause={() => setIsPlaying(false)}
-              onLoadStart={() => setIsLoading(true)}
-              onLoadedData={() => setIsLoading(false)}
-              onError={(e) => {
-                console.error('Video error:', e);
-                setError('خطأ في تشغيل الفيديو');
-                setConnectionStatus('error');
-              }}
-            />
+            {currentChannel && currentChannel.type === 'youtube' ? (
+              <iframe
+                className="video-player youtube-player"
+                src={currentChannel.url}
+                title={currentChannel.name}
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+                onLoad={() => {
+                  setIsLoading(false);
+                  setConnectionStatus('connected');
+                }}
+                onError={() => {
+                  setError('خطأ في تحميل البث المباشر');
+                  setConnectionStatus('error');
+                }}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                className="video-player"
+                controls={false}
+                autoPlay={false}
+                muted={isMuted}
+                onPlay={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                onLoadStart={() => setIsLoading(true)}
+                onLoadedData={() => setIsLoading(false)}
+                onError={(e) => {
+                  console.error('Video error:', e);
+                  setError('خطأ في تشغيل الفيديو');
+                  setConnectionStatus('error');
+                }}
+              />
+            )}
             
             {isLoading && (
               <div className="loading-overlay">
@@ -413,6 +420,13 @@ const LivePage = () => {
           width: 100%;
           height: 400px;
           object-fit: cover;
+        }
+
+        .youtube-player {
+          width: 100%;
+          height: 400px;
+          border: none;
+          border-radius: 12px;
         }
 
         .loading-overlay {
@@ -660,7 +674,8 @@ const LivePage = () => {
             font-size: 2rem;
           }
 
-          .video-player {
+          .video-player,
+          .youtube-player {
             height: 300px;
           }
 
@@ -690,7 +705,8 @@ const LivePage = () => {
             font-size: 1.5rem;
           }
 
-          .video-player {
+          .video-player,
+          .youtube-player {
             height: 250px;
           }
 
