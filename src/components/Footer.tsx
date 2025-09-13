@@ -24,53 +24,41 @@ import ErrorIcon from '@mui/icons-material/Error';
 
 function Copyright() {
   return (
-    
-    <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-       <Typography 
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center', 
+      width: '100%',
+      mt: 4,
+      mb: 2,
+      px: { xs: 2, sm: 3, md: 4 }
+    }}>
+      <Typography 
         variant="body1" 
         sx={{ 
           color: '#009d9d', 
-          mt: 1,
-          fontSize: '16px',
-          lineHeight: 1.8,
-          fontWeight: 400,
+          fontSize: { xs: '12px', sm: '14px', md: '16px' },
+          lineHeight: { xs: 1.5, sm: 1.6, md: 1.8 },
+          fontWeight: 600,
           textAlign: 'center',
           letterSpacing: '0.5px',
           textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          marginBottom: 5
-
- 
+          mb: 3
         }}
       >
-        <strong>
-          اللهم أجعل هذا الموقع صدقه جاريه لي ولحمد المران ولاهل بيتنا ووالدينا وموتانا اللهم اغفر لهم ورحمهم ووفقنا لخدمة الدين
-          </strong>
-
-        </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
-
-  
+        اللهم أجعل هذا الموقع صدقه جاريه لي ولحمد المران ولاهل بيتنا ووالدينا وموتانا اللهم اغفر لهم ورحمهم ووفقنا لخدمة الدين
+      </Typography>
+      
       <Typography 
         variant="body1" 
         sx={{ 
           color: 'var(--text-primary)', 
-          mt: 1,
-          fontSize: '16px',
-          lineHeight: 1.8,
+          fontSize: { xs: '11px', sm: '12px', md: '14px' },
+          lineHeight: { xs: 1.4, sm: 1.5, md: 1.6 },
           fontWeight: 400,
           textAlign: 'center',
-          letterSpacing: '0.5px',
-          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
-          marginBottom: 8
- 
+          letterSpacing: '0.3px',
+          opacity: 0.8
         }}
       >
         الموقع هذا يعتبر مصدر مفتوح لنشر القرآن الكريم وبجوده
@@ -81,9 +69,10 @@ function Copyright() {
         <br />
         اللهم أني أبتغي وجهك فبارك لنا فيه
         <br />
-        <strong>مطور الموقع: محمد الرميحي | Msr7799</strong>
+        <strong style={{ color: 'var(--secondary-color)' }}>
+          مطور الموقع: محمد الرميحي | Msr7799
+        </strong>
       </Typography>
-    </Box>
     </Box>
   );
 }
@@ -195,7 +184,12 @@ export default function Footer() {
               </Typography>
               <InputLabel htmlFor="email-newsletter" sx={{ color: 'var(--text-primary)', mb: 1 }}>البريد الإلكتروني</InputLabel>
               <form onSubmit={handleSend}>
-                <Stack direction="row" spacing={1} useFlexGap>
+                <Stack 
+                  direction={{ xs: 'column', sm: 'row' }} 
+                  spacing={{ xs: 2, sm: 1 }} 
+                  useFlexGap
+                  sx={{ width: '100%' }}
+                >
                   <TextField
                     id="email-newsletter"
                     hiddenLabel
@@ -213,7 +207,7 @@ export default function Footer() {
                       },
                     }}
                     sx={{
-                      width: '250px',
+                      width: { xs: '100%', sm: '250px' },
                       '& .MuiOutlinedInput-root': {
                         color: 'var(--text-primary)',
                         backgroundColor: 'var(--background-paper)',
@@ -243,7 +237,8 @@ export default function Footer() {
                       flexShrink: 0,
                       backgroundColor: 'var(--primary-color)',
                       color: 'white',
-                      minWidth: '80px',
+                      minWidth: { xs: '100%', sm: '80px' },
+                      height: { xs: '45px', sm: 'auto' },
                       '&:hover': {
                         backgroundColor: 'var(--primary-dark)',
                       },
@@ -297,9 +292,11 @@ export default function Footer() {
           {/* روابط ومفاتيح */}
           <Box
             sx={{
-              display: { xs: 'none', sm: 'flex' },
+              display: { xs: 'flex', sm: 'flex' },
               flexDirection: 'column',
               gap: 1,
+              width: { xs: '100%', sm: 'auto' },
+              mt: { xs: 3, sm: 0 }
             }}
           >
             <Typography
@@ -313,30 +310,37 @@ export default function Footer() {
             >
               روابط ومفاتيح
             </Typography>
-            {keywords.slice(0, 6).map((word, idx) => (
-              <Box
-                key={idx}
-                sx={{
-                  border: '1px solid var(--secondary-color)',
-                  color: 'var(--secondary-color)',
-                  borderRadius: '20px',
-                  px: 1.5,
-                  py: 0.2,
-                  fontSize: 12,
-                  m: 0.3,
-                  background: 'transparent',
-                  textAlign: 'center',
-                  width: 'fit-content',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    backgroundColor: 'var(--secondary-color)',
-                    color: 'white',
-                  }
-                }}
-              >
-                {word}
-              </Box>
-            ))}
+            <Box sx={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: { xs: 0.5, sm: 0.3 },
+              justifyContent: { xs: 'center', sm: 'flex-start' }
+            }}>
+              {keywords.slice(0, 6).map((word, idx) => (
+                <Box
+                  key={idx}
+                  sx={{
+                    border: '1px solid var(--secondary-color)',
+                    color: 'var(--secondary-color)',
+                    borderRadius: '20px',
+                    px: { xs: 1, sm: 1.5 },
+                    py: 0.2,
+                    fontSize: { xs: 10, sm: 12 },
+                    background: 'transparent',
+                    textAlign: 'center',
+                    width: 'fit-content',
+                    transition: 'all 0.3s ease',
+                    display: { xs: idx < 4 ? 'block' : 'none', sm: 'block' },
+                    '&:hover': {
+                      backgroundColor: 'var(--secondary-color)',
+                      color: 'white',
+                    }
+                  }}
+                >
+                  {word}
+                </Box>
+              ))}
+            </Box>
           </Box>
           <Box
             sx={{

@@ -40,8 +40,22 @@ const HomePage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // قائمة الصور للعرض المتناوب
-  const heroImages = [
+  // كشف حجم الشاشة
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // قائمة الصور للديسكتوب
+  const desktopImages = [
     {
       src: 'alf.gif',
       alt: 'القرآن الكريم - التلاوة المباركة',
@@ -55,21 +69,79 @@ const HomePage = () => {
     {
       src: 'img/hero.png',
       alt: 'الاستماع للقرآن',
-      title: 'الاستماع للقرآن',
-    
+      title: 'الاستماع للقرآن'
     }
   ];
 
+  // قائمة الصور للهواتف
+  const mobileImages = [
+    {
+      src: 'mobile-hero-1.gif',
+      alt: 'القرآن الكريم - التلاوة المباركة',
+      title: 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
+    },
+    {
+      src: 'mobile-hero-2.png',
+      alt: 'المصحف الشريف',
+      title: 'كتاب الله العزيز'
+    },
+    {
+      src: 'mobile-hero-3.png',
+      alt: 'آيات القرآن الكريم',
+      title: 'نور وهداية'
+    },
+    {
+      src: 'mobile-hero-4.png',
+      alt: 'الخط العربي الإسلامي',
+      title: 'جمال الكلمة'
+    },
+    {
+      src: 'mobile-hero-5.png',
+      alt: 'تلاوة القرآن',
+      title: 'صوت الحق'
+    },
+    {
+      src: 'mobile-hero-6.png',
+      alt: 'المسجد النبوي',
+      title: 'بيت الله الحرام'
+    },
+    {
+      src: 'mobile-hero-7.png',
+      alt: 'الدعاء والذكر',
+      title: 'طمأنينة القلب'
+    },
+    {
+      src: 'mobile-hero-8.png',
+      alt: 'نور الإسلام',
+      title: 'هداية ورحمة'
+    },
+    {
+      src: 'mobile-hero-9.png',
+      alt: 'المصحف والسبحة',
+      title: 'عبادة وتسبيح'
+    }
+  ];
+
+  // اختيار الصور حسب نوع الجهاز
+  const heroImages = isMobile ? mobileImages : desktopImages;
+
+  // إعادة تعيين الفهرس عند تغيير نوع الجهاز
+  useEffect(() => {
+    if (currentImageIndex >= heroImages.length) {
+      setCurrentImageIndex(0);
+    }
+  }, [isMobile, heroImages.length, currentImageIndex]);
+
   // تبديل الصور تلقائياً
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !heroImages.length) return;
     
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % heroImages.length
       );
     }, 
-    10000); // تغيير كل 5 ثواني
+    10000); // تغيير كل 10 ثواني
 
     return () => clearInterval(interval);
   }, [mounted, heroImages.length]);
@@ -170,14 +242,16 @@ const HomePage = () => {
         <section className="hero">
           <div className="hero-background">
             <div className="hero-image-container">
-              <Image
-                src={heroImages[currentImageIndex].src}
-                alt={heroImages[currentImageIndex].alt}
-                fill
-                style={{ objectFit: 'cover' }}
-                priority
-                quality={90}
-              />
+              {heroImages[currentImageIndex] && (
+                <Image
+                  src={heroImages[currentImageIndex].src}
+                  alt={heroImages[currentImageIndex].alt}
+                  fill
+                  style={{ objectFit: 'cover' }}
+                  priority
+                  quality={90}
+                />
+              )}
             </div>
             <div className="hero-overlay"></div>
           </div>
@@ -190,8 +264,7 @@ const HomePage = () => {
               
             </h2>
             <p className="hero-description">
-
-              {heroImages[currentImageIndex].title}
+              {heroImages[currentImageIndex]?.title || 'القرآن الكريم'}
             </p>
    
             
