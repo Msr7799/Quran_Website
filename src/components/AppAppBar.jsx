@@ -62,7 +62,7 @@ const navigationItems = [
   { 
     text: 'API', 
     icon: BookIcon, 
-    href: 'https://quran-api-qklj.onrender.com/docs',
+    href: 'https://msr-quran-data.vercel.app',
     color: '#607D8B'
   },
   { 
