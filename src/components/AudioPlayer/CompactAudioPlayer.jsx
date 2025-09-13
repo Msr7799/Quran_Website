@@ -468,7 +468,8 @@ const CompactAudioPlayer = ({
                   maxHeight: 200,
                   '& .MuiMenuItem-root': {
                     color: '#000000',
-                    fontSize: '11px',
+                    fontSize: '13px', // تكبير الخط
+                    fontWeight: 'bold', // جعل الخط bold
                     minHeight: '32px',
                     '&:hover': {
                       bgcolor: '#f0f0f0'
@@ -484,19 +485,25 @@ const CompactAudioPlayer = ({
               }
             }}
             sx={{
-              fontSize: '12px',
+              fontSize: '13px', // تكبير الخط
+              fontWeight: 'bold', // جعل الخط bold
               height: '28px',
-              bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
+              bgcolor: 'white', // خلفية بيضاء دائماً
               color: '#000000',
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
               },
               '& .MuiSelect-select': {
                 padding: '4px 8px',
-                color: '#000000'
+                color: '#000000',
+                fontWeight: 'bold' // جعل النص المختار bold
               },
               '&:hover .MuiOutlinedInput-notchedOutline': {
                 borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#ff6347', // برتقالي عند التركيز
+                borderWidth: '2px'
               }
             }}
           >
@@ -544,7 +551,8 @@ const CompactAudioPlayer = ({
                 maxHeight: 200,
                 '& .MuiMenuItem-root': {
                   color: '#000000',
-                  fontSize: '11px',
+                  fontSize: '13px', // تكبير الخط
+                  fontWeight: 'bold', // جعل الخط bold
                   minHeight: '32px',
                   '&:hover': {
                     bgcolor: '#f0f0f0'
@@ -560,19 +568,25 @@ const CompactAudioPlayer = ({
             }
           }}
           sx={{
-            fontSize: '12px',
+            fontSize: '13px', // تكبير الخط
+            fontWeight: 'bold', // جعل الخط bold
             height: '28px',
-            bgcolor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.9)',
+            bgcolor: 'white', // خلفية بيضاء دائماً
             color: '#000000',
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
             },
             '& .MuiSelect-select': {
               padding: '4px 8px',
-              color: '#000000'
+              color: '#000000',
+              fontWeight: 'bold' // جعل النص المختار bold
             },
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+            },
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#ff6347', // برتقالي عند التركيز
+              borderWidth: '2px'
             }
           }}
         >
@@ -595,12 +609,13 @@ const CompactAudioPlayer = ({
         size="small"
         sx={{
           color: 'tomato',
-          width: 24,
-          height: 24,
-          minWidth: 24
+          width: 36, // تكبير الأيقونة أكثر
+          height: 36,
+          minWidth: 36,
+          marginLeft: '50px' // نقل الأيقونة لليسار أكثر
         }}
       >
-        {audioIsMuted ? <VolumeOff sx={{ fontSize: 12 }} /> : <VolumeUp sx={{ fontSize: 12 }} />}
+        {audioIsMuted ? <VolumeOff sx={{ fontSize: 20 }} /> : <VolumeUp sx={{ fontSize: 20 }} />}
       </IconButton>
     </Box>
   );

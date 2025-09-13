@@ -15,13 +15,45 @@ import TwitterIcon from '@mui/icons-material/X';
 import LanguageIcon from '@mui/icons-material/Language';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ScrollToTop from './ScrollToTop';
+import CircularProgress from '@mui/material/CircularProgress';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ErrorIcon from '@mui/icons-material/Error';
 
 
 
 
 function Copyright() {
   return (
+    
     <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+       <Typography 
+        variant="body1" 
+        sx={{ 
+          color: '#009d9d', 
+          mt: 1,
+          fontSize: '16px',
+          lineHeight: 1.8,
+          fontWeight: 400,
+          textAlign: 'center',
+          letterSpacing: '0.5px',
+          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          marginBottom: 5
+
+ 
+        }}
+      >
+        <strong>
+          اللهم أجعل هذا الموقع صدقه جاريه لي ولحمد المران ولاهل بيتنا ووالدينا وموتانا اللهم اغفر لهم ورحمهم ووفقنا لخدمة الدين
+          </strong>
+
+        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+
+  
       <Typography 
         variant="body1" 
         sx={{ 
@@ -32,14 +64,18 @@ function Copyright() {
           fontWeight: 400,
           textAlign: 'center',
           letterSpacing: '0.5px',
-          textShadow: '0 1px 2px rgba(0,0,0,0.1)'
+          textShadow: '0 1px 2px rgba(0,0,0,0.1)',
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          marginBottom: 8
+ 
         }}
       >
         الموقع هذا يعتبر مصدر مفتوح لنشر القرآن الكريم وبجوده
         <br />
         هذا الموقع مفتوح المصدر وويمكنك أستعمال الكود في حسابي في قت هاب
-        <br />
-        ويعتبر صدقه جاريه لوالديني ولأخي عبدالله خليفه الرميحي
         <br />
         وقريبا سيتم أنشآء تطبيقين ios & android platforms
         <br />
@@ -47,6 +83,7 @@ function Copyright() {
         <br />
         <strong>مطور الموقع: محمد الرميحي | Msr7799</strong>
       </Typography>
+    </Box>
     </Box>
   );
 }
@@ -58,10 +95,49 @@ const keywords = [
 
 export default function Footer() {
   const [email, setEmail] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [message, setMessage] = React.useState('');
+  const [messageType, setMessageType] = React.useState<'success' | 'error' | ''>('');
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    window.location.href = `mailto:alromaihi2224@gmail.com?subject=رسالة من زائر الموقع&body=${encodeURIComponent(email)}`;
+    
+    if (!email.trim()) {
+      setMessage('يرجى إدخال بريد إلكتروني صحيح');
+      setMessageType('error');
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage('');
+    setMessageType('');
+
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (data.ok) {
+        setMessage('✅ تم الاشتراك بنجاح! تفقد بريدك الإلكتروني');
+        setMessageType('success');
+        setEmail(''); // مسح الإيميل بعد النجاح
+      } else {
+        setMessage(data.message || 'حدث خطأ أثناء الاشتراك');
+        setMessageType('error');
+      }
+    } catch (error) {
+      console.error('خطأ في الاشتراك:', error);
+      setMessage('حدث خطأ في الشبكة. يرجى المحاولة مرة أخرى.');
+      setMessageType('error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -112,10 +188,10 @@ export default function Footer() {
                 gutterBottom
                 sx={{ fontWeight: 600, mt: 2, color: 'var(--text-primary)' }}
               >
-                اشترك معنا ليصلك كل جديد
+                📿 اشترك في الحديث اليومي
               </Typography>
               <Typography variant="body2" sx={{ color: 'var(--text-secondary)', mb: 2 }}>
-                أكتب ايميلك لتصلك التحديثات والأخبار الجديدة عن الموقع
+                احصل على حديث شريف يومياً من صحيح البخاري أو مسلم في بريدك الإلكتروني
               </Typography>
               <InputLabel htmlFor="email-newsletter" sx={{ color: 'var(--text-primary)', mb: 1 }}>البريد الإلكتروني</InputLabel>
               <form onSubmit={handleSend}>
@@ -162,19 +238,60 @@ export default function Footer() {
                     variant="contained"
                     color="primary"
                     size="small"
+                    disabled={isLoading}
                     sx={{
                       flexShrink: 0,
                       backgroundColor: 'var(--primary-color)',
                       color: 'white',
+                      minWidth: '80px',
                       '&:hover': {
                         backgroundColor: 'var(--primary-dark)',
                       },
+                      '&:disabled': {
+                        backgroundColor: 'var(--primary-color)',
+                        opacity: 0.7,
+                      },
                     }}
                   >
-                    Send
+                    {isLoading ? <CircularProgress size={20} color="inherit" /> : 'اشترك'}
                   </Button>
                 </Stack>
               </form>
+              
+              {/* رسائل الحالة */}
+              {message && (
+                <Box
+                  sx={{
+                    mt: 2,
+                    p: 1.5,
+                    borderRadius: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    backgroundColor: messageType === 'success' 
+                      ? 'rgba(76, 175, 80, 0.1)' 
+                      : 'rgba(244, 67, 54, 0.1)',
+                    border: `1px solid ${messageType === 'success' 
+                      ? 'rgba(76, 175, 80, 0.3)' 
+                      : 'rgba(244, 67, 54, 0.3)'}`,
+                  }}
+                >
+                  {messageType === 'success' ? (
+                    <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 20 }} />
+                  ) : (
+                    <ErrorIcon sx={{ color: '#f44336', fontSize: 20 }} />
+                  )}
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: messageType === 'success' ? '#4caf50' : '#f44336',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {message}
+                  </Typography>
+                </Box>
+              )}
             </Box>
           </Box>
           {/* روابط ومفاتيح */}
@@ -316,6 +433,7 @@ export default function Footer() {
             width: '100%',
             borderTop: '1px solid',
             borderColor: 'var(--border-color)',
+            mb: 3,
           }}
         >
           <div>
