@@ -31,20 +31,20 @@ export default async function handler(req, res) {
       const books = ['bukhari', 'muslim'];
       const randomBook = books[Math.floor(Math.random() * books.length)];
       
-      const hadithResponse = await axios.get('https://hadithapi.com/api/hadiths', {
-        params: {
-          apiKey: process.env.HADITH_API_KEY,
-          book: randomBook,
-          random: 1
-        },
+      const hadithResponse = await axios.get(`https://hadithapi.com/api/hadiths/?apiKey=${process.env.HADITH_API_KEY}&book=${randomBook}&paginate=10`, {
         timeout: 10000 // 10 seconds timeout
       });
+
+      console.log('📡 Hadith API Response Status:', hadithResponse.status);
+      console.log('📄 Hadith API Response Data Keys:', Object.keys(hadithResponse.data || {}));
 
       if (!hadithResponse.data || !hadithResponse.data.hadiths || hadithResponse.data.hadiths.length === 0) {
         throw new Error('لم يتم العثور على أحاديث من API');
       }
 
-      hadith = hadithResponse.data.hadiths[0];
+      // اختيار حديث عشوائي من النتائج
+      const randomIndex = Math.floor(Math.random() * hadithResponse.data.hadiths.length);
+      hadith = hadithResponse.data.hadiths[randomIndex];
       console.log('✅ تم جلب الحديث من:', randomBook);
       console.log('📄 بداية الحديث:', hadith.hadithText?.substring(0, 100) + '...');
 

@@ -126,6 +126,12 @@ const HomePage = () => {
   // قائمة الصور للهواتف
   const mobileImages = [
     {
+    src: 'mobile-hero-1.gif',
+    alt: 'quran-hero-mobile',
+    title: 'اول صوره'
+
+    },
+    {
       src: 'mobile-hero-2.png',
       alt: 'المصحف الشريف',
       title: 'كتاب الله العزيز'

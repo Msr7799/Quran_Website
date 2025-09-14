@@ -154,7 +154,13 @@ export default function Footer() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (parseError) {
+        console.error('خطأ في تحليل استجابة JSON:', parseError);
+        data = { error: 'استجابة غير صحيحة من الخادم' };
+      }
 
       if (response.ok) {
         setMessage('تم إرسال رابط تأكيد إلغاء الاشتراك إلى بريدك الإلكتروني 📧');
@@ -174,12 +180,20 @@ export default function Footer() {
         setMessage('هذا البريد الإلكتروني غير مشترك في النشرة البريدية');
         setMessageType('warning');
         setShowUnsubscribe(false);
+      } else if (response.status === 500) {
+        setMessage(data.error || 'حدث خطأ في الخادم. يرجى المحاولة لاحقاً.');
+        setMessageType('error');
       } else {
-        throw new Error(data.error || 'فشل في إرسال رابط التأكيد');
+        setMessage(data.error || `خطأ غير متوقع (${response.status}). يرجى المحاولة لاحقاً.`);
+        setMessageType('error');
       }
     } catch (error) {
       console.error('خطأ في إرسال رابط إلغاء الاشتراك:', error);
-      setMessage('حدث خطأ في إرسال رابط التأكيد. يرجى المحاولة لاحقاً.');
+      if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+        setMessage('فشل الاتصال بالخادم. تحقق من الاتصال بالإنترنت.');
+      } else {
+        setMessage('حدث خطأ في إرسال رابط التأكيد. يرجى المحاولة لاحقاً.');
+      }
       setMessageType('error');
     } finally {
       setIsLoading(false);

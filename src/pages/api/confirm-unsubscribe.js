@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { connectToDatabase } from '../../utils/mongoDataStorage.js';
+import { sanitizeEmail } from '../../utils/validation.js';
 
 // التحقق من صحة وانتهاء صلاحية الـ Token
 function verifyUnsubscribeToken(token) {

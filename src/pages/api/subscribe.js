@@ -61,17 +61,14 @@ export default async function handler(req, res) {
         const books = ['bukhari', 'muslim'];
         const randomBook = books[Math.floor(Math.random() * books.length)];
         
-        const hadithResponse = await axios.get('https://hadithapi.com/api/hadiths', {
-          params: {
-            apiKey: process.env.HADITH_API_KEY,
-            book: randomBook,
-            random: 1
-          },
+        const hadithResponse = await axios.get(`https://hadithapi.com/api/hadiths/?apiKey=${process.env.HADITH_API_KEY}&book=${randomBook}&paginate=10`, {
           timeout: 10000
         });
 
         if (hadithResponse.data && hadithResponse.data.hadiths && hadithResponse.data.hadiths.length > 0) {
-          const hadith = hadithResponse.data.hadiths[0];
+          // اختيار حديث عشوائي من النتائج
+          const randomIndex = Math.floor(Math.random() * hadithResponse.data.hadiths.length);
+          const hadith = hadithResponse.data.hadiths[randomIndex];
           
           // إرسال الحديث الأول
           const { sendDailyHadithToSubscriber } = await import('../../utils/emailSender.js');

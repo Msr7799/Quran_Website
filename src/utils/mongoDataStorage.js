@@ -17,6 +17,16 @@ async function connectToDB() {
   return db.collection(COLLECTION_NAME);
 }
 
+// إضافة دالة connectToDatabase للتوافق مع API routes الأخرى
+export async function connectToDatabase() {
+  if (!client) {
+    client = new MongoClient(MONGODB_URI);
+    await client.connect();
+    db = client.db(DB_NAME);
+  }
+  return { db };
+}
+
 // قراءة المشتركين
 export async function getSubscribers() {
   try {

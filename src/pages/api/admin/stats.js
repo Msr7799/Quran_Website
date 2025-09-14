@@ -1,4 +1,4 @@
-import { getSubscribersCount, getSubscribers } from '../../../utils/dataStorage.js';
+import { getSubscribersCount, getSubscribers } from '../../../utils/mongoDataStorage.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {

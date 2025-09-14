@@ -1,107 +1,125 @@
-.
+.-------------------- src ----------------------
 ├── components
-│   ├── AppAppBar.jsx
-│   ├── AsmaAllahCarousel.jsx
-│   ├── AudioPlayer
-│   │   ├── AyahHighlight.jsx
-│   │   ├── QuranAudioPlayer.jsx
-│   │   ├── SimpleAudioPlayer.jsx
-│   │   └── tafseer_popup.js
-│   ├── BookCard.jsx
-│   ├── EnhancedAudioPlayer.jsx
-│   ├── Footer.tsx
-│   ├── HadithCarousel.jsx
-│   ├── Layout.jsx
-│   ├── LoadingSpinner.jsx
-│   ├── Logo.jsx
-│   ├── PageLoader.jsx
-│   ├── QuranAudioIndex.jsx
-│   ├── QuranChatBox.jsx
-│   ├── QuranLoader.jsx
-│   ├── QuranPage
-│   │   ├── EnhancedPageViewer.jsx
-│   │   ├── README.md
-│   │   ├── SimplePageViewer.jsx
-│   │   ├── SimpleQuranViewer.jsx
-│   │   └── SVGPageViewer.jsx
-│   ├── QuranPlayer.jsx
-│   ├── QuranSoundContainer.jsx
-│   ├── ScrollToTop.jsx
-│   ├── SeoHead.jsx
-│   ├── SurahCard.jsx
-│   ├── SurahInstagramCard.jsx
-│   ├── SurahsList.jsx
-│   ├── VerseDisplay.jsx
-│   └── VerseNumber.jsx
+│   ├── AppAppBar.jsx
+│   ├── AsmaAllahCarousel.jsx
+│   ├── AudioPlayer
+│   │   ├── AyahHighlight.jsx
+│   │   ├── CleanAudioPlayer.jsx
+│   │   ├── CompactAudioPlayer.jsx
+│   │   ├── QuranAudioPlayer.jsx
+│   │   ├── SimpleAudioPlayerFixed.jsx
+│   │   ├── SimpleAudioPlayer.jsx
+│   │   └── tafseer_popup.js
+│   ├── BookCard.jsx
+│   ├── EnhancedAudioPlayer.jsx
+│   ├── Footer.tsx
+│   ├── HadithCarousel.jsx
+│   ├── Layout.jsx
+│   ├── LoadingSpinner.jsx
+│   ├── Logo.jsx
+│   ├── MobileTopBar.jsx
+│   ├── PageLoader.jsx
+│   ├── QuranAudioIndex.jsx
+│   ├── QuranChatBox.jsx
+│   ├── QuranLoader.jsx
+│   ├── QuranPage
+│   │   ├── EnhancedPageViewer.jsx
+│   │   ├── NewSVGPageViewer.jsx
+│   │   ├── OptimizedQuranPage.jsx
+│   │   ├── README.md
+│   │   ├── SimplePageViewer.jsx
+│   │   ├── SimpleQuranViewer.jsx
+│   │   └── SVGPageViewer.jsx
+│   ├── QuranPlayer.jsx
+│   ├── QuranSoundContainer.jsx
+│   ├── ScrollToTop.tsx
+│   ├── SeoHead.jsx
+│   ├── SurahCard.jsx
+│   ├── SurahInstagramCard.jsx
+│   ├── SurahsList.jsx
+│   ├── VerseDisplay.jsx
+│   └── VerseNumber.jsx
+├── DATA_SYNCHRONIZATION_GUIDE.md
 ├── hooks
-│   ├── useLoading.js
-│   └── useQuranAPI.js
+│   └── useLoading.js
 ├── pages
-│   ├── 404.jsx
-│   ├── about.jsx
-│   ├── _app.js
-│   ├── _document.js
-│   ├── index.jsx
-│   ├── live.jsx
-│   ├── quran
-│   │   └── [surahId].jsx
-│   ├── quran-pages
-│   │   └── [page].jsx
-│   ├── quran-pdf
-│   │   └── index.jsx
-│   ├── quran-sound
-│   │   ├── index.jsx
-│   │   └── [reciter].jsx
-│   └── search
-│       └── [[...query]].tsx
+│   ├── 404.jsx
+│   ├── about.jsx
+│   ├── api
+│   │   ├── admin
+│   │   │   └── stats.js
+│   │   ├── send-daily.js
+│   │   ├── subscribe.js
+│   │   └── unsubscribe.js
+│   ├── _app.js
+│   ├── _document.js
+│   ├── index.jsx
+│   ├── live.jsx
+│   ├── quran
+│   │   └── [surahId].jsx
+│   ├── quran-pages
+│   │   └── [page].jsx
+│   ├── quran-pdf
+│   │   └── index.jsx
+│   ├── quran-sound
+│   │   ├── index.jsx
+│   │   └── [reciter].jsx
+│   └── search
+│       └── [[...query]].tsx
 ├── styles
-│   ├── 404.module.css
-│   ├── About.module.css
-│   ├── AudioPlayer.module.css
-│   ├── BookCard.module.css
-│   ├── EmblaCarousel.module.css
-│   ├── fonts
-│   │   ├── allah
-│   │   │   └── Symbols1_Ver02.otf
-│   │   ├── bismillah
-│   │   │   ├── QCF_Bismillah_COLOR-Regular.woff
-│   │   │   └── QCF_Bismillah_COLOR-Regular.woff2
-│   │   ├── Cairo-Regular.ttf
-│   │   ├── hafs
-│   │   │   ├── uthmanic_hafs_v22.woff
-│   │   │   └── uthmanic_hafs_v22.woff2
-│   │   └── mehr
-│   │       ├── mehr.ttf
-│   │       └── mehr.woff
-│   ├── Footer.module.css
-│   ├── globals.css
-│   ├── Live.module.css
-│   ├── loaders.css
-│   ├── QuranAudioIndex.module.css
-│   ├── Quran.module.css
-│   ├── QuranPdf.module.css
-│   ├── QuranSound.module.css
-│   ├── RecitersList.module.css
-│   ├── SurahCardCarousel.module.css
-│   ├── Surah.module.css
-│   ├── SurahsList.module.css
-│   └── variables.css
+│   ├── 404.module.css
+│   ├── About.module.css
+│   ├── AudioPlayer.module.css
+│   ├── BookCard.module.css
+│   ├── components
+│   │   └── QuranPage.module.css
+│   ├── EmblaCarousel.module.css
+│   ├── fonts
+│   │   ├── allah
+│   │   │   └── Symbols1_Ver02.otf
+│   │   ├── bismillah
+│   │   │   ├── QCF_Bismillah_COLOR-Regular.woff
+│   │   │   └── QCF_Bismillah_COLOR-Regular.woff2
+│   │   ├── Cairo-Regular.ttf
+│   │   ├── hafs
+│   │   │   ├── uthmanic_hafs_v22.woff
+│   │   │   └── uthmanic_hafs_v22.woff2
+│   │   └── mehr
+│   │       ├── mehr.ttf
+│   │       └── mehr.woff
+│   ├── Footer.module.css
+│   ├── globals.css
+│   ├── Live.module.css
+│   ├── loaders.css
+│   ├── QuranAudioIndex.module.css
+│   ├── Quran.module.css
+│   ├── QuranPdf.module.css
+│   ├── QuranSound.module.css
+│   ├── RecitersList.module.css
+│   ├── SurahCardCarousel.module.css
+│   ├── Surah.module.css
+│   ├── SurahsList.module.css
+│   └── variables.css
 ├── theme
-│   ├── AppTheme.tsx
-│   ├── ColorModeIconDropdown.tsx
-│   ├── ColorModeSelect.tsx
-│   ├── customizations
-│   │   ├── dataDisplay.tsx
-│   │   ├── feedback.tsx
-│   │   ├── inputs.tsx
-│   │   ├── navigation.tsx
-│   │   └── surfaces.ts
-│   └── themePrimitives.ts
+│   ├── AppTheme.tsx
+│   ├── ColorModeIconDropdown.tsx
+│   ├── ColorModeSelect.tsx
+│   ├── customizations
+│   │   ├── dataDisplay.tsx
+│   │   ├── feedback.tsx
+│   │   ├── inputs.tsx
+│   │   ├── navigation.tsx
+│   │   └── surfaces.ts
+│   └── themePrimitives.ts
 └── utils
     ├── convertToArabicNumerals.js
+    ├── dataStorage.js
+    ├── emailSender.js
+    ├── emailTemplates.js
+    ├── encryption.js
     ├── pageMapping.js
-    ├── quranAPI.js
     ├── quranPageMapping.js
+    ├── simpleQuranAPI.js
     └── surahPageMapping.js
 
-20 directories, 85 files
+23 directories, 100 files
