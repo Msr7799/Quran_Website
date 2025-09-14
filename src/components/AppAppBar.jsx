@@ -80,7 +80,7 @@ function AppAppBar() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [hoveredItem, setHoveredItem] = useState(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true); // إظهار القائمة افتراضياً
   const [shouldShakeLogo, setShouldShakeLogo] = useState(false);
   
   const router = useRouter();
@@ -267,6 +267,7 @@ function AppAppBar() {
             className={`search-icon-btn ${isSearchExpanded ? 'active' : ''}`}
             onClick={toggleSearch}
             aria-label={isSearchExpanded ? 'إغلاق البحث' : 'فتح البحث'}
+            data-tooltip="البحث في القرآن"
           >
             {isSearchExpanded ? <CloseIcon /> : <SearchIcon />}
           </button>
@@ -284,6 +285,7 @@ function AppAppBar() {
                 style={{
                   '--item-color': item.color,
                 }}
+                data-tooltip={item.text}
               >
                 <item.icon className="nav-icon" />
                 
@@ -298,12 +300,6 @@ function AppAppBar() {
                   />
                 )}
               </Link>
-              
-              <div 
-                className={`tooltip ${hoveredItem === index ? 'visible' : ''}`}
-              >
-                {item.text}
-              </div>
             </div>
           ))}
         </nav>
@@ -351,14 +347,14 @@ function AppAppBar() {
         /* زر اللوجو الثابت */
         .logo-menu-button {
           position: fixed;
-          top: 20px; /* تحريك اللوقو أكثر للأعلى */
-          right: 100px; /* تحريك اللوقو أكثر لليسار */
+          top: 20px;
+          right: 20px; /* إعادة اللوجو إلى اليمين */
           z-index: 1001;
 
           /* تحسينات للشاشات الصغيرة */
           @media (max-width: 768px) {
-            top: 70px; /* أسفل أكثر في الشاشات الصغيرة */
-            right: 60px; /* مساحة من الحافة */
+            top: 80px; /* تحت البسملة مباشرة */
+            right: 20px; /* يبقى في اليمين */
           }
           cursor: pointer;
           outline: none;
@@ -574,24 +570,28 @@ function AppAppBar() {
         .fixed-sidebar {
           position: fixed;
           top: 20px;
-          right: 20px;
-          height: calc(100vh - 40px);
-          width: 70px;
-          background: #363636;
+          left: 20px; /* نقل إلى اليسار */
+          height: calc(100vh - 40px); /* الطول الكامل */
+          width: 90px; /* تكبير العرض */
+          background: linear-gradient(
+            180deg,
+            rgba(104, 123, 140, 0.95) 0%,
+            rgba(145, 151, 154, 0.95) 50%,
+            rgba(108, 113, 117, 0.95) 100%
+          );
           backdrop-filter: blur(20px);
-          border-left: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 15px;
-          /* تم تغيير لون البوكس شدو الى أبيض وخفف ضيائه */
-          box-shadow: 
-            -4px 0 20px rgba(255, 255, 255, 0.10),
-            inset 1px 0 0 rgba(255, 255, 255, 0.1);
-          z-index: 1000;
+          border-radius: 20px;
+          box-shadow: 0 8px 32px rgba(52, 73, 94, 0.15);
+          border: 1px solid rgba(52, 73, 94, 0.1);
           display: flex;
           flex-direction: column;
-          font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
-          transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-          transform: translateX(120%);
-          opacity: 0;
+          align-items: center;
+          justify-content: flex-start;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1000;
+          transform: translateX(0);
+          opacity: 1;
+          overflow: visible; /* مهم جداً لظهور التلميحات */
         }
 
         .fixed-sidebar.visible {
@@ -600,7 +600,7 @@ function AppAppBar() {
         }
 
         .fixed-sidebar.hidden {
-          transform: translateX(120%);
+          transform: translateX(-120%); /* تغيير الاتجاه للإخفاء إلى اليسار */
           opacity: 0;
         }
 
@@ -611,15 +611,15 @@ function AppAppBar() {
         }
 
         .search-icon-btn {
-          width: 48px;
-          height: 48px;
+          width: 60px; /* تكبير من 48px إلى 60px */
+          height: 60px; /* تكبير من 48px إلى 60px */
           margin: 0 auto;
           display: flex;
           align-items: center;
           justify-content: center;
           background: var(--background-paper);
           border: 2px solid var(--primary-color);
-          border-radius: 12px;
+          border-radius: 15px; /* تكبير border-radius */
           color: var(--primary-color);
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -729,11 +729,11 @@ function AppAppBar() {
         }
 
         .sidebar-nav {
-          flex: 1;
-          padding: 12px 0;
+          flex: 1; /* إعادة التمدد الكامل */
+          padding: 15px 0; /* تكبير المساحات الداخلية */
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 12px; /* تكبير المسافة بين العناصر */
           overflow-y: auto;
           scrollbar-width: none;
         }
@@ -745,64 +745,66 @@ function AppAppBar() {
         .nav-item-wrapper {
           position: relative;
           margin: 0 11px;
+          overflow: visible; /* مهم لظهور التلميحات */
+          z-index: 1001; /* ضمان ظهور التلميحات فوق العناصر الأخرى */
         }
 
         .nav-item {
-          width: 48px;
-          height: 48px;
+          width: 60px; /* تكبير من 48px إلى 60px */
+          height: 60px; /* تكبير من 48px إلى 60px */
           display: flex;
           align-items: center;
           justify-content: center;
           text-decoration: none;
-          border-radius: 12px;
-          color: rgba(255, 255, 255, 0.8);
+          border-radius: 15px; /* تكبير border-radius */
+          color: rgba(52, 65, 75, 0.86);
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           overflow: hidden;
-          background: rgba(255, 255, 255, 0.05);
-          backdrop-filter: blur(10px);
-          border: 2px solid white;
+          background: rgba(52, 73, 94, 0.05);
+          backdrop-filter: blur(1px);
+          border: 2px solid rgba(167, 180, 194, 0.58);
         }
 
         .nav-item:hover {
-          color: white;
-          background: rgba(255, 255, 255, 0.15);
+          color: var(--item-color);
+          background: rgba(52, 73, 94, 0.15);
           transform: translateX(-2px) scale(1.05);
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
         .nav-item.active {
-          color: white;
-          background: rgba(255, 255, 255, 0.2);
+          color: var(--item-color);
+          background: rgba(52, 73, 94, 0.2);
           transform: translateX(-2px);
           box-shadow: 
             0 4px 16px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            inset 0 1px 0 rgba(52, 73, 94, 0.2);
         }
 
         .nav-icon {
-          font-size: 22px !important;
+          font-size: 26px !important; /* تكبير الأيقونات */
           transition: all 0.3s ease;
           filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
         }
 
         .active-indicator {
           position: absolute;
-          right: -11px;
+          left: -11px; /* تغيير من right إلى left */
           top: 0;
           bottom: 0;
           width: 4px;
-          border-radius: 2px 0 0 2px;
+          border-radius: 0 2px 2px 0; /* تغيير border-radius للجهة اليسرى */
           animation: slideIn 0.3s ease;
         }
 
         @keyframes slideIn {
           from {
-            right: -20px;
+            left: -20px; /* تغيير من right إلى left */
             opacity: 0;
           }
           to {
-            right: -11px;
+            left: -11px; /* تغيير من right إلى left */
             opacity: 1;
           }
         }
@@ -829,40 +831,52 @@ function AppAppBar() {
           }
         }
 
-        .tooltip {
+        /* tooltip عام لكل عناصر التنقل - نفس طريقة زر الثيم */
+        .nav-item-wrapper {
+          position: relative;
+        }
+        
+        .nav-item[data-tooltip]:hover::after {
+          content: attr(data-tooltip);
           position: absolute;
-          right: 60px;
+          left: 75px;
           top: 50%;
           transform: translateY(-50%);
-          background: rgba(0, 0, 0, 0.9);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
           color: white;
-          padding: 8px 12px;
-          border-radius: 8px;
-          font-size: 12px;
-          font-weight: 500;
+          padding: 10px 15px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
           white-space: nowrap;
-          opacity: 0;
-          visibility: hidden;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 1002;
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          z-index: 9999;
+          backdrop-filter: blur(15px);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+          font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+          animation: tooltipAppear 0.3s ease-out;
         }
 
-        .tooltip:before {
+        .nav-item[data-tooltip]:hover::before {
           content: '';
           position: absolute;
-          right: -6px;
+          left: 67px;
           top: 50%;
           transform: translateY(-50%);
-          border: 6px solid transparent;
-          border-left-color: rgba(0, 0, 0, 0.9);
+          border: 8px solid transparent;
+          border-right-color: rgba(0, 0, 0, 0.95);
+          z-index: 10000;
         }
 
-        .tooltip.visible {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(-50%) translateX(-8px);
+        @keyframes tooltipAppear {
+          0% {
+            opacity: 0;
+            transform: translateY(-50%) translateX(0px) scale(0.8);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(-50%) translateX(10px) scale(1);
+          }
         }
 
         .sidebar-footer {
@@ -871,15 +885,15 @@ function AppAppBar() {
         }
 
         .theme-toggle-btn {
-          width: 48px;
-          height: 48px;
+          width: 60px; /* تكبير من 48px إلى 60px */
+          height: 60px; /* تكبير من 48px إلى 60px */
           margin: 0 auto;
           display: flex;
           align-items: center;
           justify-content: center;
           background: rgba(255, 255, 255, 0.1);
           border: none;
-          border-radius: 12px;
+          border-radius: 15px; /* تكبير border-radius */
           color: rgba(255, 255, 255, 0.9);
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -929,12 +943,12 @@ function AppAppBar() {
         @media (max-width: 480px) {
           .fixed-sidebar {
             width: 60px;
-            right: 80px;
+            left: 15px; /* القائمة في اليسار */
           }
           
           .logo-menu-button {
             top: 15px;
-            right: 15px;
+            right: 15px; /* اللوجو في اليمين */
           }
 
           .close-icon-wrapper {
@@ -961,7 +975,11 @@ function AppAppBar() {
         @media (max-width: 360px) {
           .logo-menu-button {
             top: 10px;
-            right: 10px;
+            right: 10px; /* اللوجو في اليمين */
+          }
+
+          .fixed-sidebar {
+            left: 10px; /* القائمة في اليسار */
           }
 
           .close-icon-wrapper {
@@ -982,6 +1000,76 @@ function AppAppBar() {
         .fixed-sidebar,
         .logo-menu-button {
           contain: layout style paint;
+        }
+
+        /* tooltip خاص بزر البحث - نفس طريقة باقي الأزرار */
+        .search-icon-btn[data-tooltip]:hover::after {
+          content: attr(data-tooltip);
+          position: absolute;
+          left: 75px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
+          color: white;
+          padding: 10px 15px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          white-space: nowrap;
+          z-index: 9999;
+          backdrop-filter: blur(15px);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+          font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+          animation: tooltipAppear 0.3s ease-out;
+        }
+
+        .search-icon-btn[data-tooltip]:hover::before {
+          content: '';
+          position: absolute;
+          left: 67px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 8px solid transparent;
+          border-right-color: rgba(0, 0, 0, 0.95);
+          z-index: 10000;
+        }
+
+        /* tooltip خاص بزر الثيم */
+        .theme-toggle-btn {
+          position: relative;
+        }
+
+        .theme-toggle-btn:hover::after {
+          content: 'تبديل الوضع المظلم/الفاتح';
+          position: absolute;
+          left: 75px;
+          top: 50%;
+          transform: translateY(-50%);
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%);
+          color: white;
+          padding: 10px 15px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 600;
+          white-space: nowrap;
+          z-index: 1002;
+          backdrop-filter: blur(15px);
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+          font-family: 'Cairo', -apple-system, BlinkMacSystemFont, sans-serif;
+          animation: tooltipAppear 0.3s ease-out;
+        }
+
+        .theme-toggle-btn:hover::before {
+          content: '';
+          position: absolute;
+          left: 67px;
+          top: 50%;
+          transform: translateY(-50%);
+          border: 8px solid transparent;
+          border-right-color: rgba(0, 0, 0, 0.95);
+          z-index: 1003;
         }
 
         /* تحسينات إمكانية الوصول */

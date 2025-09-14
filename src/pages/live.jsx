@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import SeoHead from '../components/SeoHead';
+import RadioAudioPlayer from '../components/AudioPlayer/RadioAudioPlayer';
 import { Play, Pause, Volume2, VolumeX, Radio, Signal, AlertCircle } from 'lucide-react';
 
 const LivePage = () => {
@@ -17,14 +18,97 @@ const LivePage = () => {
   const [error, setError] = useState(null);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [mounted, setMounted] = useState(false);
+  const [radios, setRadios] = useState([]);
+  const [radioLoading, setRadioLoading] = useState(true);
 
   const videoRef = useRef(null);
   const hlsRef = useRef(null);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
 
   // Component mount check
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // متابعة تغييرات الثيم
+  useEffect(() => {
+    if (!mounted) return;
+    
+    // متابعة تغييرات الثيم من localStorage
+    const handleStorageChange = () => {
+      const currentTheme = localStorage.getItem('theme');
+      if (currentTheme) {
+        setIsDarkMode(currentTheme === 'dark');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // متابعة تغييرات data-theme attribute
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const theme = document.documentElement.getAttribute('data-theme');
+          setIsDarkMode(theme === 'dark');
+        }
+      });
+    });
+
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme']
+    });
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      observer.disconnect();
+    };
+  }, [mounted]);
+  // Load radio stations
+  useEffect(() => {
+    const loadRadios = async () => {
+      try {
+        setRadioLoading(true);
+        const response = await fetch('/json/radios.json');
+        const radioData = await response.json();
+        
+        // Extract radios array from the JSON object
+        const radiosArray = radioData.radios || [];
+        
+        // Add IDs to radio objects if they don't have them
+        const radiosWithIds = radiosArray.map((radio, index) => ({
+          id: radio.id || index + 1,
+          name: radio.name || `إذاعة ${index + 1}`,
+          url: radio.url
+        }));
+
+        
+        setRadios(radiosWithIds);
+      } catch (error) {
+        console.error('Error loading radios:', error);
+        // Set fallback radios
+        setRadios([
+          {
+            id: 1,
+            name: "إذاعة القرآن الكريم",
+            url: "https://radio.quran.islamway.net/live"
+          },
+          {
+            id: 2,
+            name: "إذاعة السنة النبوية",
+            url: "https://radio.sunnah.islamway.net/live"
+          }
+        ]);
+      } finally {
+        setRadioLoading(false);
+      }
+    };
+
+    if (mounted) {
+      loadRadios();
+    }
+  }, [mounted]);
 
   // Load live TV channels
   useEffect(() => {
@@ -43,8 +127,8 @@ const LivePage = () => {
           {
             id: 2,
             name: "قناة القرآن الكريم - احتياطي",
-            url: "https://win.holol.com/live/quran/playlist.m3u8",
-            type: "hls"
+            url: "https://www.youtube.com/embed/7opN4Gopoio?autoplay=1&mute=0",
+            type: "youtube"
           }
         ];
         setChannels(youtubeChannels);
@@ -294,40 +378,6 @@ const LivePage = () => {
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="controls-container">
-            <div className="playback-controls">
-              <button 
-                className="control-btn play-btn"
-                onClick={togglePlayPause}
-                disabled={isLoading || connectionStatus === 'error'}
-              >
-                {isLoading ? (
-                  <div className="small-spinner"></div>
-                ) : isPlaying ? (
-                  <Pause size={24} />
-                ) : (
-                  <Play size={24} />
-                )}
-              </button>
-            </div>
-
-            <div className="volume-controls">
-              <button className="control-btn" onClick={toggleMute}>
-                {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-              </button>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.1"
-                value={volume}
-                onChange={handleVolumeChange}
-                className="volume-slider"
-              />
-              <span className="volume-value">{Math.round(volume * 100)}%</span>
-            </div>
-          </div>
 
           {/* Channel List */}
           <div className="channels-list">
@@ -352,6 +402,26 @@ const LivePage = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Radio Player Section */}
+        <div className="radio-section">
+          <div className="radio-section-header">
+            <h2>
+              <Radio className="section-icon" />
+              مشغل الإذاعة المباشر
+            </h2>
+            <p>استمع إلى إذاعات القرآن الكريم والبرامج الإسلامية</p>
+          </div>
+
+          {radioLoading ? (
+            <div className="radio-loading">
+              <div className="loading-spinner"></div>
+              <p>جاري تحميل الإذاعات...</p>
+            </div>
+          ) : (
+            <RadioAudioPlayer radios={radios} />
+          )}
         </div>
       </div>
 
@@ -512,82 +582,6 @@ const LivePage = () => {
           font-size: 0.9rem;
         }
 
-        .controls-container {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .playback-controls {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .control-btn {
-          background: none;
-          border: 2px solid #1976d2;
-          color: #1976d2;
-          padding: 12px;
-          border-radius: 50%;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .play-btn {
-          background: #1976d2;
-          color: white;
-          padding: 16px;
-        }
-
-        .control-btn:hover {
-          transform: scale(1.1);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .control-btn:disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-          transform: none;
-        }
-
-        .volume-controls {
-          display: flex;
-          align-items: center;
-          gap: 15px;
-        }
-
-        .volume-slider {
-          width: 100px;
-          height: 4px;
-          background: #e0e0e0;
-          border-radius: 2px;
-          outline: none;
-          -webkit-appearance: none;
-          cursor: pointer;
-        }
-
-        .volume-slider::-webkit-slider-thumb {
-          width: 16px;
-          height: 16px;
-          background: #1976d2;
-          border-radius: 50%;
-          cursor: pointer;
-          -webkit-appearance: none;
-        }
-
-        .volume-value {
-          font-size: 0.9rem;
-          color: #666;
-          min-width: 40px;
-        }
 
         .channels-list {
           background: white;
@@ -611,6 +605,7 @@ const LivePage = () => {
         .channel-btn {
           background: white;
           border: 2px solid #e0e0e0;
+          color: black;
           padding: 15px;
           border-radius: 8px;
           cursor: pointer;
@@ -664,6 +659,67 @@ const LivePage = () => {
           50% { transform: scaleY(0.5); }
         }
 
+        /* Radio Section Styles */
+        .radio-section {
+          margin-top: 40px;
+          padding-top: 40px;
+          border-top: 2px solid #e0e0e0;
+        }
+
+        .radio-section-header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+
+        .radio-section-header h2 {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          font-size: 2rem;
+          color: #1976d2;
+          margin-bottom: 10px;
+          font-family: 'Cairo', sans-serif;
+        }
+
+        .section-icon {
+          color: #667eea;
+        }
+
+        .radio-section-header p {
+          font-size: 1.1rem;
+          color: #666;
+          margin: 0;
+        }
+
+        .radio-loading {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 60px 20px;
+          background: white;
+          border-radius: 16px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          text-align: center;
+        }
+
+        .radio-loading .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid #e0e0e0;
+          border-top: 4px solid #667eea;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin-bottom: 16px;
+        }
+
+        .radio-loading p {
+          color: #666;
+          font-size: 1rem;
+          margin: 0;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .live-container {
@@ -685,18 +741,24 @@ const LivePage = () => {
             gap: 15px;
           }
 
-          .controls-container {
-            flex-direction: column;
-            gap: 20px;
-          }
-
-          .volume-controls {
-            width: 100%;
-            justify-content: center;
-          }
 
           .channels-grid {
             grid-template-columns: 1fr;
+          }
+
+          .radio-section {
+            margin-top: 30px;
+            padding-top: 30px;
+          }
+
+          .radio-section-header h2 {
+            font-size: 1.8rem;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .radio-section-header p {
+            font-size: 1rem;
           }
         }
 
@@ -714,8 +776,22 @@ const LivePage = () => {
             text-align: center;
           }
 
-          .volume-slider {
-            width: 150px;
+
+          .radio-section {
+            margin-top: 20px;
+            padding-top: 20px;
+          }
+
+          .radio-section-header h2 {
+            font-size: 1.5rem;
+          }
+
+          .radio-section-header p {
+            font-size: 0.9rem;
+          }
+
+          .radio-loading {
+            padding: 40px 15px;
           }
         }
       `}</style>

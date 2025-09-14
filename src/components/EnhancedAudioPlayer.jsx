@@ -436,6 +436,15 @@ const EnhancedAudioPlayer = forwardRef(({
       }
     };
 
+    // إضافة timer لتحديث أسرع وأكثر دقة
+    const updateTimer = setInterval(() => {
+      if (!isDragging && !audio.paused) {
+        const current = audio.currentTime;
+        setCurrentTimeLocal(current);
+        onTimeUpdate?.(current);
+      }
+    }, 100); // تحديث كل 100ms بدلاً من اعتماد على timeupdate فقط
+
     const handleLoadedMetadata = () => {
       setDuration(audio.duration);
       setIsLoading(false);
@@ -463,8 +472,9 @@ const EnhancedAudioPlayer = forwardRef(({
     audio.addEventListener('volumechange', handleVolumeChange);
     audio.addEventListener('error', handleError);
 
-    // تنظيف المستمعين
+    // تنظيف المستمعين والـ timer
     return () => {
+      clearInterval(updateTimer);
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('play', handlePlay);

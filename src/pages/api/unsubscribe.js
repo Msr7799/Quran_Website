@@ -1,5 +1,5 @@
 import { verifyUnsubscribeToken } from '../../utils/encryption.js';
-import { removeSubscriber } from '../../utils/dataStorage.js';
+import { removeSubscriber } from '../../utils/mongoDataStorage.js';
 
 export default async function handler(req, res) {
   // فقط GET requests

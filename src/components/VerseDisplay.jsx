@@ -8,53 +8,7 @@ import { styled, keyframes } from '@mui/material/styles';
 import { PlayArrow, Pause, MenuBook, Close } from '@mui/icons-material';
 import { Fade, Zoom } from '@mui/material';
 
-// تحريك fade in سلس ومحسن - أكثر نعومة
-const fadeInSmooth = keyframes`
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.92);
-    filter: blur(6px);
-  }
-  30% {
-    opacity: 0.3;
-    transform: translateY(15px) scale(0.96);
-    filter: blur(3px);
-  }
-  70% {
-    opacity: 0.8;
-    transform: translateY(5px) scale(0.98);
-    filter: blur(1px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-  }
-`;
-
-// تحريك fade out سلس ومحسن - أكثر نعومة
-const fadeOutSmooth = keyframes`
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-  }
-  30% {
-    opacity: 0.8;
-    transform: translateY(-5px) scale(0.98);
-    filter: blur(1px);
-  }
-  70% {
-    opacity: 0.3;
-    transform: translateY(-15px) scale(0.96);
-    filter: blur(3px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-30px) scale(0.92);
-    filter: blur(6px);
-  }
-`;
+// تم إزالة أنيميشن الفيد إن والفيد أوت
 
 // تحريك النص القرآني مع تأثير لطيف ومحسن
 const textFadeIn = keyframes`
@@ -88,24 +42,18 @@ const infoFadeIn = keyframes`
 `;
 
 // Container للآية - موضع نسبي داخل الحاوية الثابتة مع z-index محسن
-const VerseWrapper = styled(Box)(({ theme, isVisible }) => ({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: '90%',
-  maxWidth: '800px',
-  animation: isVisible 
-    ? `${fadeInSmooth} 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`
-    : `${fadeOutSmooth} 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards`,
-  pointerEvents: isVisible ? 'auto' : 'none',
-  zIndex: isVisible ? 1100 : 1000, // z-index أعلى لضمان الظهور فوق المحتوى
-  '@media (max-width: 768px)': {
-    width: '95%',
-    animation: isVisible 
-      ? `${fadeInSmooth} 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards`
-      : `${fadeOutSmooth} 0.5s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards`,
-  },
+const VerseWrapper = styled(Box)(({ theme }) => ({
+  opacity: 1,
+  width: '100%',
+  maxWidth: '900px',
+  margin: '0 auto',
+  position: 'relative',
+  borderRadius: '20px',
+  overflow: 'hidden',
+  boxShadow: theme.shadows[10],
+  background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+  backdropFilter: 'blur(10px)',
+  border: '1px solid rgba(255,255,255,0.1)',
 }));
 
 const VerseCard = styled(Card)(({ theme, isVisible }) => ({
@@ -113,25 +61,17 @@ const VerseCard = styled(Card)(({ theme, isVisible }) => ({
     ? 'rgba(255, 255, 255, 0.98)' 
     : 'rgba(30, 30, 30, 0.98)',
   borderRadius: '24px',
-  boxShadow: isVisible 
-    ? '0 20px 60px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2)' 
-    : '0 10px 40px rgba(0,0,0,0.2)',
+  boxShadow: '0 20px 60px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.2)',
   border: `2px solid ${theme.palette.mode === 'light' ? '#e3f2fd' : '#404040'}`,
   backdropFilter: 'blur(20px)',
   overflow: 'hidden',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
   '&:hover': {
-    transform: isVisible ? 'translateY(-2px)' : 'translateY(8px)',
-    boxShadow: isVisible 
-      ? '0 24px 72px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.25)' 
-      : '0 12px 48px rgba(0,0,0,0.25)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 24px 72px rgba(0,0,0,0.35), 0 12px 32px rgba(0,0,0,0.25)',
   },
   '@media (max-width: 768px)': {
     borderRadius: '20px',
-    boxShadow: isVisible 
-      ? '0 12px 36px rgba(0,0,0,0.25)' 
-      : '0 6px 24px rgba(0,0,0,0.2)',
+    boxShadow: '0 12px 36px rgba(0,0,0,0.25)',
   },
 }));
 
@@ -156,17 +96,10 @@ const VerseText = styled(Typography)(({ theme, isVisible }) => ({
   direction: 'rtl',
   textShadow: '0 2px 4px rgba(0,0,0,0.1)',
   marginBottom: '16px',
-  animation: isVisible 
-    ? `${textFadeIn} 1s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards`
-    : 'none',
-  opacity: isVisible ? 1 : 0,
-  transition: 'all 0.4s ease',
+  opacity: 1,
   '@media (max-width: 768px)': {
     fontSize: '1.4rem',
     lineHeight: '1.6',
-    animation: isVisible 
-      ? `${textFadeIn} 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards`
-      : 'none',
   },
   '@media (max-width: 480px)': {
     fontSize: '1.2rem',
@@ -179,13 +112,8 @@ const VerseInfo = styled(Box)(({ theme, isVisible }) => ({
   justifyContent: 'center',
   gap: '16px',
   marginBottom: '12px',
-  opacity: isVisible ? 1 : 0,
-  transform: isVisible ? 'translateY(0)' : 'translateY(10px)',
-  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-  transitionDelay: isVisible ? '0.4s' : '0s',
   '@media (max-width: 768px)': {
     gap: '12px',
-    transitionDelay: isVisible ? '0.3s' : '0s',
   },
 }));
 
@@ -198,9 +126,6 @@ const VerseNumber = styled(Typography)(({ theme, isVisible }) => ({
   padding: '8px 16px',
   borderRadius: '20px',
   border: `2px solid ${theme.palette.mode === 'light' ? '#1976d2' : '#3b82f6'}`,
-  transition: 'all 0.3s ease',
-  transform: isVisible ? 'scale(1)' : 'scale(0.9)',
-  opacity: isVisible ? 1 : 0,
   '@media (max-width: 768px)': {
     fontSize: '1rem',
     padding: '6px 12px',
@@ -212,13 +137,9 @@ const PlayButton = styled(IconButton)(({ theme, isVisible }) => ({
   color: 'white',
   width: '48px',
   height: '48px',
-  opacity: isVisible ? 1 : 0,
-  transform: isVisible ? 'scale(1) rotate(0deg)' : 'scale(0.8) rotate(-10deg)',
-  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-  transitionDelay: isVisible ? '0.5s' : '0s',
   '&:hover': {
     backgroundColor: theme.palette.mode === 'light' ? '#1565c0' : '#2563eb',
-    transform: isVisible ? 'scale(1.05) rotate(0deg)' : 'scale(0.85) rotate(-10deg)',
+    transform: 'scale(1.05)',
   },
   '&:active': {
     transform: 'scale(0.95)',
@@ -227,7 +148,6 @@ const PlayButton = styled(IconButton)(({ theme, isVisible }) => ({
   '@media (max-width: 768px)': {
     width: '40px',
     height: '40px',
-    transitionDelay: isVisible ? '0.4s' : '0s',
   },
 }));
 
@@ -236,13 +156,8 @@ const ProgressContainer = styled(Box)(({ theme, isVisible }) => ({
   alignItems: 'center',
   gap: '12px',
   marginTop: '8px',
-  opacity: isVisible ? 1 : 0,
-  transform: isVisible ? 'translateY(0)' : 'translateY(15px)',
-  transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-  transitionDelay: isVisible ? '0.6s' : '0s',
   '@media (max-width: 768px)': {
     gap: '8px',
-    transitionDelay: isVisible ? '0.5s' : '0s',
   },
 }));
 
@@ -463,17 +378,11 @@ export default function VerseDisplay({
 
   // التحكم في حالة الرندر للأنميشن
   useEffect(() => {
-    if (isVisible) {
-      setIsRendered(true);
-    } else {
-      // تأخير إزالة العنصر حتى انتهاء الأنميشن
-      const timeout = setTimeout(() => {
-        setIsRendered(false);
-        // إغلاق التفسير عند إخفاء الآية
-        handleCloseTafseer();
-      }, 400); // نفس مدة أنميشن fadeOut
-      
-      return () => clearTimeout(timeout);
+    // الحاوية دائماً مرندرة، فقط المحتوى يتغير
+    setIsRendered(true);
+    if (!isVisible) {
+      // إغلاق التفسير عند إخفاء الآية
+      handleCloseTafseer();
     }
   }, [isVisible]);
 
@@ -491,38 +400,46 @@ export default function VerseDisplay({
     return Math.min((currentTime / totalDuration) * 100, 100);
   };
 
-  if (!isRendered || isLoading) {
-    return null;
-  }
-
+  // المشغل يظهر دائماً - لا يختفي أبداً
   return (
-    <VerseWrapper isVisible={isVisible}>
+    <VerseWrapper>
       <VerseCard elevation={8}>
         <VerseContent>
           {/* معلومات الآية */}
           <VerseInfo>
-            <Zoom in={isVisible} style={{ transitionDelay: isVisible ? '200ms' : '0ms' }}>
-              <VerseNumber>
-                {surahName} - آية {verseNumber}
-              </VerseNumber>
-            </Zoom>
-            <Zoom in={isVisible} style={{ transitionDelay: isVisible ? '300ms' : '0ms' }}>
-              <PlayButton onClick={onTogglePlayPause}>
-                {isPlaying ? (
-                  <Pause sx={{ fontSize: '24px' }} />
-                ) : (
-                  <PlayArrow sx={{ fontSize: '24px' }} />
-                )}
-              </PlayButton>
-            </Zoom>
+            <VerseNumber>
+              {isVisible && verseText && surahName ? `${surahName} - آية ${verseNumber}` : 'اختر سورة للاستماع'}
+            </VerseNumber>
+            <PlayButton onClick={onTogglePlayPause}>
+              {isPlaying ? (
+                <Pause sx={{ fontSize: '24px' }} />
+              ) : (
+                <PlayArrow sx={{ fontSize: '24px' }} />
+              )}
+            </PlayButton>
           </VerseInfo>
 
           {/* نص الآية - قابل للضغط لعرض التفسير */}
-          <Fade in={isVisible} timeout={{ enter: 600, exit: 300 }}>
-            <VerseTextClickable onClick={handleVerseClick}>
-              {verseText}
-            </VerseTextClickable>
-          </Fade>
+          <Box sx={{ minHeight: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+            {isVisible && verseText ? (
+              <VerseTextClickable onClick={handleVerseClick}>
+                {verseText}
+              </VerseTextClickable>
+            ) : (
+              <Typography
+                sx={{
+                  fontFamily: 'hafs',
+                  fontSize: '1.4rem',
+                  color: 'text.secondary',
+                  textAlign: 'center',
+                  fontStyle: 'italic',
+                  opacity: 0.7
+                }}
+              >
+                ستظهر الآيات هنا أثناء التشغيل...
+              </Typography>
+            )}
+          </Box>
 
           {/* قسم التفسير */}
           <TafseerContainer>

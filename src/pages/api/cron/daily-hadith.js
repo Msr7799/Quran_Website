@@ -1,6 +1,9 @@
+// API endpoint للجدولة اليومية للأحاديث
+// يتم استدعاؤها يومياً في الساعة 7 مساءً بتوقيت البحرين (UTC+3)
+
 import axios from 'axios';
-import { getSubscribers } from '../../utils/mongoDataStorage.js';
-import { sendDailyHadithToAll } from '../../utils/emailSender.js';
+import { getSubscribers } from '../../../utils/mongoDataStorage.js';
+import { sendDailyHadithToAll } from '../../../utils/emailSender.js';
 
 export default async function handler(req, res) {
   // فقط POST requests
@@ -12,12 +15,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('📖 بدء عملية إرسال الحديث اليومي...');
+    console.log('🕰️ بدء الإرسال اليومي المجدول - الساعة 7 مساءً بتوقيت البحرين');
+
+    // التحقق من التوقيت (البحرين UTC+3)
+    const now = new Date();
+    const bahrainTime = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // UTC+3
+    const currentHour = bahrainTime.getHours();
+    
+    console.log(`⏰ الوقت الحالي في البحرين: ${bahrainTime.toLocaleString('ar-SA')} - الساعة: ${currentHour}`);
+
+    // التحقق أن الوقت مناسب للإرسال (بين 6:50 و 7:30 مساءً)
+    if (currentHour < 18 || currentHour > 19) {
+      console.log('⏰ ليس وقت الإرسال المناسب. الإرسال مجدول للساعة 7 مساءً');
+      return res.status(200).json({ 
+        ok: true, 
+        message: 'ليس وقت الإرسال المناسب',
+        currentTime: bahrainTime.toLocaleString('ar-SA')
+      });
+    }
 
     // الحصول على قائمة المشتركين
     const subscribers = await getSubscribers();
     
     if (subscribers.length === 0) {
+      console.log('👥 لا يوجد مشتركين حالياً');
       return res.status(200).json({ 
         ok: true, 
         message: 'لا يوجد مشتركين حالياً',
@@ -69,16 +90,17 @@ export default async function handler(req, res) {
     }
 
     // إرسال الحديث لجميع المشتركين
-    console.log('📧 بدء إرسال الحديث للمشتركين...');
+    console.log('📧 بدء إرسال الحديث اليومي للمشتركين...');
     const results = await sendDailyHadithToAll(subscribers, hadith);
 
     const stats = {
       total: subscribers.length,
       successful: results.successful.length,
-      failed: results.failed.length
+      failed: results.failed.length,
+      timestamp: bahrainTime.toLocaleString('ar-SA')
     };
 
-    console.log('📊 إحصائيات الإرسال:', stats);
+    console.log('📊 إحصائيات الإرسال اليومي:', stats);
 
     if (results.failed.length > 0) {
       console.log('❌ فشل الإرسال لـ:', results.failed.map(f => f.email));
@@ -96,10 +118,10 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('❌ خطأ عام في إرسال الحديث اليومي:', error);
+    console.error('❌ خطأ عام في الإرسال اليومي المجدول:', error);
     return res.status(500).json({ 
       ok: false, 
-      message: 'حدث خطأ أثناء إرسال الحديث اليومي',
+      message: 'حدث خطأ أثناء الإرسال اليومي',
       error: error.message
     });
   }

@@ -91,6 +91,34 @@ export async function sendDailyHadithToAll(subscribers, hadith) {
   return results;
 }
 
+// إرسال حديث لمشترك واحد
+export async function sendDailyHadithToSubscriber(email, hadith) {
+  try {
+    const transporter = createTransporter();
+    const unsubscribeToken = generateUnsubscribeToken(email);
+    
+    const currentDate = new Date().toLocaleDateString('ar-SA');
+    
+    const mailOptions = {
+      from: {
+        name: 'موقع القرآن الكريم - حديث اليوم',
+        address: process.env.EMAIL_FROM
+      },
+      to: email,
+      subject: `📿 حديثك الأول - ${currentDate} - موقع القرآن الكريم`,
+      html: createHadithEmailTemplate(hadith, email, unsubscribeToken),
+      priority: 'normal'
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ تم إرسال الحديث للمشترك:', email);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ خطأ في إرسال الحديث للمشترك:', error);
+    return { success: false, error: error.message };
+  }
+}
+
 // التحقق من إعدادات البريد الإلكتروني
 export async function testEmailConfiguration() {
   try {

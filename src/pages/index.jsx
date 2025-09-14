@@ -27,6 +27,11 @@ const HomePage = () => {
   const [mounted, setMounted] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // حالة AppAppBar للتحكم بالقائمة الجانبية
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldShakeLogo, setShouldShakeLogo] = useState(false);
 
   // تأكد من تحميل المكون قبل العرض
   useEffect(() => {
@@ -39,6 +44,51 @@ const HomePage = () => {
 
     return () => clearTimeout(timer);
   }, []);
+
+  // تطبيق نفس نظام الثيم المستخدم في AppAppBar.jsx
+  useEffect(() => {
+    if (mounted) {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        setIsDarkMode(savedTheme === 'dark');
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        setIsDarkMode(prefersDark);
+      }
+    }
+
+    // متابعة تغييرات الثيم من localStorage
+    const handleStorageChange = () => {
+      const currentTheme = localStorage.getItem('theme');
+      if (currentTheme) {
+        setIsDarkMode(currentTheme === 'dark');
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // متابعة تغييرات data-theme attribute
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'data-theme') {
+          const theme = document.documentElement.getAttribute('data-theme');
+          setIsDarkMode(theme === 'dark');
+        }
+      });
+    });
+
+    if (mounted) {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme']
+      });
+    }
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      observer.disconnect();
+    };
+  }, [mounted]);
 
   // كشف حجم الشاشة
   const [isMobile, setIsMobile] = useState(false);
@@ -76,11 +126,6 @@ const HomePage = () => {
   // قائمة الصور للهواتف
   const mobileImages = [
     {
-      src: 'mobile-hero-1.gif',
-      alt: 'القرآن الكريم - التلاوة المباركة',
-      title: 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
-    },
-    {
       src: 'mobile-hero-2.png',
       alt: 'المصحف الشريف',
       title: 'كتاب الله العزيز'
@@ -93,7 +138,7 @@ const HomePage = () => {
     {
       src: 'mobile-hero-4.png',
       alt: 'الخط العربي الإسلامي',
-      title: 'جمال الكلمة'
+      title:'القرآن العظيم'
     },
     {
       src: 'mobile-hero-5.png',
@@ -119,6 +164,11 @@ const HomePage = () => {
       src: 'mobile-hero-9.png',
       alt: 'المصحف والسبحة',
       title: 'عبادة وتسبيح'
+    },
+    {
+      src: 'mobile-hero-1.gif',
+      alt: 'القرآن الكريم - التلاوة المباركة',
+      title: 'بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ'
     }
   ];
 
@@ -136,15 +186,25 @@ const HomePage = () => {
   useEffect(() => {
     if (!mounted || !heroImages.length) return;
     
-    const interval = setInterval(() => {
+    const currentImage = heroImages[currentImageIndex];
+    
+    // تحديد المدة الزمنية حسب نوع الصورة
+    const getDelay = () => {
+      // إذا كانت الصورة الحالية هي GIF (آخر صورة في قائمة الهاتف)
+      if (isMobile && currentImage?.src === 'mobile-hero-1.gif') {
+        return 11000; // 10 ثوان + ثانية إضافية
+      }
+      return 10000; // المدة العادية
+    };
+
+    const timeout = setTimeout(() => {
       setCurrentImageIndex((prevIndex) => 
         (prevIndex + 1) % heroImages.length
       );
-    }, 
-    10000); // تغيير كل 10 ثواني
+    }, getDelay());
 
-    return () => clearInterval(interval);
-  }, [mounted, heroImages.length]);
+    return () => clearTimeout(timeout);
+  }, [mounted, heroImages.length, currentImageIndex, isMobile]);
 
   // الميزات الرئيسية للموقع
   const features = [
@@ -187,7 +247,7 @@ const HomePage = () => {
       icon: Zap,
       title: 'API للمطورين',
       description: 'استخدم API القرآن الكريم في تطبيقاتك',
-      href: 'https://quran-api-qklj.onrender.com/docs',
+      href: 'https://msr-quran-data.vercel.app',
       color: '#9b59b6'
     }
   ];
@@ -200,31 +260,7 @@ const HomePage = () => {
     { number: '153', label: 'قارئ', icon: Mic }
   ];
 
-  // عرض loader بسيط أثناء التحميل
-  if (!mounted || isLoading) {
-    return (
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        background: '#fafafa',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 9999,
-        opacity: isLoading ? 1 : 0,
-        transition: 'opacity 0.5s ease-out'
-      }}>
-        <QuranLoader
-          size={80}
-          text="مرحباً بك في موقع القرآن الكريم..."
-          showText={true}
-        />
-      </div>
-    );
-  }
+  // لا نعرض loader كـ early return لحل مشكلة SSR
 
   return (
     <>
@@ -238,17 +274,55 @@ const HomePage = () => {
         opacity: mounted && !isLoading ? 1 : 0,
         transition: 'opacity 0.8s ease-in-out'
       }}>
+        {/* البسملة في أعلى الموقع */}
+        <div className="basmala-header">
+          {mounted && (
+            <Image
+              src={isDarkMode ? "/basmalh-dark.svg" : "/basmalh-light.svg"}
+              alt="بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ"
+              width={400}
+              height={100}
+              className="basmala-image"
+              priority
+              quality={95}
+              key={`basmala-${isDarkMode ? 'dark' : 'light'}`}
+              onLoad={() => {
+              }}
+              onError={(e) => {
+                console.log('خطأ في تحميل البسملة:', e.target.src);
+                console.log('الثيم الحالي:', isDarkMode);
+              }}
+            />
+          )}
+          
+          {/* عرض معلومات الثيم للفحص */}
+          {process.env.NODE_ENV === 'development' && mounted && (
+            <div style={{ 
+              position: 'absolute', 
+              top: '10px', 
+              right: '10px', 
+              background: 'rgba(0,0,0,0.8)', 
+              color: 'white', 
+              padding: '5px', 
+              fontSize: '12px',
+              borderRadius: '5px',
+              zIndex: 1000
+            }}>
+            </div>
+          )}
+        </div>
+
         {/* Hero Section */}
         <section className="hero">
           <div className="hero-background">
             <div className="hero-image-container">
               {heroImages[currentImageIndex] && (
                 <Image
-                  src={heroImages[currentImageIndex].src}
+                  src={heroImages[currentImageIndex].src.startsWith('/') ? heroImages[currentImageIndex].src : `/${heroImages[currentImageIndex].src}`}
                   alt={heroImages[currentImageIndex].alt}
                   fill
                   style={{ objectFit: 'cover' }}
-                  priority
+                  priority={currentImageIndex === 0}
                   quality={90}
                 />
               )}
@@ -256,40 +330,45 @@ const HomePage = () => {
             <div className="hero-overlay"></div>
           </div>
           
-          <div className="hero-content">
-            <h1 className="hero-title">
-         بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ 
-            </h1>
-            <h2 className="hero-subtitle">
-              
-            </h2>
-            <p className="hero-description">
-              {heroImages[currentImageIndex]?.title || 'القرآن الكريم'}
-            </p>
-   
-            
-            <div className="hero-actions">
-              <Link href="/quran-pages/1" className="btn btn-primary hero-btn">
-                ابدأ التصفح
-              </Link>
-              <Link href="/quran-sound" className="btn btn-secondary hero-btn">
-                استمع الآن
-              </Link>
-            </div>
-          </div>
+     
 
           {/* مؤشرات الصور */}
           <div className="hero-indicators">
             {heroImages.map((_, index) => (
               <button
                 key={index}
+                type="button"
                 className={`indicator ${index === currentImageIndex ? 'active' : ''}`}
                 onClick={() => setCurrentImageIndex(index)}
                 aria-label={`صورة ${index + 1}`}
+                aria-pressed={index === currentImageIndex}
               />
             ))}
           </div>
         </section>
+
+{/* Navigation section — تصحيح الفتح والإغلاق */}
+<section className="Navigation">
+  <div className="hero-content">
+    <h1 className="hero-title">
+      بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ
+    </h1>
+    <h2 className="hero-subtitle"></h2>
+    <p className="hero-description">
+      {heroImages[currentImageIndex]?.title || 'القرآن الكريم'}
+    </p>
+
+    <div className="hero-actions">
+      <Link href="/quran-pages/1" className="btn btn-primary hero-btn">
+        ابدأ التصفح
+      </Link>
+      <Link href="/quran-sound" className="btn btn-secondary hero-btn">
+        استمع الآن
+      </Link>
+    </div>
+  </div>
+</section>
+
 
         {/* الإحصائيات */}
         <section className="stats-section">
@@ -324,7 +403,18 @@ const HomePage = () => {
             <div className="features-grid">
               {features.map((feature, index) => {
                 const IconComponent = feature.icon;
-                return (
+                return feature.href.startsWith('http') ? (
+                  <a key={index} href={feature.href} target="_blank" rel="noopener noreferrer" className="feature-card">
+                    <div className="feature-icon" style={{ color: feature.color }}>
+                      <IconComponent size={48} strokeWidth={1.5} />
+                    </div>
+                    <h3 className="feature-title">{feature.title}</h3>
+                    <p className="feature-description">{feature.description}</p>
+                    <div className="feature-arrow">
+                      <ArrowLeft size={20} strokeWidth={2} />
+                    </div>
+                  </a>
+                ) : (
                   <Link key={index} href={feature.href} className="feature-card">
                     <div className="feature-icon" style={{ color: feature.color }}>
                       <IconComponent size={48} strokeWidth={1.5} />
@@ -362,12 +452,85 @@ const HomePage = () => {
         </section>
       </div>
 
+      {/* Loader overlay لحل مشكلة SSR */}
+      {(!mounted || isLoading) && (
+        <div className="page-loader-overlay" aria-hidden={!isLoading}>
+          <QuranLoader
+            size={80}
+            text="مرحباً بك في موقع القرآن الكريم..."
+            showText={true}
+          />
+        </div>
+      )}
+
       {/* أنماط الصفحة الرئيسية */}
       <style jsx>{`
         .homepage {
           width: 100%;
           min-height: 100vh;
           background-color: var(--background-color);
+        }
+
+        /* Loader overlay للـ SSR */
+        .page-loader-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(250, 250, 250, 0.95);
+          backdrop-filter: blur(4px);
+          transition: opacity 0.5s ease-out;
+        }
+
+        /* البسملة في أعلى الموقع */
+        .basmala-header {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 20px 0;
+          margin-bottom: 0;
+          border-radius: 10px;
+          position: relative;
+          bottom: 40px;
+          border: 3px ridge #4a4a4a;
+        }
+
+        .basmala-image {
+          border-radius: 30px;
+          background: rgba(255, 255, 255, 0.1);
+          padding: 15px;
+          backdrop-filter: blur(10px);
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .basmala-image:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 768px) {
+          .basmala-header {
+            padding: 15px 10px;
+          }
+          
+          .basmala-image {
+            width: 300px !important;
+            height: 75px !important;
+            padding: 10px;
+            border-radius: 22px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .basmala-image {
+            width: 250px !important;
+            height: 60px !important;
+            padding: 8px;
+            border-radius: 10px;
+          }
         }
 
         /* Hero Section - محسن للاستجابة */
@@ -381,7 +544,7 @@ const HomePage = () => {
           text-align: center;
           color: white;
           overflow: hidden;
-          border-radius: 12px;
+          
         }
 
         .hero-background {

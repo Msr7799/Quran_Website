@@ -86,7 +86,9 @@ export default function Footer() {
   const [email, setEmail] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
   const [message, setMessage] = React.useState('');
-  const [messageType, setMessageType] = React.useState<'success' | 'error' | ''>('');
+  const [messageType, setMessageType] = React.useState<'success' | 'error' | 'warning' | ''>('');
+  const [showUnsubscribe, setShowUnsubscribe] = React.useState(false);
+  const [existingEmail, setExistingEmail] = React.useState('');
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,13 +118,68 @@ export default function Footer() {
         setMessage('✅ تم الاشتراك بنجاح! تفقد بريدك الإلكتروني');
         setMessageType('success');
         setEmail(''); // مسح الإيميل بعد النجاح
+        setShowUnsubscribe(false);
+      } else if (response.status === 409 && data.exists) {
+        // الإيميل موجود بالفعل - اعرض خيار إلغاء الاشتراك
+        setMessage('هذا البريد الإلكتروني مشترك بالفعل');
+        setMessageType('warning');
+        setShowUnsubscribe(true);
+        setExistingEmail(data.email);
       } else {
         setMessage(data.message || 'حدث خطأ أثناء الاشتراك');
         setMessageType('error');
+        setShowUnsubscribe(false);
       }
     } catch (error) {
       console.error('خطأ في الاشتراك:', error);
       setMessage('حدث خطأ في الشبكة. يرجى المحاولة مرة أخرى.');
+      setMessageType('error');
+      setShowUnsubscribe(false);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    if (!email) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch('/api/send-unsubscribe-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setMessage('تم إرسال رابط تأكيد إلغاء الاشتراك إلى بريدك الإلكتروني 📧');
+        setMessageType('success');
+        setShowUnsubscribe(false);
+        setEmail(''); // مسح الإيميل
+        
+        // إخفاء الرسالة بعد 10 ثواني
+        setTimeout(() => {
+          setMessage('');
+          setMessageType('');
+        }, 10000);
+      } else if (response.status === 429) {
+        setMessage(data.error || 'تم تجاوز الحد المسموح من المحاولات');
+        setMessageType('error');
+      } else if (response.status === 404) {
+        setMessage('هذا البريد الإلكتروني غير مشترك في النشرة البريدية');
+        setMessageType('warning');
+        setShowUnsubscribe(false);
+      } else {
+        throw new Error(data.error || 'فشل في إرسال رابط التأكيد');
+      }
+    } catch (error) {
+      console.error('خطأ في إرسال رابط إلغاء الاشتراك:', error);
+      setMessage('حدث خطأ في إرسال رابط التأكيد. يرجى المحاولة لاحقاً.');
       setMessageType('error');
     } finally {
       setIsLoading(false);
@@ -263,28 +320,68 @@ export default function Footer() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1,
+                    flexDirection: showUnsubscribe ? 'column' : 'row',
                     backgroundColor: messageType === 'success' 
                       ? 'rgba(76, 175, 80, 0.1)' 
+                      : messageType === 'warning'
+                      ? 'rgba(255, 152, 0, 0.1)'
                       : 'rgba(244, 67, 54, 0.1)',
                     border: `1px solid ${messageType === 'success' 
                       ? 'rgba(76, 175, 80, 0.3)' 
+                      : messageType === 'warning'
+                      ? 'rgba(255, 152, 0, 0.3)'
                       : 'rgba(244, 67, 54, 0.3)'}`,
                   }}
                 >
-                  {messageType === 'success' ? (
-                    <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 20 }} />
-                  ) : (
-                    <ErrorIcon sx={{ color: '#f44336', fontSize: 20 }} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    {messageType === 'success' ? (
+                      <CheckCircleIcon sx={{ color: '#4caf50', fontSize: 20 }} />
+                    ) : messageType === 'warning' ? (
+                      <ErrorIcon sx={{ color: '#ff9800', fontSize: 20 }} />
+                    ) : (
+                      <ErrorIcon sx={{ color: '#f44336', fontSize: 20 }} />
+                    )}
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: messageType === 'success' ? '#4caf50' : messageType === 'warning' ? '#ff9800' : '#f44336',
+                        fontWeight: 500,
+                      }}
+                    >
+                      {message}
+                    </Typography>
+                  </Box>
+                  
+                  {/* زر إرسال رابط إلغاء الاشتراك */}
+                  {showUnsubscribe && (
+                    <Button
+                      onClick={handleUnsubscribe}
+                      variant="outlined"
+                      size="small"
+                      disabled={isLoading}
+                      sx={{
+                        mt: 1,
+                        borderColor: '#d32f2f',
+                        color: '#d32f2f',
+                        fontSize: '12px',
+                        py: 0.5,
+                        px: 2,
+                        '&:hover': {
+                          borderColor: '#b71c1c',
+                          backgroundColor: 'rgba(211, 47, 47, 0.04)',
+                        },
+                        '&:disabled': {
+                          opacity: 0.6,
+                        },
+                      }}
+                    >
+                      {isLoading ? (
+                        <CircularProgress size={16} color="inherit" />
+                      ) : (
+                        '📧 إرسال رابط الإلغاء'
+                      )}
+                    </Button>
                   )}
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: messageType === 'success' ? '#4caf50' : '#f44336',
-                      fontWeight: 500,
-                    }}
-                  >
-                    {message}
-                  </Typography>
                 </Box>
               )}
             </Box>

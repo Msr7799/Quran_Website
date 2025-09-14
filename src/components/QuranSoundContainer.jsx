@@ -63,45 +63,54 @@ margin: '30px 0 40px 0',
 position: 'relative',
 zIndex: 10000,
 display: 'flex',
+flexDirection: 'column',
 alignItems: 'center',
 justifyContent: 'center',
 overflow: 'visible',
 backgroundColor: 'var(--background-paper)',
-borderRadius: '20px',
+borderRadius: '10px',
 border: '2px dashed var(--border-color)',
 transition: 'all 0.3s ease',
 boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+gap: '20px',
+padding: '20px',
 '@media (max-width: 768px)': {
   minHeight: '250px',
   margin: '20px 0 30px 0',
   padding: '15px',
+  gap: '15px',
 },
 '@media (max-width: 480px)': {
   minHeight: '200px',
   margin: '15px 0 25px 0',
   padding: '10px',
   borderRadius: '15px',
+  gap: '12px',
 },
 }));
 
 // مكونات القسم الجديد داخل VerseDisplayContainer
 const ReciterSection = styled(Box)(({ theme }) => ({
   display: 'flex',
-  flexDirection: 'column',
+  flexDirection: 'row',
   alignItems: 'center',
+  justifyContent: 'center',
   padding: '20px',
   backgroundColor: 'var(--background-paper)',
   borderRadius: '15px',
-  marginBottom: '20px',
   backdropFilter: 'blur(10px)',
   border: '1px solid var(--border-color)',
+  gap: '20px',
+  width: '100%',
+  maxWidth: '600px',
   '@media (max-width: 768px)': {
+    flexDirection: 'column',
     padding: '15px',
-    marginBottom: '15px',
+    gap: '15px',
   },
   '@media (max-width: 480px)': {
     padding: '10px',
-    marginBottom: '10px',
+    gap: '10px',
   },
 }));
 
@@ -111,7 +120,6 @@ const ReciterImage = styled('img')(({ theme }) => ({
   borderRadius: '50%',
   border: '3px solid var(--border-color)',
   boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-  marginBottom: '15px',
   transition: 'transform 0.3s ease',
   '&:hover': {
     transform: 'scale(1.05)',
@@ -131,6 +139,10 @@ const ReciterImage = styled('img')(({ theme }) => ({
 const ReciterInfo = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   color: 'var(--text-primary)',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 const ReciterName = styled(Typography)(({ theme }) => ({
@@ -184,10 +196,11 @@ const VerseSection = styled(Box)(({ theme }) => ({
 const PlayerSection = styled(Box)(({ theme }) => ({
   width: '100%',
   backgroundColor: 'var(--background-paper)',
-  borderRadius: '15px',
+  borderRadius: '5px',
   padding: '15px',
   backdropFilter: 'blur(10px)',
   border: '1px solid var(--border-color)',
+  maxWidth: '600px',
   '@media (max-width: 768px)': {
     padding: '12px',
   },
@@ -198,11 +211,9 @@ const PlayerSection = styled(Box)(({ theme }) => ({
 
 const ListeningSection = styled(Box)(({ theme }) => ({
   backgroundColor: 'var(--background-paper)',
-  borderRadius: '20px',
   padding: '30px',
   marginBottom: '30px',
   boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
-  border: '2px solid var(--border-color)',
   width: '100%',
   maxWidth: '100%',
   '@media (max-width: 768px)': {
@@ -242,7 +253,6 @@ const SelectionBox = styled(Paper)(({ theme }) => ({
   padding: '20px',
   borderRadius: '15px',
   backgroundColor: 'var(--background-color)',
-  border: '1px solid var(--border-color)',
   height: '500px',
   display: 'flex',
   flexDirection: 'column',
@@ -476,7 +486,7 @@ export default function QuranSoundContainer() {
     for (let i = 0; i < versesTimingData.length; i++) {
       const verse = versesTimingData[i];
       
-      if (currentTime >= verse.start_time && currentTime < verse.end_time) {
+      if (currentTime >= (verse.start_time - 31) && currentTime < verse.end_time) {
         if (currentVerseIndex !== i) {
           console.log(`الانتقال إلى الآية ${verse.verse_number} في التوقيت ${currentTime.toFixed(2)}s (مدة: ${verse.duration.toFixed(2)}s)`);
           setCurrentVerseIndex(i);
@@ -511,7 +521,7 @@ export default function QuranSoundContainer() {
 
     // إذا لم نجد آية (ربما نحن في البسملة أو في نهاية السورة)
     if (!foundVerse) {
-      if (currentTime < (versesTimingData[0]?.start_time || 0)) {
+      if (currentTime < ((versesTimingData[0]?.start_time || 0) - 31)) {
         // نحن في البسملة
         setCurrentVerseIndex(-1);
         setShowVerse(false);
@@ -677,19 +687,21 @@ export default function QuranSoundContainer() {
                   <ListItemText
                     primary={reciter.reciter.ar}
                     secondary={reciter.reciter.en}
-                    primaryTypographyProps={{
-                      fontFamily: 'hafs',
-                      fontSize: '1rem',
-                      fontWeight: selectedReciter?.id === reciter.id ? 'bold' : 'normal',
-                      textAlign: 'right',
-                      direction: 'rtl',
-                      color: 'var(--text-primary)',
-                    }}
-                    secondaryTypographyProps={{
-                      fontSize: '0.85rem',
-                      color: 'var(--text-secondary)',
-                      textAlign: 'right',
-                      direction: 'rtl',
+                    slotProps={{
+                      primary: {
+                        fontFamily: 'hafs',
+                        fontSize: '1rem',
+                        fontWeight: selectedReciter?.id === reciter.id ? 'bold' : 'normal',
+                        textAlign: 'right',
+                        direction: 'rtl',
+                        color: 'var(--text-primary)',
+                      },
+                      secondary: {
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        textAlign: 'right',
+                        direction: 'rtl',
+                      }
                     }}
                   />
                   <StatusChip
@@ -726,19 +738,21 @@ export default function QuranSoundContainer() {
                   <ListItemText
                     primary={`${surah.number}. ${surah.name.ar}`}
                     secondary={`${surah.name.en} - ${surah.numberOfAyahs} آية`}
-                    primaryTypographyProps={{
-                      fontFamily: 'hafs',
-                      fontSize: '1rem',
-                      fontWeight: selectedSurah?.number === surah.number ? 'bold' : 'normal',
-                      textAlign: 'right',
-                      direction: 'rtl',
-                      color: 'var(--text-primary)',
-                    }}
-                    secondaryTypographyProps={{
-                      fontSize: '0.85rem',
-                      color: 'var(--text-secondary)',
-                      textAlign: 'right',
-                      direction: 'rtl',
+                    slotProps={{
+                      primary: {
+                        fontFamily: 'hafs',
+                        fontSize: '1rem',
+                        fontWeight: selectedSurah?.number === surah.number ? 'bold' : 'normal',
+                        textAlign: 'right',
+                        direction: 'rtl',
+                        color: 'var(--text-primary)',
+                      },
+                      secondary: {
+                        fontSize: '0.85rem',
+                        color: 'var(--text-secondary)',
+                        textAlign: 'right',
+                        direction: 'rtl',
+                      }
                     }}
                   />
                 </ListItemStyled>
@@ -767,66 +781,65 @@ export default function QuranSoundContainer() {
       </ListeningSection>
 
       {/* حاوية شاملة للمشغل وصورة القارئ والآيات */}
-      <VerseDisplayContainer>
-        {currentAudio && (
-          <>
-            {/* قسم صورة القارئ ومعلوماته */}
-            <ReciterSection>
-              <ReciterImage 
-                src="/logo.png" 
-                alt={selectedReciter?.reciter.ar}
-              />
-              <ReciterInfo>
-                <ReciterName>{selectedReciter?.reciter.ar}</ReciterName>
-                <SurahName>{selectedSurah?.name.ar}</SurahName>
-              </ReciterInfo>
-            </ReciterSection>
+      {currentAudio && (
+        <VerseDisplayContainer>
+          {/* قسم المشغل الصوتي */}
+          <PlayerSection>
+            <EnhancedAudioPlayer
+              ref={audioRef}
+              src={currentAudio}
+              surahName={selectedSurah?.name.ar}
+              reciterName={selectedReciter?.reciter.ar}
+              onClose={handleClosePlayer}
+              onNext={handleNext}
+              onPrev={handlePrev}
+              onTogglePlayPause={handleTogglePlayPause}
+              onTimeUpdate={handleTimeUpdate}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              currentTime={currentTime}
+              totalDuration={totalDuration}
+              canGoPrev={currentSurahIndex > 0}
+              canGoNext={currentSurahIndex < surahsData.length - 1}
+              prevSurah={getPrevSurah()}
+              nextSurah={getNextSurah()}
+              currentSurah={selectedSurah?.name.ar}
+              timingAvailable={timingAvailable}
+              currentVerseNumber={getCurrentVerseNumber()}
+              totalVerses={versesTimingData.length}
+              hideReciterDisplay={false}
+            />
+          </PlayerSection>
+        </VerseDisplayContainer>
+      )}
 
-            {/* قسم عرض الآيات */}
-            <VerseSection>
-              <VerseDisplay 
-                isVisible={showVerse && currentVerseIndex >= 0}
-                onTogglePlayPause={handleTogglePlayPause}
-                isPlaying={isPlaying}
-                surahNumber={selectedSurah?.number}
-                verseNumber={getCurrentVerseNumber()}
-                currentTime={currentTime}
-                totalDuration={totalDuration}
-              />
-            </VerseSection>
-
-            {/* قسم المشغل الصوتي */}
-            <PlayerSection>
-              <EnhancedAudioPlayer
-                ref={audioRef}
-                src={currentAudio}
-                surahName={selectedSurah?.name.ar}
-                reciterName={selectedReciter?.reciter.ar}
-                onClose={handleClosePlayer}
-                onNext={handleNext}
-                onPrev={handlePrev}
-                onTogglePlayPause={handleTogglePlayPause}
-                onTimeUpdate={handleTimeUpdate}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                isPlaying={isPlaying}
-                setIsPlaying={setIsPlaying}
-                currentTime={currentTime}
-                totalDuration={totalDuration}
-                canGoPrev={currentSurahIndex > 0}
-                canGoNext={currentSurahIndex < surahsData.length - 1}
-                prevSurah={getPrevSurah()}
-                nextSurah={getNextSurah()}
-                currentSurah={selectedSurah?.name.ar}
-                timingAvailable={timingAvailable}
-                currentVerseNumber={getCurrentVerseNumber()}
-                totalVerses={versesTimingData.length}
-                hideReciterDisplay={true}
-              />
-            </PlayerSection>
-          </>
-        )}
-      </VerseDisplayContainer>
+      {/* حاوية الآيات ثابتة - تظهر دائماً مع الصوت */}
+      {currentAudio && (
+        <Box
+          sx={{
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            marginTop: '40px',
+            marginBottom: '40px',
+            padding: '0 20px',
+          }}
+        >
+          <VerseSection>
+            <VerseDisplay 
+              isVisible={showVerse && currentVerseIndex >= 0}
+              onTogglePlayPause={handleTogglePlayPause}
+              isPlaying={isPlaying}
+              surahNumber={selectedSurah?.number}
+              verseNumber={getCurrentVerseNumber()}
+              currentTime={currentTime}
+              totalDuration={totalDuration}
+            />
+          </VerseSection>
+        </Box>
+      )}
     </Container>
   );
 }
