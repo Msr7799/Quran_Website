@@ -7,6 +7,8 @@ import CompactAudioPlayer from '../../components/AudioPlayer/CompactAudioPlayer'
 import MobileTopBar from '../../components/MobileTopBar';
 import TafseerPopup from '../../components/AudioPlayer/tafseer_popup';
 import NewSVGPageViewer from '../../components/QuranPage/NewSVGPageViewer';
+import PageNavigator from '../../components/Navigation/PageNavigator';
+import MobileSurahSelector from '../../components/Navigation/MobileSurahSelector';
 import { getPageInfo, getMainSurahForPage } from '../../utils/pageMapping';
 import { Box, Typography, IconButton } from '@mui/material';
 import { VolumeUp, VolumeOff } from '@mui/icons-material';
@@ -83,6 +85,36 @@ const QuranPageView = () => {
     return () => observer.disconnect();
   }, []);
 
+  // تتبع وضع الشاشة الكاملة وإضافة CSS class للـ body
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isCurrentlyFullscreen = !!document.fullscreenElement;
+      setIsFullscreen(isCurrentlyFullscreen);
+      
+      console.log('🔄 تغيير وضع الشاشة الكاملة:', isCurrentlyFullscreen ? 'مفعل' : 'معطل');
+      
+      // إضافة أو إزالة CSS class من الـ body
+      if (isCurrentlyFullscreen) {
+        document.body.classList.add('quran-fullscreen');
+        console.log('✅ تم إضافة class quran-fullscreen');
+      } else {
+        document.body.classList.remove('quran-fullscreen');
+        console.log('✅ تم إزالة class quran-fullscreen');
+      }
+    };
+
+    // التحقق من الحالة الحالية عند تحميل المكون
+    handleFullscreenChange();
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    
+    // تنظيف عند انتهاء المكون
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.body.classList.remove('quran-fullscreen');
+    };
+  }, []);
+
   // تحميل البيانات الأساسية
   useEffect(() => {
     const loadData = async () => {
@@ -143,8 +175,20 @@ const QuranPageView = () => {
     setZoomLevel(1);
   }, []);
 
-  const toggleFullscreen = useCallback(() => {
-    setIsFullscreen(!isFullscreen);
+  const toggleFullscreen = useCallback(async () => {
+    try {
+      if (!document.fullscreenElement) {
+        // دخول وضع الشاشة الكاملة
+        await document.documentElement.requestFullscreen();
+      } else {
+        // الخروج من وضع الشاشة الكاملة
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('خطأ في تبديل وضع الشاشة الكاملة:', error);
+      // fallback: تحديث الـ state فقط إذا فشلت Fullscreen API
+      setIsFullscreen(!isFullscreen);
+    }
   }, [isFullscreen]);
 
   const toggleAudioPlayer = useCallback(() => {
@@ -168,6 +212,11 @@ const QuranPageView = () => {
   const handleReciterChange = useCallback((reciterId) => {
     setSelectedReciter(reciterId);
   }, []);
+
+  // معالجة تغيير الصفحة من مكون التنقل
+  const handlePageNavigatorChange = useCallback((pageNumber) => {
+    navigateToPage(pageNumber);
+  }, [navigateToPage]);
 
   // إدارة إظهار/إخفاء أزرار التنقل
   const showNavigationButtonsTemporarily = useCallback(() => {
@@ -295,6 +344,14 @@ const QuranPageView = () => {
         />
       )}
 
+      {/* مكون اختيار السورة للموبايل - في الأعلى */}
+      <MobileSurahSelector
+        currentPage={currentPage}
+        isDarkMode={isDarkMode}
+        onPageChange={handlePageNavigatorChange}
+        isFullscreen={isFullscreen}
+      />
+
       <Box
         sx={{
           minHeight: '100vh',
@@ -360,7 +417,7 @@ const QuranPageView = () => {
             }
           }}></Box>
 
-          {/* التنقل في الوسط */}
+          {/* مكون التنقل المحسن في الوسط */}
           <Box sx={{
             display: 'flex',
             alignItems: 'center',
@@ -370,71 +427,12 @@ const QuranPageView = () => {
               marginBottom: '5px'
             }
           }}>
-            <IconButton
-              onClick={() => navigateToPage(currentPage - 1)}
-              disabled={currentPage <= 1}
-              sx={(theme) => ({
-                width: '40px',
-                height: '40px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                color: isDarkMode ? '#ffffff' : '#333333',
-                border: theme.palette.mode === 'dark'
-                  ? '1px solid rgba(255, 255, 255, 0.3)'
-                  : '1px solid rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                '&:hover': {
-                  background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-                  borderColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.5)'
-                    : 'rgba(0, 0, 0, 0.5)',
-                },
-                '&:disabled': {
-                  opacity: 0.5,
-                  borderColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.2)'
-                    : 'rgba(0, 0, 0, 0.2)',
-                }
-              })}
-            >
-              ‹
-            </IconButton>
-
-            <Typography variant="h6" sx={{
-              color: isDarkMode ? '#ffffff' : '#333333',
-              minWidth: '100px',
-              textAlign: 'center'
-            }}>
-              صفحة {currentPage}
-            </Typography>
-
-            <IconButton
-              onClick={() => navigateToPage(currentPage + 1)}
-              disabled={currentPage >= totalPages}
-              sx={(theme) => ({
-                width: '40px',
-                height: '40px',
-                background: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)',
-                color: isDarkMode ? '#ffffff' : '#333333',
-                border: theme.palette.mode === 'dark'
-                  ? '1px solid rgba(255, 255, 255, 0.3)'
-                  : '1px solid rgba(0, 0, 0, 0.3)',
-                borderRadius: '8px',
-                '&:hover': {
-                  background: isDarkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
-                  borderColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.5)'
-                    : 'rgba(0, 0, 0, 0.5)',
-                },
-                '&:disabled': {
-                  opacity: 0.5,
-                  borderColor: theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.2)'
-                    : 'rgba(0, 0, 0, 0.2)',
-                }
-              })}
-            >
-              ›
-            </IconButton>
+            <PageNavigator
+              currentPage={currentPage}
+              totalPages={totalPages}
+              isDarkMode={isDarkMode}
+              onPageChange={handlePageNavigatorChange}
+            />
           </Box>
 
           {/* أدوات التحكم */}
@@ -564,16 +562,17 @@ const QuranPageView = () => {
         {/* منطقة عرض الصفحة الجديدة والنظيفة */}
         <Box
           sx={{
-            marginTop: isFullscreen ? '0px' : '90px', /* إزالة المارجن في وضع الشاشة الكاملة */
+            marginTop: isFullscreen ? '0px' : '10px', /* إزالة المارجن في وضع الشاشة الكاملة */
             marginBottom: isFullscreen ? '0px' : (showAudioPlayer ? '80px' : '20px'), /* إزالة المارجن في وضع الشاشة الكاملة */
-            padding: isFullscreen ? '0px' : '20px', /* إزالة البادينغ في وضع الشاشة الكاملة */
+            padding: isFullscreen ? '0px' : '0px', /* إزالة البادينغ في وضع الشاشة الكاملة */
             display: 'flex',
             justifyContent: 'center',
             height: isFullscreen ? '100vh' : 'auto', /* ملء الشاشة في وضع الشاشة الكاملة */
             width: isFullscreen ? '100vw' : '100%', /* ملء عرض الشاشة في وضع الشاشة الكاملة، عرض كامل في الوضع العادي */
             /* في الشاشات الصغيرة - ترك مساحة لشريط التحكم السفلي */
-            '@media (max-width: 768px)': {
+            '@media (max-width: 758px)': {
               marginTop: '20px',
+              marginRight: '-3px ',
               marginBottom: showAudioPlayer ? '80px' : '20px', /* مساحة للمشغل المضغوط */
               paddingBottom: '20px'
             }
@@ -590,7 +589,7 @@ const QuranPageView = () => {
                 : isDarkMode
                   ? 'linear-gradient(145deg, #2a2a2a 0%, #1e1e1e 100%)'
                   : 'linear-gradient(145deg, #f8f9fa 0%, #ffffff 100%)',
-              padding: isFullscreen ? '0px' : '30px', /* إزالة البادينغ في وضع الشاشة الكاملة */
+              padding: isFullscreen ? '0px' : '0px', /* إزالة البادينغ في وضع الشاشة الكاملة */
               borderRadius: isFullscreen ? '0px' : '20px', /* إزالة الحواف المدورة في وضع الشاشة الكاملة */
               border: isFullscreen ? 'none' : (isDarkMode
                 ? '3px solid rgba(255, 255, 255, 0.1)'
@@ -752,7 +751,7 @@ const QuranPageView = () => {
             <Box
               sx={{
                 position: 'fixed',
-                top: '20px',
+                top: '15px',
                 left: '80px', /* بعيداً عن اللوجو */
                 right: '80px', /* بعيداً عن اللوجو */
                 display: 'flex',

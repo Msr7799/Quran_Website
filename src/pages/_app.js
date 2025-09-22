@@ -11,7 +11,6 @@ import '../styles/loaders.css';
 import AppAppBar from '../components/AppAppBar';
 import Layout from '../components/Layout';
 import Footer from '../components/Footer';
-import Logo from '../components/Logo';
 
 /**
  * المكون الأساسي للتطبيق

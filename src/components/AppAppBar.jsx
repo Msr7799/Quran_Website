@@ -88,6 +88,7 @@ function AppAppBar() {
 
   useEffect(() => {
     setMounted(true);
+    console.log('🚀 AppAppBar mounted');
 
     // التحقق من sessionStorage (يُمسح عند إغلاق التاب)
     const hasSeenMenuInThisTab = sessionStorage.getItem('hasSeenMenuInThisTab');
@@ -99,11 +100,9 @@ function AppAppBar() {
         setShouldShakeLogo(true);
       }, 2000);
 
-      return () => clearTimeout(timer);
-    } else {
-      // رأى القائمة من قبل في هذا التاب - لا اهتزاز
-      console.log('✅ المستخدم رأى القائمة من قبل في هذا التاب - لا اهتزاز');
-      setShouldShakeLogo(false);
+      return () => {
+        clearTimeout(timer);
+      };
     }
   }, []);
 
@@ -1083,6 +1082,15 @@ function AppAppBar() {
             transition: none;
             animation: none;
           }
+        }
+
+        /* إخفاء AppAppBar في وضع الشاشة الكاملة */
+        body.quran-fullscreen .logo-menu-button,
+        body.quran-fullscreen .fixed-sidebar {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
         }
       `}</style>
     </>
