@@ -79,8 +79,8 @@ const MobileTopBar = ({
               borderColor: 'rgba(255, 99, 71, 0.2)'
             }
           }}
-        >
-          <ArrowBack sx={{ fontSize: 14 }} />
+          >
+                      <ArrowForward sx={{ fontSize: 14 }} />
         </IconButton>
 
         <IconButton
@@ -99,7 +99,7 @@ const MobileTopBar = ({
             }
           }}
         >
-          <ArrowForward sx={{ fontSize: 14 }} />
+          <ArrowBack sx={{ fontSize: 14 }} />
         </IconButton>
       </Box>
 
