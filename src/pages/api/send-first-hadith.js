@@ -12,20 +12,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🔍 البحث عن المشتركين المعلقين (أكثر من 5 ثواني)...');
+    const { email: singleEmail } = req.body || {};
     
-    // البحث عن المشتركين الذين لم يتلقوا أول حديث
-    const pendingEmails = await getPendingFirstHadithSubscribers(5);
+    let pendingEmails = [];
+    
+    if (singleEmail) {
+      // طلب لإيميل محدد
+      console.log('🔍 معالجة طلب أول حديث لإيميل محدد:', singleEmail);
+      pendingEmails = [singleEmail];
+    } else {
+      // البحث عن المشتركين المعلقين (أكثر من 5 ثواني)
+      console.log('🔍 البحث عن المشتركين المعلقين (أكثر من 5 ثواني)...');
+      pendingEmails = await getPendingFirstHadithSubscribers(5);
+    }
     
     if (pendingEmails.length === 0) {
       return res.status(200).json({ 
         ok: true, 
-        message: 'لا يوجد مشتركين معلقين حالياً',
+        message: singleEmail ? `لا حاجة لإرسال أول حديث للإيميل: ${singleEmail}` : 'لا يوجد مشتركين معلقين حالياً',
         processed: 0
       });
     }
 
-    console.log(`📋 تم العثور على ${pendingEmails.length} مشترك معلق`);
+    console.log(`📋 سيتم معالجة ${pendingEmails.length} مشترك`);
     
     let successCount = 0;
     let failureCount = 0;
@@ -37,7 +46,7 @@ export default async function handler(req, res) {
       const sources = ['البخاري', 'مسلم'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
       hadith = await hadithReader.getRandomHadith(randomSource);
-    } catch (error) {
+    } catch (hadithError) {
       hadith = {
         hadithText: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم',
         book: 'صحيح البخاري',
