@@ -12,13 +12,29 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email: singleEmail } = req.body || {};
+    // دعم GET و POST - فحص query parameters و body
+    const singleEmail = req.method === 'GET' 
+      ? req.query.email 
+      : req.body?.email;
     
     let pendingEmails = [];
     
     if (singleEmail) {
       // طلب لإيميل محدد
       console.log('🔍 معالجة طلب أول حديث لإيميل محدد:', singleEmail);
+      
+      // فحص أن الإيميل لم يتلق أول حديث مسبقاً
+      const { checkSubscriptionStatus } = await import('../../utils/mongoDataStorage.js');
+      const status = await checkSubscriptionStatus(singleEmail);
+      
+      if (!status.exists || !status.isActive) {
+        return res.status(400).json({ 
+          ok: false, 
+          message: `الإيميل ${singleEmail} غير مشترك أو غير نشط`,
+          processed: 0
+        });
+      }
+      
       pendingEmails = [singleEmail];
     } else {
       // البحث عن المشتركين المعلقين (أكثر من 5 ثواني)
@@ -46,7 +62,7 @@ export default async function handler(req, res) {
       const sources = ['البخاري', 'مسلم'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
       hadith = await hadithReader.getRandomHadith(randomSource);
-    } catch (hadithError) {
+    } catch {
       hadith = {
         hadithText: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم',
         book: 'صحيح البخاري',
