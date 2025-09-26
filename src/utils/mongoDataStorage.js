@@ -119,7 +119,11 @@ export async function getPendingFirstHadithSubscribers(secondsAgo = 5) {
     
     const pendingSubscribers = await collection.find({
       isActive: true,
-      firstHadithSent: false,
+      $or: [
+        { firstHadithSent: false },
+        { firstHadithSent: { $exists: false } },
+        { firstHadithSent: null }
+      ],
       subscribedAt: { $lte: cutoffTime }
     }).toArray();
     

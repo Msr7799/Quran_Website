@@ -66,35 +66,52 @@ export default async function handler(req, res) {
       await sendWelcomeEmail(cleanEmail);
       console.log('✅ تم إرسال رسالة الترحيب بنجاح');
       
-      // إرسال أول حديث بعد 10 ثواني (مدة قصيرة وموثوقة)
-      setTimeout(async () => {
+      // إرسال أول حديث مباشرة (بدون setTimeout لتجنب مشاكل Vercel)
+      try {
+        console.log('🔍 بدء إرسال أول حديث للمشترك الجديد:', cleanEmail);
+        
+        // استيراد الدوال مباشرة بدلاً من fetch
+        const hadithReader = (await import('../../utils/hadithDataReader.js')).default;
+        const { sendDailyHadithToSubscriber } = await import('../../utils/emailSender.js');
+        const { markFirstHadithSent } = await import('../../utils/mongoDataStorage.js');
+        
+        // جلب حديث عشوائي
+        const sources = ['البخاري', 'مسلم'];
+        const randomSource = sources[Math.floor(Math.random() * sources.length)];
+        let hadith;
+        
         try {
-          console.log('🔍 بدء إرسال أول حديث للمشترك الجديد:', cleanEmail);
-          
-          // استدعاء API للمعالجة
-          const response = await fetch(`${process.env.SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-first-hadith`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: cleanEmail })
-          });
-          
-          const result = await response.json();
-          if (result.ok) {
-            console.log('✅ تم إرسال أول حديث بنجاح للمشترك:', cleanEmail);
-          } else {
-            console.error('❌ فشل في إرسال أول حديث:', result.message);
-          }
-        } catch (error) {
-          console.error('❌ خطأ في استدعاء إرسال أول حديث:', error.message);
+          hadith = await hadithReader.getRandomHadith(randomSource);
+        } catch {
+          hadith = {
+            hadithText: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم',
+            book: 'صحيح البخاري',
+            englishNarrator: 'أبو هريرة رضي الله عنه'
+          };
         }
-      }, 10 * 1000); // 10 ثوانِ
+        
+        // إرسال الحديث
+        const result = await sendDailyHadithToSubscriber(cleanEmail, hadith);
+        
+        if (result.success) {
+          await markFirstHadithSent(cleanEmail);
+          console.log('✅ تم إرسال أول حديث بنجاح للمشترك:', cleanEmail);
+          console.log('📖 المصدر:', hadith.book);
+        } else {
+          console.error('❌ فشل في إرسال أول حديث:', result.error);
+        }
+        
+      } catch (firstHadithError) {
+        console.error('❌ خطأ في إرسال أول حديث:', firstHadithError.message);
+        // لا نوقف العملية - المشترك مضاف ورسالة الترحيب أرسلت
+      }
       
       console.log('📧 اشتراك جديد نجح:', cleanEmail);
-      console.log('⏱️ سيتم إرسال أول حديث خلال 10 ثوانِ');
+      console.log('📖 تم إرسال رسالة الترحيب وأول حديث');
       
       return res.status(200).json({ 
         ok: true, 
-        message: 'تم الاشتراك بنجاح! ستصلك رسالة ترحيب فوراً وأول حديث خلال 10 ثوانِ' 
+        message: 'تم الاشتراك بنجاح! ستصلك رسالة ترحيب وأول حديث فوراً' 
       });
     } catch (emailError) {
       console.error('❌ خطأ في إرسال رسالة الترحيب:', emailError);
