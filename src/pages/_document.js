@@ -61,34 +61,59 @@ export default function Document() {
         <script
           dangerouslySetInnerHTML={{
             __html: `
-            // منع وميض الصفحة - مبسط ومحسن
+            // منع وميض الصفحة - محسن وآمن
             (function() {
-              // تطبيق الخلفية فوراً
-              document.documentElement.style.backgroundColor = '#fafafa';
-              document.body.style.backgroundColor = '#fafafa';
+              // تطبيق الخلفية بأمان
+              function applyBackgroundSafely() {
+                try {
+                  if (document.documentElement) {
+                    document.documentElement.style.backgroundColor = '#fafafa';
+                  }
+                  if (document.body) {
+                    document.body.style.backgroundColor = '#fafafa';
+                  }
+                } catch (error) {
+                  console.warn('خطأ في تطبيق الخلفية:', error);
+                }
+              }
 
               let loaded = false;
 
               function showContent() {
                 if (!loaded) {
                   loaded = true;
-                  const nextDiv = document.getElementById('__next');
-                  if (nextDiv) {
-                    nextDiv.classList.add('loaded');
+                  try {
+                    const nextDiv = document.getElementById('__next');
+                    if (nextDiv) {
+                      nextDiv.classList.add('loaded');
+                    }
+                  } catch (error) {
+                    console.warn('خطأ في إظهار المحتوى:', error);
                   }
                 }
               }
 
+              // تطبيق الخلفية بأمان
+              applyBackgroundSafely();
+
+              // إعادة المحاولة عند تحميل DOM
+              document.addEventListener('DOMContentLoaded', function() {
+                applyBackgroundSafely();
+                showContent();
+              });
+
               // إظهار المحتوى عند تحميل React
               window.addEventListener('load', showContent);
-              document.addEventListener('DOMContentLoaded', showContent);
 
               // backup timeout - إظهار المحتوى بعد 2 ثانية كحد أقصى
               setTimeout(showContent, 2000);
 
               // إظهار فوري إذا كان DOM جاهز
               if (document.readyState === 'complete') {
-                setTimeout(showContent, 100);
+                setTimeout(function() {
+                  applyBackgroundSafely();
+                  showContent();
+                }, 100);
               }
             })();
             `,

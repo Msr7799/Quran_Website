@@ -93,13 +93,19 @@ const QuranPageView = () => {
       
       console.log('🔄 تغيير وضع الشاشة الكاملة:', isCurrentlyFullscreen ? 'مفعل' : 'معطل');
       
-      // إضافة أو إزالة CSS class من الـ body
-      if (isCurrentlyFullscreen) {
-        document.body.classList.add('quran-fullscreen');
-        console.log('✅ تم إضافة class quran-fullscreen');
-      } else {
-        document.body.classList.remove('quran-fullscreen');
-        console.log('✅ تم إزالة class quran-fullscreen');
+      // إضافة أو إزالة CSS class من الـ body بأمان
+      try {
+        if (document.body) {
+          if (isCurrentlyFullscreen) {
+            document.body.classList.add('quran-fullscreen');
+            console.log('✅ تم إضافة class quran-fullscreen');
+          } else {
+            document.body.classList.remove('quran-fullscreen');
+            console.log('✅ تم إزالة class quran-fullscreen');
+          }
+        }
+      } catch (error) {
+        console.warn('خطأ في تطبيق fullscreen class:', error);
       }
     };
 
@@ -111,7 +117,13 @@ const QuranPageView = () => {
     // تنظيف عند انتهاء المكون
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.body.classList.remove('quran-fullscreen');
+      try {
+        if (document.body) {
+          document.body.classList.remove('quran-fullscreen');
+        }
+      } catch (error) {
+        console.warn('خطأ في إزالة fullscreen class:', error);
+      }
     };
   }, []);
 
