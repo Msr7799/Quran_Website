@@ -1,14 +1,13 @@
-// API endpoint للجدولة اليومية للأحاديث
-// يتم استدعاؤها يومياً في الساعة 7 مساءً بتوقيت البحرين (UTC+3)
+// API endpoint للإرسال اليومي الذكي - بدون Cron Jobs
+// يعمل عند الاستدعاء ويفحص MongoDB إذا تم الإرسال اليوم أم لا
 
-import axios from 'axios';
-import { getSubscribers } from '../../../utils/mongoDataStorage.js';
+import { getSubscribers, checkTodayHadithSent, markTodayHadithSent } from '../../../utils/mongoDataStorage.js';
 import { sendDailyHadithToAll } from '../../../utils/emailSender.js';
 import hadithReader from '../../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
-  // فقط POST requests
-  if (req.method !== 'POST') {
+  // دعم GET و POST
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ 
       ok: false, 
       message: 'Method not allowed' 
@@ -16,24 +15,22 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('🕰️ بدء الإرسال اليومي المجدول - الساعة 7 مساءً بتوقيت البحرين');
+    console.log('🔍 فحص نظام الإرسال اليومي الذكي...');
 
-    // التحقق من التوقيت (البحرين UTC+3)
-    const now = new Date();
-    const bahrainTime = new Date(now.getTime() + (3 * 60 * 60 * 1000)); // UTC+3
-    const currentHour = bahrainTime.getHours();
+    // فحص هل تم الإرسال اليوم من MongoDB
+    const alreadySentToday = await checkTodayHadithSent();
     
-    console.log(`⏰ الوقت الحالي في البحرين: ${bahrainTime.toLocaleString('ar-SA')} - الساعة: ${currentHour}`);
-
-    // التحقق أن الوقت مناسب للإرسال (بين 6:50 و 7:30 مساءً)
-    if (currentHour < 18 || currentHour > 19) {
-      console.log('⏰ ليس وقت الإرسال المناسب. الإرسال مجدول للساعة 7 مساءً');
+    if (alreadySentToday) {
+      console.log('✅ تم إرسال الحديث اليومي بالفعل اليوم');
       return res.status(200).json({ 
         ok: true, 
-        message: 'ليس وقت الإرسال المناسب',
-        currentTime: bahrainTime.toLocaleString('ar-SA')
+        message: 'تم إرسال الحديث اليومي بالفعل اليوم',
+        alreadySent: true,
+        date: new Date().toDateString()
       });
     }
+
+    console.log('🚀 لم يتم الإرسال اليوم - بدء الإرسال...');
 
     // الحصول على قائمة المشتركين
     const subscribers = await getSubscribers();
@@ -84,44 +81,53 @@ export default async function handler(req, res) {
           hadithNumber: '6406',
           chapter: 'كتاب الدعوات'
         };
-        
         console.log('📋 استخدام حديث احتياطي ثابت');
       }
     }
 
     // إرسال الحديث لجميع المشتركين
-    console.log('📧 بدء إرسال الحديث اليومي للمشتركين...');
-    const results = await sendDailyHadithToAll(subscribers, hadith);
-
-    const stats = {
-      total: subscribers.length,
-      successful: results.successful.length,
-      failed: results.failed.length,
-      timestamp: bahrainTime.toLocaleString('ar-SA')
-    };
-
-    console.log('📊 إحصائيات الإرسال اليومي:', stats);
-
-    if (results.failed.length > 0) {
-      console.log('❌ فشل الإرسال لـ:', results.failed.map(f => f.email));
+    console.log('📤 بدء إرسال الحديث اليومي للمشتركين...');
+    
+    const result = await sendDailyHadithToAll(hadith);
+    
+    if (result.success) {
+      // تسجيل الإرسال في MongoDB لتجنب التكرار
+      const hadithData = {
+        book: hadith.book,
+        text: hadith.hadithText?.substring(0, 200),
+        subscribersCount: result.totalSent
+      };
+      
+      await markTodayHadithSent(hadithData);
+      
+      console.log(`✅ تم إرسال الحديث اليومي بنجاح إلى ${result.totalSent} مشترك`);
+      console.log(`❌ فشل الإرسال لـ ${result.totalFailed} مشترك`);
+      console.log('💾 تم تسجيل الإرسال في MongoDB');
+      
+      return res.status(200).json({ 
+        ok: true, 
+        message: 'تم إرسال الحديث اليومي بنجاح وتسجيله في قاعدة البيانات',
+        stats: {
+          total: subscribers.length,
+          successful: result.totalSent,
+          failed: result.totalFailed
+        },
+        hadith: {
+          source: hadith.book,
+          preview: hadith.hadithText?.substring(0, 150) + '...'
+        },
+        date: new Date().toDateString()
+      });
+    } else {
+      throw new Error('فشل في إرسال الحديث اليومي');
     }
 
-    return res.status(200).json({ 
-      ok: true, 
-      message: `تم إرسال الحديث اليومي بنجاح إلى ${stats.successful} مشترك${stats.failed > 0 ? ` (فشل: ${stats.failed})` : ''}`,
-      stats,
-      hadith: {
-        text: hadith.hadithText?.substring(0, 150) + '...',
-        source: hadith.book,
-        narrator: hadith.englishNarrator
-      }
-    });
-
   } catch (error) {
-    console.error('❌ خطأ عام في الإرسال اليومي المجدول:', error);
+    console.error('❌ خطأ في الإرسال اليومي الذكي:', error);
+    
     return res.status(500).json({ 
       ok: false, 
-      message: 'حدث خطأ أثناء الإرسال اليومي',
+      message: 'حدث خطأ أثناء الإرسال اليومي الذكي',
       error: error.message
     });
   }

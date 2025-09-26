@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { getSubscribers } from '../../utils/mongoDataStorage.js';
 import { sendDailyHadithToAll } from '../../utils/emailSender.js';
 import hadithReader from '../../utils/hadithDataReader.js';

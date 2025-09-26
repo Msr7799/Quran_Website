@@ -1,10 +1,10 @@
-import axios from 'axios';
 import { sendDailyHadithToSubscriber } from '../../utils/emailSender.js';
+import { getPendingFirstHadithSubscribers, markFirstHadithSent } from '../../utils/mongoDataStorage.js';
 import hadithReader from '../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
-  // فقط POST requests
-  if (req.method !== 'POST') {
+  // دعم GET و POST requests
+  if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ 
       ok: false, 
       message: 'Method not allowed' 
@@ -12,68 +12,74 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
-
-    if (!email) {
-      return res.status(400).json({ 
-        ok: false, 
-        message: 'البريد الإلكتروني مطلوب' 
+    console.log('🔍 البحث عن المشتركين المعلقين (أكثر من 5 ثواني)...');
+    
+    // البحث عن المشتركين الذين لم يتلقوا أول حديث
+    const pendingEmails = await getPendingFirstHadithSubscribers(5);
+    
+    if (pendingEmails.length === 0) {
+      return res.status(200).json({ 
+        ok: true, 
+        message: 'لا يوجد مشتركين معلقين حالياً',
+        processed: 0
       });
     }
 
+    console.log(`📋 تم العثور على ${pendingEmails.length} مشترك معلق`);
+    
+    let successCount = 0;
+    let failureCount = 0;
 
-    // جلب حديث عشوائي من الملفات المحلية
+
+    // جلب حديث واحد للجميع
     let hadith;
     try {
-      
-      // اختيار عشوائي بين البخاري ومسلم
       const sources = ['البخاري', 'مسلم'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
-      
-      // محاولة الحصول على حديث من المصدر المحدد
       hadith = await hadithReader.getRandomHadith(randomSource);
-      
+    } catch (error) {
+      hadith = {
+        hadithText: 'كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم',
+        book: 'صحيح البخاري',
+        englishNarrator: 'أبو هريرة رضي الله عنه'
+      };
+    }
 
-    } catch (localError) {
+    // إرسال لجميع المشتركين المعلقين
+    for (const email of pendingEmails) {
       try {
-        // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
-        hadith = await hadithReader.getRandomHadith();
+        const result = await sendDailyHadithToSubscriber(email, hadith);
         
-      } catch (fallbackError) {
-        
-        // حديث احتياطي ثابت في حالة فشل جميع المحاولات
-        hadith = {
-          hadithText: 'عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم: "مرحباً بك في النشرة اليومية للأحاديث الشريفة. كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
-          book: 'صحيح البخاري',
-          englishNarrator: 'أبو هريرة رضي الله عنه',
-          hadithNumber: '6406',
-          chapter: 'كتاب الدعوات'
-        };
-        
+        if (result.success) {
+          await markFirstHadithSent(email);
+          successCount++;
+          console.log(`✅ تم إرسال أول حديث لـ: ${email}`);
+        } else {
+          failureCount++;
+          console.error(`❌ فشل إرسال لـ: ${email}`);
+        }
+      } catch (emailError) {
+        failureCount++;
+        console.error(`❌ خطأ في إرسال لـ: ${email}`, emailError.message);
       }
     }
 
-    // إرسال الحديث للمشترك الجديد
-    const result = await sendDailyHadithToSubscriber(email, hadith);
-
-    if (result.success) {
-      return res.status(200).json({ 
-        ok: true, 
-        message: `تم إرسال الحديث الأول بنجاح إلى ${email}`,
-        hadith: {
-          text: hadith.hadithText?.substring(0, 150) + '...',
-          source: hadith.book,
-          narrator: hadith.englishNarrator
-        }
-      });
-    } else {
-      throw new Error(result.error || 'فشل في إرسال الحديث');
-    }
+    return res.status(200).json({ 
+      ok: true, 
+      message: `تمت معالجة ${pendingEmails.length} مشترك`,
+      processed: pendingEmails.length,
+      success: successCount,
+      failures: failureCount,
+      hadith: {
+        source: hadith.book,
+        preview: hadith.hadithText?.substring(0, 100) + '...'
+      }
+    });
 
   } catch (error) {
     return res.status(500).json({ 
       ok: false, 
-      message: 'حدث خطأ أثناء إرسال الحديث الأول',
+      message: 'حدث خطأ في معالجة المشتركين المعلقين',
       error: error.message
     });
   }
