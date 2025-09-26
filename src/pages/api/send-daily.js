@@ -13,8 +13,6 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('📖 بدء عملية إرسال الحديث اليومي...');
-
     // الحصول على قائمة المشتركين
     const subscribers = await getSubscribers();
     
@@ -26,12 +24,9 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log(`👥 عدد المشتركين: ${subscribers.length}`);
-
     // جلب حديث عشوائي من الملفات المحلية
     let hadith;
     try {
-      console.log('🔍 جلب حديث من الملفات المحلية...');
       
       // اختيار عشوائي بين البخاري ومسلم
       const sources = ['البخاري', 'مسلم'];
@@ -39,21 +34,13 @@ export default async function handler(req, res) {
       
       // محاولة الحصول على حديث من المصدر المحدد
       hadith = await hadithReader.getRandomHadith(randomSource);
-      
-      console.log('✅ تم جلب الحديث من:', hadith.book);
-      console.log('📄 بداية الحديث:', hadith.hadithText?.substring(0, 100) + '...');
 
     } catch (localError) {
-      console.error('❌ خطأ في جلب الحديث من الملفات المحلية:', localError.message);
-      
       try {
         // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
-        console.log('🔄 محاولة الحصول على حديث عشوائي من أي مصدر...');
         hadith = await hadithReader.getRandomHadith();
-        console.log('✅ تم جلب حديث عشوائي من:', hadith.book);
         
       } catch (fallbackError) {
-        console.error('❌ فشل في جلب الحديث من الملفات المحلية:', fallbackError.message);
         
         // حديث احتياطي ثابت في حالة فشل جميع المحاولات
         hadith = {
@@ -64,12 +51,10 @@ export default async function handler(req, res) {
           chapter: 'كتاب الدعوات'
         };
         
-        console.log('📋 استخدام حديث احتياطي ثابت');
       }
     }
 
     // إرسال الحديث لجميع المشتركين
-    console.log('📧 بدء إرسال الحديث للمشتركين...');
     const results = await sendDailyHadithToAll(subscribers, hadith);
 
     const stats = {
@@ -77,12 +62,6 @@ export default async function handler(req, res) {
       successful: results.successful.length,
       failed: results.failed.length
     };
-
-    console.log('📊 إحصائيات الإرسال:', stats);
-
-    if (results.failed.length > 0) {
-      console.log('❌ فشل الإرسال لـ:', results.failed.map(f => f.email));
-    }
 
     return res.status(200).json({ 
       ok: true, 
@@ -96,7 +75,6 @@ export default async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('❌ خطأ عام في إرسال الحديث اليومي:', error);
     return res.status(500).json({ 
       ok: false, 
       message: 'حدث خطأ أثناء إرسال الحديث اليومي',

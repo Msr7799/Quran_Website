@@ -21,12 +21,10 @@ export default async function handler(req, res) {
       });
     }
 
-    console.log('📖 بدء إرسال الحديث الأول للمشترك الجديد:', email);
 
     // جلب حديث عشوائي من الملفات المحلية
     let hadith;
     try {
-      console.log('🔍 جلب حديث من الملفات المحلية...');
       
       // اختيار عشوائي بين البخاري ومسلم
       const sources = ['البخاري', 'مسلم'];
@@ -35,20 +33,13 @@ export default async function handler(req, res) {
       // محاولة الحصول على حديث من المصدر المحدد
       hadith = await hadithReader.getRandomHadith(randomSource);
       
-      console.log('✅ تم جلب الحديث من:', hadith.book);
-      console.log('📄 بداية الحديث:', hadith.hadithText?.substring(0, 100) + '...');
 
     } catch (localError) {
-      console.error('❌ خطأ في جلب الحديث من الملفات المحلية:', localError.message);
-      
       try {
         // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
-        console.log('🔄 محاولة الحصول على حديث عشوائي من أي مصدر...');
         hadith = await hadithReader.getRandomHadith();
-        console.log('✅ تم جلب حديث عشوائي من:', hadith.book);
         
       } catch (fallbackError) {
-        console.error('❌ فشل في جلب الحديث من الملفات المحلية:', fallbackError.message);
         
         // حديث احتياطي ثابت في حالة فشل جميع المحاولات
         hadith = {
@@ -59,16 +50,13 @@ export default async function handler(req, res) {
           chapter: 'كتاب الدعوات'
         };
         
-        console.log('📋 استخدام حديث احتياطي ثابت');
       }
     }
 
     // إرسال الحديث للمشترك الجديد
-    console.log('📧 إرسال الحديث الأول للمشترك...');
     const result = await sendDailyHadithToSubscriber(email, hadith);
 
     if (result.success) {
-      console.log('✅ تم إرسال الحديث الأول بنجاح إلى:', email);
       return res.status(200).json({ 
         ok: true, 
         message: `تم إرسال الحديث الأول بنجاح إلى ${email}`,
@@ -83,7 +71,6 @@ export default async function handler(req, res) {
     }
 
   } catch (error) {
-    console.error('❌ خطأ في إرسال الحديث الأول:', error);
     return res.status(500).json({ 
       ok: false, 
       message: 'حدث خطأ أثناء إرسال الحديث الأول',
