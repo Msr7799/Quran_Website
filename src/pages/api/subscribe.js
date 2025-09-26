@@ -1,6 +1,7 @@
 import validator from 'validator';
-import { addSubscriber } from '../../utils/mongoDataStorage.js';
+import { addSubscriber, checkSubscriptionStatus } from '../../utils/mongoDataStorage.js';
 import { sendWelcomeEmail } from '../../utils/emailSender.js';
+import hadithReader from '../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
   // فقط POST requests
@@ -32,6 +33,19 @@ export default async function handler(req, res) {
 
     const cleanEmail = email.trim().toLowerCase();
 
+    // التحقق من حالة الاشتراك الحالية
+    const subscriptionStatus = await checkSubscriptionStatus(cleanEmail);
+    
+    if (subscriptionStatus.exists && subscriptionStatus.isActive) {
+      return res.status(409).json({ 
+        ok: false, 
+        message: 'هذا البريد الإلكتروني مشترك بالفعل',
+        exists: true,
+        email: cleanEmail,
+        action: 'already_subscribed'
+      });
+    }
+
     // إضافة المشترك لقاعدة البيانات المحلية
     try {
       await addSubscriber(cleanEmail);
@@ -53,43 +67,40 @@ export default async function handler(req, res) {
       await sendWelcomeEmail(cleanEmail);
       console.log('✅ تم إرسال رسالة الترحيب بنجاح');
       
-      // إرسال الحديث الأول فوراً (حل لمشكلة setTimeout في serverless)
-      try {
-        const axios = require('axios');
-        
-        // جلب حديث عشوائي
-        const books = ['bukhari', 'muslim'];
-        const randomBook = books[Math.floor(Math.random() * books.length)];
-        
-        const hadithResponse = await axios.get(`https://hadithapi.com/api/hadiths/?apiKey=${process.env.HADITH_API_KEY}&book=${randomBook}&paginate=10`, {
-          timeout: 10000
-        });
-
-        if (hadithResponse.data && hadithResponse.data.hadiths && hadithResponse.data.hadiths.length > 0) {
-          // اختيار حديث عشوائي من النتائج
-          const randomIndex = Math.floor(Math.random() * hadithResponse.data.hadiths.length);
-          const hadith = hadithResponse.data.hadiths[randomIndex];
+      // جدولة إرسال الحديث الأول بعد 3 دقائق (للتجنب التعارض مع رسالة الترحيب)
+      setTimeout(async () => {
+        try {
+          console.log('🔍 وقت إرسال الحديث الأول - جلب من الملفات المحلية...');
           
-          // إرسال الحديث الأول
-          const { sendDailyHadithToSubscriber } = await import('../../utils/emailSender.js');
-          const result = await sendDailyHadithToSubscriber(cleanEmail, hadith);
+          // اختيار عشوائي بين البخاري ومسلم
+          const sources = ['البخاري', 'مسلم'];
+          const randomSource = sources[Math.floor(Math.random() * sources.length)];
           
-          if (result.success) {
-            console.log('✅ تم إرسال الحديث الأول بنجاح للمشترك:', cleanEmail);
-          } else {
-            console.error('❌ فشل في إرسال الحديث الأول:', result.error);
+          // الحصول على حديث من المصدر المحدد
+          const hadith = await hadithReader.getRandomHadith(randomSource);
+          
+          if (hadith) {
+            // إرسال الحديث الأول
+            const { sendDailyHadithToSubscriber } = await import('../../utils/emailSender.js');
+            const result = await sendDailyHadithToSubscriber(cleanEmail, hadith);
+            
+            if (result.success) {
+              console.log('✅ تم إرسال الحديث الأول بنجاح بعد 3 دقائق للمشترك:', cleanEmail);
+              console.log('📄 المصدر:', hadith.book);
+            } else {
+              console.error('❌ فشل في إرسال الحديث الأول:', result.error);
+            }
           }
+        } catch (hadithError) {
+          console.error('❌ خطأ في إرسال الحديث الأول المُجدول:', hadithError);
         }
-      } catch (hadithError) {
-        console.error('❌ خطأ في إرسال الحديث الأول:', hadithError);
-        // لا نوقف العملية في حال فشل الحديث
-      }
+      }, 3 * 60 * 1000); // 3 دقائق = 180000 مللي ثانية
       
       console.log('📧 اشتراك جديد نجح:', cleanEmail);
       
       return res.status(200).json({ 
         ok: true, 
-        message: 'تم الاشتراك بنجاح! ستصلك رسالة ترحيب وأول حديث فوراً' 
+        message: 'تم الاشتراك بنجاح! ستصلك رسالة ترحيب فوراً وأول حديث خلال 3 دقائق' 
       });
     } catch (emailError) {
       console.error('❌ خطأ في إرسال رسالة الترحيب:', emailError);

@@ -1,19 +1,16 @@
 import nodemailer from 'nodemailer';
-import crypto from 'crypto';
-import { connectToDatabase } from '../../utils/mongoDataStorage.js';
-import { sanitizeEmail } from '../../utils/validation.js';
+import { getSubscribers } from '../../utils/mongoDataStorage.js';
+import { generateUnsubscribeToken } from '../../utils/encryption.js';
 
 // Rate limiting storage (in production use Redis/database)
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS = 2; // 2 requests per minute
 
-// إنشاء token مشفر
-function createUnsubscribeToken(email) {
-  const timestamp = Date.now();
-  const data = `${email}:${timestamp}`;
-  const token = crypto.createHash('sha256').update(data + process.env.UNSUBSCRIBE_SECRET).digest('hex');
-  return `${Buffer.from(data).toString('base64')}.${token}`;
+// تحقق من صحة البريد الإلكتروني
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
 // التحقق من Rate Limiting
@@ -44,10 +41,11 @@ export default async function handler(req, res) {
     const { email } = req.body;
     
     // تنظيف وتحقق من البريد الإلكتروني
-    const sanitizedEmail = sanitizeEmail(email);
-    if (!sanitizedEmail) {
+    if (!email || !isValidEmail(email.trim())) {
       return res.status(400).json({ error: 'البريد الإلكتروني غير صالح' });
     }
+    
+    const sanitizedEmail = email.trim().toLowerCase();
 
     // فحص Rate Limiting
     const clientIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || 'unknown';
@@ -58,28 +56,37 @@ export default async function handler(req, res) {
       });
     }
 
-    // الاتصال بقاعدة البيانات
-    const { db } = await connectToDatabase();
+    // التحقق من وجود البريد الإلكتروني في قائمة المشتركين
+    console.log('👥 التحقق من المشتركين...');
+    const subscribers = await getSubscribers();
+    console.log('📊 عدد المشتركين:', subscribers.length);
+    console.log('🔍 البحث عن:', sanitizedEmail);
     
-    // التحقق من وجود البريد الإلكتروني
-    const existingSubscriber = await db.collection('subscribers').findOne({
-      email: sanitizedEmail
-    });
-
-    if (!existingSubscriber) {
+    const isSubscribed = subscribers.includes(sanitizedEmail);
+    console.log('✅ مشترك؟', isSubscribed ? 'نعم' : 'لا');
+    
+    if (!isSubscribed) {
+      console.log('❌ البريد غير مشترك');
       return res.status(404).json({ 
         error: 'هذا البريد الإلكتروني غير مشترك في النشرة البريدية'
       });
     }
+    
+    console.log('✅ البريد مشترك، المتابعة...');
 
     // إنشاء token آمن
-    const unsubscribeToken = createUnsubscribeToken(sanitizedEmail);
+    const unsubscribeToken = generateUnsubscribeToken(sanitizedEmail);
     
-    // إنشاء رابط إلغاء الاشتراك
-    const unsubscribeUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/confirm-unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
+    // إنشاء رابط إلغاء الاشتراك (مرن للإنتاج واللوكال هوست)
+    const baseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
+    const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
 
     // إعداد NodeMailer
-    const transporter = nodemailer.createTransporter({
+    console.log('🔧 إعداد NodeMailer...');
+    console.log('📧 البريد:', process.env.EMAIL_USER ? 'موجود' : 'مفقود');
+    console.log('🔑 كلمة المرور:', process.env.EMAIL_PASS ? 'موجودة' : 'مفقودة');
+    
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.EMAIL_USER,
@@ -145,17 +152,34 @@ export default async function handler(req, res) {
     `;
 
     // إرسال الإيميل
-    await transporter.sendMail({
-      from: `"موقع القرآن الكريم" <${process.env.EMAIL_USER}>`,
-      to: sanitizedEmail,
-      subject: '📧 تأكيد إلغاء الاشتراك - موقع القرآن الكريم',
-      html: emailHtml
-    });
+    console.log('📤 محاولة إرسال إيميل إلى:', sanitizedEmail);
+    console.log('🔗 رابط إلغاء الاشتراك:', unsubscribeUrl);
+    
+    try {
+      const info = await transporter.sendMail({
+        from: `"موقع القرآن الكريم" <${process.env.EMAIL_USER}>`,
+        to: sanitizedEmail,
+        subject: '📧 تأكيد إلغاء الاشتراك - موقع القرآن الكريم',
+        html: emailHtml
+      });
+      
+      console.log('✅ تم إرسال الإيميل بنجاح!');
+      console.log('📬 Message ID:', info.messageId);
+      console.log('📊 Response:', info.response);
 
-    res.status(200).json({
-      success: true,
-      message: 'تم إرسال رابط تأكيد إلغاء الاشتراك إلى بريدك الإلكتروني'
-    });
+      res.status(200).json({
+        success: true,
+        message: 'تم إرسال رابط تأكيد إلغاء الاشتراك إلى بريدك الإلكتروني'
+      });
+      
+    } catch (emailError) {
+      console.error('❌ خطأ تفصيلي في إرسال الإيميل:');
+      console.error('📧 Gmail Error Code:', emailError.code);
+      console.error('📝 Gmail Error Message:', emailError.message);
+      console.error('🔍 Full Error:', emailError);
+      
+      throw emailError; // إعادة رمي الخطأ للمعالج الرئيسي
+    }
 
   } catch (error) {
     console.error('خطأ في إرسال رابط إلغاء الاشتراك:', error);

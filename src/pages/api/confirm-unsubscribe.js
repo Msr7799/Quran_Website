@@ -124,12 +124,18 @@ export default async function handler(req, res) {
       `);
     }
 
-    // حذف المشترك من قاعدة البيانات
-    const deleteResult = await db.collection('subscribers').deleteOne({
-      email: tokenResult.email
-    });
+    // تعطيل المشترك بدلاً من حذفه نهائياً
+    const updateResult = await db.collection('subscribers').updateOne(
+      { email: tokenResult.email },
+      { 
+        $set: { 
+          isActive: false, 
+          unsubscribedAt: new Date() 
+        } 
+      }
+    );
 
-    if (deleteResult.deletedCount === 1) {
+    if (updateResult.matchedCount === 1) {
       // إلغاء اشتراك ناجح
       return res.status(200).send(`
         <!DOCTYPE html>

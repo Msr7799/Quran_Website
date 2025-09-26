@@ -39,17 +39,35 @@ export async function getSubscribers() {
   }
 }
 
-// إضافة مشترك جديد
+// إضافة مشترك جديد أو إعادة تفعيل معطل
 export async function addSubscriber(email) {
   try {
     const collection = await connectToDB();
     
-    // التحقق من عدم وجود الإيميل مسبقاً
+    // التحقق من وجود الإيميل مسبقاً
     const existing = await collection.findOne({ email });
+    
     if (existing) {
-      throw new Error('هذا البريد الإلكتروني مشترك بالفعل');
+      if (existing.isActive) {
+        throw new Error('هذا البريد الإلكتروني مشترك بالفعل');
+      } else {
+        // إعادة تفعيل حساب معطل
+        await collection.updateOne(
+          { email },
+          { 
+            $set: { 
+              isActive: true, 
+              resubscribedAt: new Date(),
+              unsubscribedAt: null 
+            } 
+          }
+        );
+        console.log('🔄 تم إعادة تفعيل مشترك:', email);
+        return true;
+      }
     }
     
+    // إضافة مشترك جديد
     const subscriberData = {
       email,
       subscribedAt: new Date(),
@@ -98,5 +116,28 @@ export async function getSubscribersCount() {
   } catch (error) {
     console.error('خطأ في عد المشتركين:', error);
     return 0;
+  }
+}
+
+// التحقق من حالة اشتراك البريد الإلكتروني
+export async function checkSubscriptionStatus(email) {
+  try {
+    const collection = await connectToDB();
+    const subscriber = await collection.findOne({ email });
+    
+    if (!subscriber) {
+      return { exists: false, isActive: false, status: 'not_found' };
+    }
+    
+    return { 
+      exists: true, 
+      isActive: subscriber.isActive, 
+      status: subscriber.isActive ? 'active' : 'inactive',
+      subscribedAt: subscriber.subscribedAt,
+      unsubscribedAt: subscriber.unsubscribedAt
+    };
+  } catch (error) {
+    console.error('خطأ في فحص حالة الاشتراك:', error);
+    return { exists: false, isActive: false, status: 'error' };
   }
 }
