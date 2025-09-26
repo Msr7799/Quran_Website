@@ -28,14 +28,30 @@ function checkRateLimit(ip) {
   // إضافة الطلب الحالي
   recentRequests.push(now);
   rateLimitMap.set(ip, recentRequests);
-  
   return true;
 }
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ 
+      error: 'Method not allowed' 
+    });
   }
+
+  // فحص متغيرات البيئة المطلوبة
+  const requiredEnvVars = ['GMAIL_USER', 'GMAIL_APP_PASSWORD', 'UNSUBSCRIBE_SECRET'];
+  const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
+  
+  if (missingVars.length > 0) {
+    console.error('❌ متغيرات البيئة مفقودة:', missingVars);
+    return res.status(500).json({ 
+      error: 'خطأ في إعدادات الخادم. يرجى المحاولة لاحقاً.'
+    });
+  }
+
+  console.log('✅ جميع متغيرات البيئة متوفرة');
+  console.log('📧 Gmail User:', process.env.GMAIL_USER);
+  console.log('🔗 Base URL:', process.env.SITE_URL || process.env.NEXT_PUBLIC_BASE_URL);
 
   try {
     const { email } = req.body;
@@ -73,6 +89,9 @@ export default async function handler(req, res) {
     const baseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || `${req.headers['x-forwarded-proto'] || 'http'}://${req.headers.host}`;
     const unsubscribeUrl = `${baseUrl}/api/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
     
+    // إعداد nodemailer مع تفاصيل إضافية للتشخيص
+    console.log('🔧 إعداد NodeMailer transporter...');
+    
     const transporter = nodemailer.createTransporter({
       service: 'gmail',
       auth: {
@@ -81,8 +100,20 @@ export default async function handler(req, res) {
       },
       tls: {
         rejectUnauthorized: false
-      }
+      },
+      debug: process.env.NODE_ENV === 'development', // تفعيل debug في التطوير فقط
+      logger: process.env.NODE_ENV === 'development' // تفعيل logger في التطوير فقط
     });
+
+    // اختبار الاتصال مع Gmail
+    try {
+      await transporter.verify();
+      console.log('✅ تم التحقق من الاتصال مع Gmail بنجاح');
+    } catch (verifyError) {
+      console.error('❌ فشل في التحقق من الاتصال مع Gmail:');
+      console.error('Verify Error:', verifyError.message);
+      throw new Error('فشل في الاتصال مع خادم البريد الإلكتروني');
+    }
 
     // قالب الإيميل
     const emailHtml = `
@@ -142,6 +173,9 @@ export default async function handler(req, res) {
 
     // إرسال الإيميل
     try {
+      // تسجيل محاولة الإرسال
+      console.log(`📤 محاولة إرسال إيميل إلغاء اشتراك إلى: ${sanitizedEmail}`);
+      
       const info = await transporter.sendMail({
         from: `"موقع القرآن الكريم" <${process.env.GMAIL_USER}>`,
         to: sanitizedEmail,
@@ -149,18 +183,28 @@ export default async function handler(req, res) {
         html: emailHtml
       });
 
+      console.log(`✅ تم إرسال إيميل إلغاء الاشتراك بنجاح! Message ID: ${info.messageId}`);
+
       res.status(200).json({
         success: true,
         message: 'تم إرسال رابط تأكيد إلغاء الاشتراك إلى بريدك الإلكتروني'
       });
       
     } catch (emailError) {
+      console.error('❌ خطأ تفصيلي في إرسال إيميل إلغاء الاشتراك:');
+      console.error('Gmail Error Code:', emailError.code);
+      console.error('Gmail Error Message:', emailError.message);
+      console.error('Full Error:', emailError);
+      
       throw emailError; // إعادة رمي الخطأ للمعالج الرئيسي
     }
 
   } catch (error) {
+    console.error('❌ خطأ عام في إرسال رابط إلغاء الاشتراك:', error);
+    
     res.status(500).json({ 
-      error: 'حدث خطأ في إرسال رابط التأكيد. يرجى المحاولة لاحقاً.'
+      error: 'حدث خطأ في إرسال رابط التأكيد. يرجى المحاولة لاحقاً.',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 }
