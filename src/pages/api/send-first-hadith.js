@@ -1,6 +1,5 @@
 import { sendDailyHadithToSubscriber } from '../../utils/emailSender.js';
 import { getPendingFirstHadithSubscribers, markFirstHadithSent } from '../../utils/mongoDataStorage.js';
-import hadithReader from '../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
   // دعم GET و POST requests
@@ -59,6 +58,9 @@ export default async function handler(req, res) {
     // جلب حديث واحد للجميع
     let hadith;
     try {
+      // Dynamic import لتجنب مشاكل build
+      const hadithReader = (await import('../../utils/hadithDataReader.js')).default;
+      
       const sources = ['البخاري', 'مسلم'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
       hadith = await hadithReader.getRandomHadith(randomSource);

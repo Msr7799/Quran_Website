@@ -1,8 +1,6 @@
 // API endpoint للحصول على حديث عشوائي
 // يدعم فلترة حسب المصدر (البخاري/مسلم)
 
-import hadithReader from '../../../utils/hadithDataReader.js';
-
 export default async function handler(req, res) {
   // دعم GET و POST requests
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -18,6 +16,9 @@ export default async function handler(req, res) {
     
     console.log('🔍 طلب حديث عشوائي - المصدر:', source || 'الكل');
 
+    // Dynamic import لتجنب مشاكل build
+    const hadithReader = (await import('../../../utils/hadithDataReader.js')).default;
+    
     // الحصول على حديث عشوائي
     const hadith = await hadithReader.getRandomHadith(source);
     

@@ -47,10 +47,7 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="true" />
         
         {/* الخطوط العربية */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
+   
         
         {/* أيقونات Material */}
         <link 
@@ -210,8 +207,3 @@ export default function MyApp({ Component, pageProps }) {
     </>
   );
 }
-
-// إعدادات Next.js للتطبيق
-MyApp.getInitialProps = async ({ ctx }) => {
-  return {};
-};

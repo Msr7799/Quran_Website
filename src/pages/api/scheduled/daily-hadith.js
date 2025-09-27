@@ -3,7 +3,6 @@
 
 import { getSubscribers, checkTodayHadithSent, markTodayHadithSent } from '../../../utils/mongoDataStorage.js';
 import { sendDailyHadithToAll } from '../../../utils/emailSender.js';
-import hadithReader from '../../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
   // دعم GET و POST
@@ -46,10 +45,13 @@ export default async function handler(req, res) {
 
     console.log(`👥 عدد المشتركين: ${subscribers.length}`);
 
-    // جلب حديث عشوائي من الملفات المحلية
+    // جلب حديث عشوائي عبر dynamic import
     let hadith;
     try {
       console.log('🔍 جلب حديث من الملفات المحلية...');
+      
+      // Dynamic import لتجنب مشاكل build
+      const hadithReader = (await import('../../../utils/hadithDataReader.js')).default;
       
       // اختيار عشوائي بين البخاري ومسلم
       const sources = ['البخاري', 'مسلم'];

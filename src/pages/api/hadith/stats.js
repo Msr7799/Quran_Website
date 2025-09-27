@@ -1,26 +1,25 @@
 // API endpoint للحصول على إحصائيات قاعدة بيانات الأحاديث
 
-import hadithReader from '../../../utils/hadithDataReader.js';
-
 export default async function handler(req, res) {
   // دعم GET requests فقط
   if (req.method !== 'GET') {
     return res.status(405).json({ 
       ok: false, 
-      message: 'Method not allowed. Use GET only.' 
     });
   }
 
   try {
     console.log('📊 طلب إحصائيات قاعدة بيانات الأحاديث...');
 
-    // الحصول على الإحصائيات
-    const stats = await hadithReader.getDataStats();
+    // Dynamic import لتجنب مشاكل build
+    const hadithReader = (await import('../../../utils/hadithDataReader.js')).default;
     
-    // معلومات إضافية
-    const additionalInfo = {
-      dataSource: 'ملفات محلية - صحيح البخاري ومسلم',
-      dataPath: 'public/AlSahihehan/myData.json',
+    // الحصول على إحصائيات قاعدة البيانات
+    const stats = await hadithReader.getDataStats();
+      
+      // معلومات إضافية
+      const additionalInfo = {
+        dataSource: 'ملفات محلية - صحيح البخاري ومسلم',
       lastUpdated: new Date().toISOString(),
       version: '1.0.0'
     };

@@ -1,8 +1,6 @@
 // API endpoint للبحث في الأحاديث
 // يدعم البحث بالكلمات المفتاحية والفلترة حسب المصدر
 
-import hadithReader from '../../../utils/hadithDataReader.js';
-
 export default async function handler(req, res) {
   // دعم GET و POST requests
   if (req.method !== 'GET' && req.method !== 'POST') {
@@ -31,6 +29,9 @@ export default async function handler(req, res) {
     
     console.log(`🔍 البحث عن: "${searchTerm}" في المصدر: ${source || 'الكل'}`);
 
+    // Dynamic import لتجنب مشاكل build
+    const hadithReader = (await import('../../../utils/hadithDataReader.js')).default;
+    
     // البحث في الأحاديث
     let searchResults = await hadithReader.searchHadiths(searchTerm.trim(), source);
     
@@ -113,7 +114,7 @@ function highlightSearchTerm(text, searchTerm) {
     // استخدام regex بسيط لتمييز كلمة البحث
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     return text.replace(regex, '**$1**');
-  } catch (error) {
+  } catch {
     // في حالة خطأ في regex، إرجاع النص الأصلي
     return text;
   }

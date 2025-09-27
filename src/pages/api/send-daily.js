@@ -1,6 +1,5 @@
 import { getSubscribers } from '../../utils/mongoDataStorage.js';
 import { sendDailyHadithToAll } from '../../utils/emailSender.js';
-import hadithReader from '../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
   // فقط POST requests
@@ -23,22 +22,26 @@ export default async function handler(req, res) {
       });
     }
 
-    // جلب حديث عشوائي من الملفات المحلية
+    // جلب حديث عشوائي عبر dynamic import
     let hadith;
     try {
+      console.log('🔍 جلب حديث من الملفات المحلية...');
+      
+      // Dynamic import لتجنب مشاكل build
+      const hadithReader = (await import('../../utils/hadithDataReader.js')).default;
       
       // اختيار عشوائي بين البخاري ومسلم
       const sources = ['البخاري', 'مسلم'];
       const randomSource = sources[Math.floor(Math.random() * sources.length)];
       
-      // محاولة الحصول على حديث من المصدر المحدد
       hadith = await hadithReader.getRandomHadith(randomSource);
 
     } catch (localError) {
       console.warn('⚠️ فشل الحصول على حديث من المصدر المحدد:', localError.message);
       try {
         // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
-        hadith = await hadithReader.getRandomHadith();
+        const hadithReader2 = (await import('../../utils/hadithDataReader.js')).default;
+        hadith = await hadithReader2.getRandomHadith();
         
       } catch (fallbackError) {
         console.warn('⚠️ فشل الحصول على أي حديث من المصادر المحلية، استخدام الحديث الاحتياطي:', fallbackError.message);        
