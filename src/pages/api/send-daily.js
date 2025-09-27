@@ -41,8 +41,7 @@ export default async function handler(req, res) {
         hadith = await hadithReader.getRandomHadith();
         
       } catch (fallbackError) {
-        console.warn('⚠️ فشل الحصول على أي حديث من المصادر المحلية، استخدام الحديث الاحتياطي:', fallbackError.message);
-        
+        console.warn('⚠️ فشل الحصول على أي حديث من المصادر المحلية، استخدام الحديث الاحتياطي:', fallbackError.message);        
         // حديث احتياطي ثابت في حالة فشل جميع المحاولات
         hadith = {
           hadithText: 'عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
