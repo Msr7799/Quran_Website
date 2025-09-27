@@ -3,19 +3,17 @@ const nextConfig = {
     trailingSlash: true,
     skipTrailingSlashRedirect: true,
     images: {
-        unoptimized: true,
+      unoptimized: true,
     },
     poweredByHeader: false,
-    productionBrowserSourceMaps: false,
-    
-    
+    productionBrowserSourceMaps: true,
     eslint: {
-        ignoreDuringBuilds: true,
+      ignoreDuringBuilds: true,
     },
-    
     typescript: {
-        ignoreBuildErrors: false,
+      ignoreBuildErrors: false,
     },
-};
-
-export default nextConfig;
+  };
+  
+  export default nextConfig;
+  
