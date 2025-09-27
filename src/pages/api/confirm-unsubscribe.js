@@ -1,6 +1,4 @@
 import crypto from 'crypto';
-import { connectToDatabase } from '../../utils/mongoDataStorage.js';
-import { sanitizeEmail } from '../../utils/validation.js';
 
 // التحقق من صحة وانتهاء صلاحية الـ Token
 function verifyUnsubscribeToken(token) {
@@ -25,7 +23,7 @@ function verifyUnsubscribeToken(token) {
     }
     
     return { valid: true, email };
-  } catch (error) {
+  } catch {
     return { valid: false, error: 'رابط غير صالح' };
   }
 }
@@ -91,7 +89,8 @@ export default async function handler(req, res) {
       `);
     }
 
-    // الاتصال بقاعدة البيانات
+    // الاتصال بقاعدة البيانات عبر dynamic import
+    const { connectToDatabase } = await import('../../utils/mongoDataStorage.js');
     const { db } = await connectToDatabase();
     
     // البحث عن المشترك
