@@ -3,7 +3,8 @@
 
 import fs from 'fs';
 import path from 'path';
-import { connectToDatabase } from './mongoDataStorage.js';
+
+// MongoDB support عبر dynamic import لتجنب مشاكل Next.js build
 
 class HadithDataReader {
   constructor() {
@@ -15,12 +16,14 @@ class HadithDataReader {
   }
 
   /**
-   * الاتصال بقاعدة البيانات MongoDB
+   * الاتصال بقاعدة البيانات MongoDB عبر dynamic import
    */
   async connectToDB() {
     if (!this.db) {
       try {
-        const { db } = await connectToDatabase();
+        // Dynamic import لتجنب مشاكل Next.js build
+        const mongoModule = await import('./mongoDataStorage.js');
+        const { db } = await mongoModule.connectToDatabase();
         this.db = db;
         console.log('✅ تم الاتصال بـ MongoDB Atlas للأحاديث');
       } catch (error) {
