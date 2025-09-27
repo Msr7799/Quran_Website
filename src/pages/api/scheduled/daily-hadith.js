@@ -1,136 +1,104 @@
-// API endpoint للإرسال اليومي الذكي - بدون Cron Jobs
-// يعمل عند الاستدعاء ويفحص MongoDB إذا تم الإرسال اليوم أم لا
+// Patched scheduled/daily-hadith.js
+// This version is defensive about the return value of sendDailyHadithToAll
+// and logs clear diagnostics so you can see why "e is not iterable" happened.
 
 import { getSubscribers, checkTodayHadithSent, markTodayHadithSent } from '../../../utils/mongoDataStorage.js';
 import { sendDailyHadithToAll } from '../../../utils/emailSender.js';
+import hadithReader from '../../../utils/hadithDataReader.js';
 
 export default async function handler(req, res) {
-  // دعم GET و POST
   if (req.method !== 'GET' && req.method !== 'POST') {
-    return res.status(405).json({ 
-      ok: false, 
-      message: 'Method not allowed' 
-    });
+    return res.status(405).json({ ok: false, message: 'Method not allowed' });
   }
 
   try {
-    console.log('🔍 فحص نظام الإرسال اليومي الذكي...');
+    console.log('[daily-hadith] start process');
 
-    // فحص هل تم الإرسال اليوم من MongoDB
-    const alreadySentToday = await checkTodayHadithSent();
-    
-    if (alreadySentToday) {
-      console.log('✅ تم إرسال الحديث اليومي بالفعل اليوم');
-      return res.status(200).json({ 
-        ok: true, 
-        message: 'تم إرسال الحديث اليومي بالفعل اليوم',
-        alreadySent: true,
-        date: new Date().toDateString()
-      });
+    // 1. Check if already sent today
+    const already = await checkTodayHadithSent();
+    console.log('[daily-hadith] checkTodayHadithSent ->', { already });
+    if (already) {
+      return res.status(200).json({ ok: true, message: 'Daily hadith already sent today' });
     }
 
-    console.log('🚀 لم يتم الإرسال اليوم - بدء الإرسال...');
-
-    // الحصول على قائمة المشتركين
+    // 2. Get subscribers
     const subscribers = await getSubscribers();
-    
-    if (subscribers.length === 0) {
-      console.log('👥 لا يوجد مشتركين حالياً');
-      return res.status(200).json({ 
-        ok: true, 
-        message: 'لا يوجد مشتركين حالياً',
-        stats: { total: 0, successful: 0, failed: 0 }
-      });
+    console.log('[daily-hadith] subscribers count ->', Array.isArray(subscribers) ? subscribers.length : typeof subscribers);
+
+    if (!Array.isArray(subscribers) || subscribers.length === 0) {
+      console.log('[daily-hadith] no subscribers to send to');
+      return res.status(200).json({ ok: true, message: 'No subscribers' });
     }
 
-    console.log(`👥 عدد المشتركين: ${subscribers.length}`);
-
-    // جلب حديث عشوائي عبر dynamic import
+    // 3. Get a hadith (prefer mongo fallback to local file implemented in hadithReader)
     let hadith;
     try {
-      console.log('🔍 جلب حديث من الملفات المحلية...');
-      
-      // Dynamic import لتجنب مشاكل build
-      const hadithReader = (await import('../../../utils/hadithDataReader.js')).default;
-      
-      // اختيار عشوائي بين البخاري ومسلم
-      const sources = ['البخاري', 'مسلم'];
-      const randomSource = sources[Math.floor(Math.random() * sources.length)];
-      
-      // محاولة الحصول على حديث من المصدر المحدد
-      hadith = await hadithReader.getRandomHadith(randomSource);
-      
-      console.log('✅ تم جلب الحديث من:', hadith.book);
-      console.log('📄 بداية الحديث:', hadith.hadithText?.substring(0, 100) + '...');
+      hadith = await hadithReader.getRandomHadith?.() || null;
+    } catch (err) {
+      console.error('[daily-hadith] hadithReader.getRandomHadith threw:', err);
+      hadith = null;
+    }
+    if (!hadith) {
+      console.error('[daily-hadith] no hadith available to send');
+      return res.status(500).json({ ok: false, message: 'No hadith available' });
+    }
+    console.log('[daily-hadith] selected hadith ->', { book: hadith.book || hadith.source, id: hadith.id || hadith._id || null });
 
-    } catch (localError) {
-      console.error('❌ خطأ في جلب الحديث من الملفات المحلية:', localError.message);
-      
-      try {
-        // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
-        console.log('🔄 محاولة الحصول على حديث عشوائي من أي مصدر...');
-        hadith = await hadithReader.getRandomHadith();
-        console.log('✅ تم جلب حديث عشوائي من:', hadith.book);
-        
-      } catch (fallbackError) {
-        console.error('❌ فشل في جلب الحديث من الملفات المحلية:', fallbackError.message);
-        
-        // حديث احتياطي ثابت في حالة فشل جميع المحاولات
-        hadith = {
-          hadithText: 'عن أبي هريرة رضي الله عنه قال: قال رسول الله صلى الله عليه وسلم: "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن: سبحان الله وبحمده، سبحان الله العظيم"',
-          book: 'صحيح البخاري',
-          englishNarrator: 'أبو هريرة رضي الله عنه',
-          hadithNumber: '6406',
-          chapter: 'كتاب الدعوات'
-        };
-        console.log('📋 استخدام حديث احتياطي ثابت');
-      }
+    // 4. Send emails; sendDailyHadithToAll may return an object { total, success, failed }
+    //    or an array/result; handle both shapes safely.
+    let sendResult;
+    try {
+      sendResult = await sendDailyHadithToAll(subscribers, hadith);
+      console.log('[daily-hadith] raw send result type:', typeof sendResult);
+    } catch (err) {
+      console.error('[daily-hadith] sendDailyHadithToAll threw:', err);
+      return res.status(500).json({ ok: false, message: 'Sending emails failed', error: err.message || String(err) });
     }
 
-    // إرسال الحديث لجميع المشتركين
-    console.log('📤 بدء إرسال الحديث اليومي للمشتركين...');
-    
-    const result = await sendDailyHadithToAll(hadith);
-    
-    if (result.success) {
-      // تسجيل الإرسال في MongoDB لتجنب التكرار
-      const hadithData = {
-        book: hadith.book,
-        text: hadith.hadithText?.substring(0, 200),
-        subscribersCount: result.totalSent
-      };
-      
-      await markTodayHadithSent(hadithData);
-      
-      console.log(`✅ تم إرسال الحديث اليومي بنجاح إلى ${result.totalSent} مشترك`);
-      console.log(`❌ فشل الإرسال لـ ${result.totalFailed} مشترك`);
-      console.log('💾 تم تسجيل الإرسال في MongoDB');
-      
-      return res.status(200).json({ 
-        ok: true, 
-        message: 'تم إرسال الحديث اليومي بنجاح وتسجيله في قاعدة البيانات',
-        stats: {
-          total: subscribers.length,
-          successful: result.totalSent,
-          failed: result.totalFailed
-        },
-        hadith: {
-          source: hadith.book,
-          preview: hadith.hadithText?.substring(0, 150) + '...'
-        },
-        date: new Date().toDateString()
-      });
+    // Normalize sendResult into a stats object
+    let stats = { total: 0, success: 0, failed: 0, details: null };
+    if (Array.isArray(sendResult)) {
+      stats.total = sendResult.length;
+      stats.success = sendResult.filter(r => r && r.ok).length;
+      stats.failed = stats.total - stats.success;
+      stats.details = sendResult;
+    } else if (sendResult && typeof sendResult === 'object') {
+      // commonly: { total, success, failed, errors }
+      stats.total = Number(sendResult.total || sendResult.sent || subscribers.length) || subscribers.length;
+      stats.success = Number(sendResult.success || sendResult.sentSuccessfully || 0);
+      stats.failed = Number(sendResult.failed || (stats.total - stats.success) || 0);
+      stats.details = sendResult;
     } else {
-      throw new Error('فشل في إرسال الحديث اليومي');
+      // unexpected type
+      stats.total = Array.isArray(subscribers) ? subscribers.length : 0;
+      stats.details = sendResult;
     }
 
+    console.log('[daily-hadith] normalized stats ->', stats);
+
+    // 5. Mark as sent in DB with sentAt and hadith meta
+    try {
+      await markTodayHadithSent({
+        date: new Date().toISOString(),
+        sent: true,
+        sentAt: new Date(),
+        hadithMeta: { id: hadith.id || hadith._id || null, book: hadith.book || hadith.source || null, textSnippet: (hadith.hadithText || '').substring(0,120) },
+        subscribersCount: stats.total,
+        stats
+      });
+    } catch (err) {
+      console.error('[daily-hadith] markTodayHadithSent failed:', err);
+      // don't fail the whole request for DB tracking failure; return success but warn
+      return res.status(200).json({ ok: true, message: 'Sent but tracking failed', stats, trackError: err.message || String(err) });
+    }
+
+    return res.status(200).json({ ok: true, message: 'Daily hadith sent', stats });
   } catch (error) {
     console.error('❌ خطأ في الإرسال اليومي الذكي:', error);
-    
-    return res.status(500).json({ 
-      ok: false, 
+    return res.status(500).json({
+      ok: false,
       message: 'حدث خطأ أثناء الإرسال اليومي الذكي',
-      error: error.message
+      error: error && error.message ? error.message : String(error)
     });
   }
 }
