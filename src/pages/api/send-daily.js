@@ -35,11 +35,13 @@ export default async function handler(req, res) {
       hadith = await hadithReader.getRandomHadith(randomSource);
 
     } catch (localError) {
+      console.warn('⚠️ فشل الحصول على حديث من المصدر المحدد:', localError.message);
       try {
         // محاولة الحصول على أي حديث عشوائي (بدون تحديد مصدر)
         hadith = await hadithReader.getRandomHadith();
         
       } catch (fallbackError) {
+        console.warn('⚠️ فشل الحصول على أي حديث من المصادر المحلية، استخدام الحديث الاحتياطي:', fallbackError.message);
         
         // حديث احتياطي ثابت في حالة فشل جميع المحاولات
         hadith = {

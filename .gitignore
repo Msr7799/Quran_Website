@@ -71,6 +71,16 @@ debug-*.log
 /scripts/
 /mcp/
 
+# Next.js specific
+.next/
+/build/
+out/
+
+# Git artifacts (should not exist outside .git/)
+/refs/
+/objects/
+/logs/
+
 # Logs
 logs
 *.log

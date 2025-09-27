@@ -45,8 +45,10 @@ const QuranPageView = () => {
 
   // بيانات الصفحة
   const [pageData, setPageData] = useState(null);
-  const [surahsInPage, setSurahsInPage] = useState([]);
-  const [metadata, setMetadata] = useState(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [surahsInPage, setSurahsInPage] = useState([]); // محجوز للاستخدام المستقبلي - عرض معلومات السور
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [metadata, setMetadata] = useState(null); // محجوز للاستخدام المستقبلي - بيانات إضافية
   const [isContentLoading, setIsContentLoading] = useState(true);
 
   // إعدادات المصحف
@@ -93,19 +95,13 @@ const QuranPageView = () => {
       
       console.log('🔄 تغيير وضع الشاشة الكاملة:', isCurrentlyFullscreen ? 'مفعل' : 'معطل');
       
-      // إضافة أو إزالة CSS class من الـ body بأمان
-      try {
-        if (document.body) {
-          if (isCurrentlyFullscreen) {
-            document.body.classList.add('quran-fullscreen');
-            console.log('✅ تم إضافة class quran-fullscreen');
-          } else {
-            document.body.classList.remove('quran-fullscreen');
-            console.log('✅ تم إزالة class quran-fullscreen');
-          }
-        }
-      } catch (error) {
-        console.warn('خطأ في تطبيق fullscreen class:', error);
+      // إضافة أو إزالة CSS class من الـ body
+      if (isCurrentlyFullscreen) {
+        document.body.classList.add('quran-fullscreen');
+        console.log('✅ تم إضافة class quran-fullscreen');
+      } else {
+        document.body.classList.remove('quran-fullscreen');
+        console.log('✅ تم إزالة class quran-fullscreen');
       }
     };
 
@@ -117,13 +113,7 @@ const QuranPageView = () => {
     // تنظيف عند انتهاء المكون
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      try {
-        if (document.body) {
-          document.body.classList.remove('quran-fullscreen');
-        }
-      } catch (error) {
-        console.warn('خطأ في إزالة fullscreen class:', error);
-      }
+      document.body.classList.remove('quran-fullscreen');
     };
   }, []);
 
