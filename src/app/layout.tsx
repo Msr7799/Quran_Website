@@ -11,6 +11,7 @@ import "./globals.css";
 const themeInitializer = `(function(){try{var saved=localStorage.getItem("theme");var dark=saved?saved==="dark":true;var root=document.documentElement;root.dataset.theme=dark?"dark":"light";root.style.colorScheme=dark?"dark":"light"}catch(error){document.documentElement.dataset.theme="dark"}})();`;
 const title = `${SITE_NAME} | قراءة واستماع للقرآن الكريم`;
 const description = "اقرأ القرآن الكريم كاملاً، واستمع لأشهر القراء، وتصفّح صفحات المصحف وابحث في الآيات بسهولة على جميع الأجهزة.";
+const supportedOpenGraphLocales = ["en_US", "tr_TR", "hi_IN", "ur_PK", "ru_RU", "es_ES", "fr_FR", "de_DE", "it_IT", "pt_BR", "zh_CN", "ja_JP", "ko_KR", "id_ID"];
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -26,6 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "ar_AR",
+    alternateLocale: supportedOpenGraphLocales,
     url: "/",
     siteName: SITE_NAME,
     title,
@@ -54,7 +56,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     "@type": "WebSite",
     name: SITE_NAME,
     url: SITE_URL,
-    inLanguage: ["ar", "en"],
+    inLanguage: ["ar", "en", "tr", "hi", "ur", "ru", "es", "fr", "de", "it", "pt", "zh", "ja", "ko", "id"],
     potentialAction: { "@type": "SearchAction", target: `${SITE_URL}/search/{search_term_string}`, "query-input": "required name=search_term_string" },
   };
 

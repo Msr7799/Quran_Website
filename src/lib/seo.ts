@@ -3,7 +3,7 @@ import { cloudinaryAsset } from "./cloudinary-assets";
 
 export const SITE_NAME = "القرآن المجيد";
 export const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://alquran-almajeed.vercel.app";
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://msr-quran-app.vercel.app/";
 export const SOCIAL_IMAGE = cloudinaryAsset("/images/social-card.png");
 
 type PageMetadata = {

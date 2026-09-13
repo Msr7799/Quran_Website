@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /auth/
 
-Sitemap: https://alquran-almajeed.vercel.app/sitemap.xml
+Sitemap: https://msr-quran-app.vercel.app/sitemap.xml
