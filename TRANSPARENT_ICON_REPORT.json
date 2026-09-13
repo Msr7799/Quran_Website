@@ -1,0 +1,156 @@
+[
+  {
+    "file": "public/svg/nav/about.webp",
+    "pixels_made_transparent": 32476,
+    "original_bytes": 20514,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/about.png",
+    "final_bytes": 20572,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 32476,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/al_mushaf.webp",
+    "pixels_made_transparent": 29013,
+    "original_bytes": 15626,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/al_mushaf.png",
+    "final_bytes": 15688,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 29013,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/deep_search.webp",
+    "pixels_made_transparent": 31823,
+    "original_bytes": 24678,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/deep_search.png",
+    "final_bytes": 24438,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 31823,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/islamic_calendar.webp",
+    "pixels_made_transparent": 30239,
+    "original_bytes": 9810,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/islamic_calendar.png",
+    "final_bytes": 9822,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 30239,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/library_pdf.webp",
+    "pixels_made_transparent": 32253,
+    "original_bytes": 1798,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/library_pdf.png",
+    "final_bytes": 1848,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 32253,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/listening_to_quran.webp",
+    "pixels_made_transparent": 50769,
+    "original_bytes": 2950,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/listening_to_quran.png",
+    "final_bytes": 2736,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 50769,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/live_broadcast.webp",
+    "pixels_made_transparent": 51286,
+    "original_bytes": 8514,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/live_broadcast.png",
+    "final_bytes": 8234,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 51286,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/noor_chat.webp",
+    "pixels_made_transparent": 39404,
+    "original_bytes": 5264,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/noor_chat.png",
+    "final_bytes": 5292,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 39404,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/quran_reader_and_tafsir.webp",
+    "pixels_made_transparent": 26498,
+    "original_bytes": 6214,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/quran_reader_and_tafsir.png",
+    "final_bytes": 6256,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 26498,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/nav/youtube_channel.webp",
+    "pixels_made_transparent": 27670,
+    "original_bytes": 2380,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/youtube_channel.png",
+    "final_bytes": 2336,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 27670,
+    "dimensions": [
+      256,
+      256
+    ]
+  },
+  {
+    "file": "public/svg/search_icon.webp",
+    "pixels_made_transparent": 31823,
+    "original_bytes": 28500,
+    "temp_png": "/mnt/data/quran_website_work_v5/quran_website/.bg_remove_tmp/search_icon.png",
+    "final_bytes": 28566,
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "transparent_pixels": 31823,
+    "dimensions": [
+      256,
+      256
+    ]
+  }
+]
