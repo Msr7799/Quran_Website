@@ -24,6 +24,17 @@ export type Reciter = {
   reciter: Localized;
   rewaya: Localized;
   server: string;
+  link?: string;
+  image?: { file: string | null; url: string | null };
+  image_url?: string | null;
+};
+
+export type SynchronizedReciter = Reciter & {
+  slug: string;
+  name: string;
+  recitation_type: "surah-by-surah" | "ayah-by-ayah";
+  tracking_available: boolean;
+  available_surahs: number[];
 };
 
 export type Radio = { id: number; name: string; url: string };

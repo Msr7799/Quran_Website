@@ -4,8 +4,7 @@
 import { Download, LoaderCircle, Pause, Play, RotateCcw, RotateCw, Volume2, VolumeX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { Surah, SurahMeta } from "@/lib/types";
-import { synchronizedReciters } from "@/lib/reciters";
+import type { Surah, SurahMeta, SynchronizedReciter } from "@/lib/types";
 import { ReciterAvatar } from "@/components/ReciterAvatar";
 import { localeInfo, useLocale } from "@/i18n/LocaleProvider";
 import { toArabicNumber } from "@/lib/numbers";
@@ -26,10 +25,10 @@ const PROGRESS_STORAGE_KEY = "alquran-reader-progress";
 const format = (value: number) => `${Math.floor(value / 60)}:${String(Math.floor(value % 60)).padStart(2, "0")}`;
 
 // يدير مزامنة النص والترجمة والتلاوة والتنقل بين الآيات.
-export function SynchronizedReader({ surah, surahs }: { surah: Surah; surahs: SurahMeta[] }) {
+export function SynchronizedReader({ surah, surahs, reciters }: { surah: Surah; surahs: SurahMeta[]; reciters: SynchronizedReciter[] }) {
   const { locale, t } = useLocale();
   const router = useRouter();
-  const [reciter, setReciter] = useState("maher-al-muaiqly");
+  const [reciter, setReciter] = useState("101");
   const [data, setData] = useState<Recitation | null>(null);
   const [loading, setLoading] = useState(true);
   const [playing, setPlaying] = useState(false);
@@ -50,10 +49,10 @@ export function SynchronizedReader({ surah, surahs }: { surah: Surah; surahs: Su
   useEffect(() => {
     const savedReciter = localStorage.getItem(RECITER_STORAGE_KEY);
     queueMicrotask(() => {
-      if (savedReciter && synchronizedReciters.some((item) => item.id === savedReciter)) setReciter(savedReciter);
+      if (savedReciter && reciters.some((item) => String(item.id) === savedReciter)) setReciter(savedReciter);
       setPreferencesLoaded(true);
     });
-  }, []);
+  }, [reciters]);
   useEffect(() => {
     if (preferencesLoaded) localStorage.setItem(RECITER_STORAGE_KEY, reciter);
   }, [preferencesLoaded, reciter]);
@@ -250,15 +249,15 @@ export function SynchronizedReader({ surah, surahs }: { surah: Surah; surahs: Su
   }
   const isArabic = locale === "ar" || locale === "ur";
   const translationDirection = localeInfo[locale].dir;
-  const activeReciter = synchronizedReciters.find((item) => item.id === reciter) ?? synchronizedReciters[0];
+  const activeReciter = reciters.find((item) => String(item.id) === reciter) ?? reciters[0];
 
   return <div className="sync-reader">
-    <div className="reader-header-portrait" aria-label={`${t("quran.reciter", "القارئ")}: ${isArabic ? activeReciter.ar : activeReciter.en}`} title={isArabic ? activeReciter.ar : activeReciter.en}>
-      <ReciterAvatar reciterId={activeReciter.imageId} name={activeReciter.ar} sizes="128px" />
+    <div className="reader-header-portrait" aria-label={`${t("quran.reciter", "القارئ")}: ${isArabic ? activeReciter.reciter.ar : activeReciter.reciter.en}`} title={isArabic ? activeReciter.reciter.ar : activeReciter.reciter.en}>
+      <ReciterAvatar reciterId={activeReciter.id} name={activeReciter.reciter.ar} sizes="128px" />
     </div>
     <div className="sync-toolbar">
       <div className="reader-selectors">
-        <div className="select-label"><span>{t("quran.reciter", "القارئ")}</span><SelectDropdown value={reciter} onValueChange={setReciter} ariaLabel={t("quran.reciter", "القارئ")} className="reader-reciter-trigger" contentClassName="reader-reciter-menu" options={synchronizedReciters.map((item) => ({ value: item.id, label: <span className="reciter-option"><ReciterAvatar reciterId={item.imageId} name={item.ar} sizes="40px" /><span>{isArabic ? item.ar : item.en}</span></span>, searchText: `${item.ar} ${item.en}` }))} /></div>
+        <div className="select-label"><span>{t("quran.reciter", "القارئ")}</span><SelectDropdown value={reciter} onValueChange={setReciter} ariaLabel={t("quran.reciter", "القارئ")} className="reader-reciter-trigger" contentClassName="reader-reciter-menu" options={reciters.map((item) => ({ value: String(item.id), label: <span className="reciter-option"><ReciterAvatar reciterId={item.id} name={item.reciter.ar} sizes="40px" /><span>{isArabic ? item.reciter.ar : item.reciter.en}</span></span>, searchText: `${item.reciter.ar} ${item.reciter.en}` }))} /></div>
         <div className="select-label"><span>{t("ui.chooseSurah", "اختر سورة")}</span><SelectDropdown value={String(surah.number)} onValueChange={(value) => router.push(`/quran/${value}`)} ariaLabel={t("ui.chooseSurah", "اختر سورة")} className="reader-surah-trigger" contentClassName="reader-surah-menu" options={surahs.map((item) => ({ value: String(item.number), label: <span className="reader-surah-option"><b>{item.number}</b><span>سورة {item.name.ar}</span><small>{item.name.transliteration}</small></span>, searchText: `${item.number} ${item.name.ar} ${item.name.en} ${item.name.transliteration}` }))} /></div>
         <a className="download-surah" href={`/api/recitation/${reciter}/${surah.number}?download=1`} download aria-disabled={!data || loading} onClick={(event) => { if (!data || loading) event.preventDefault(); }}><Download />{t("quran.downloadSurah", "تحميل السورة")}</a>
       </div>

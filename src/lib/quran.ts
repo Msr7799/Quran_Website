@@ -1,7 +1,8 @@
 import "server-only";
 import type { Filter } from "mongodb";
 import { getDatabase } from "./mongodb";
-import type { Radio, Reciter, Surah, SurahMeta, Verse } from "./types";
+import { fetchQuranData } from "./quran-data-api";
+import type { Radio, Reciter, Surah, SurahMeta, SynchronizedReciter } from "./types";
 
 type HafsSmartAyah = {
   id: number;
@@ -19,8 +20,15 @@ type HafsSmartAyah = {
 };
 
 type DatasetDocument<T> = { _id: string; data: T };
-type SurahDocument = Surah & { _id: number };
-type VerseDocument = Verse & { _id: string; surahNumber: number };
+type ResultResponse<T> = { success: boolean; result: T };
+type DataResponse<T> = { success: boolean; data: T };
+
+export type SurahNameAsset = {
+  number: number;
+  name: SurahMeta["name"];
+  image_url: string;
+  image_file: string;
+};
 
 export type QuranSearchResult = {
   id: number;
@@ -42,19 +50,31 @@ async function getDataset<T>(id: string) {
   return document.data;
 }
 
-export const getSurahs = () => getDataset<SurahMeta[]>("metadata");
+export async function getSurahs() {
+  return (await fetchQuranData<ResultResponse<SurahMeta[]>>("surahs")).result;
+}
 
 export async function getSurah(id: number) {
   if (!Number.isInteger(id) || id < 1 || id > 114) return null;
-  const database = await getDatabase();
-  const document = await database.collection<SurahDocument>("quran_surahs").findOne({ _id: id });
-  if (!document) return null;
-  const { _id, ...surah } = document;
-  void _id;
-  return surah as Surah;
+  try {
+    return (await fetchQuranData<ResultResponse<Surah>>(`surah/${id}`)).result;
+  } catch {
+    return null;
+  }
 }
 
-export const getReciters = () => getDataset<Reciter[]>("reciters");
+export async function getReciters() {
+  return (await fetchQuranData<DataResponse<Reciter[]>>("reciters")).data;
+}
+
+export async function getSynchronizedReciters() {
+  const response = await fetchQuranData<DataResponse<SynchronizedReciter[]>>("ayah-bayah/reciters");
+  return response.data.filter((reciter) => reciter.tracking_available && reciter.available_surahs.length > 0);
+}
+
+export async function getSurahNameAssets() {
+  return (await fetchQuranData<DataResponse<SurahNameAsset[]>>("surah-names")).data;
+}
 
 export async function getRadios() {
   return (await getDataset<{ radios: Radio[] }>("radios")).radios;
@@ -66,26 +86,9 @@ export const getReligiousEvents = () => getDataset<{ data: Array<{ id: number; t
 export const getLibraryBooks = () => getDataset<unknown>("library-books");
 
 export async function getAudioSources(surah: number) {
-  const database = await getDatabase();
-  return database.collection<{ _id: number; items: Array<{ id: number; link: string }> }>("audio_sources").findOne({ _id: surah });
-}
-
-export async function getPage(page: number) {
-  if (!Number.isInteger(page) || page < 1 || page > 604) return [];
-  const [metadata, database] = await Promise.all([getSurahs(), getDatabase()]);
-  const verses = await database.collection<VerseDocument>("quran_verses")
-    .find({ page }).sort({ surahNumber: 1, number: 1 }).toArray();
-  const bySurah = new Map<number, Verse[]>();
-  for (const { _id, surahNumber, ...verse } of verses) {
-    void _id;
-    const list = bySurah.get(surahNumber) ?? [];
-    list.push(verse as Verse);
-    bySurah.set(surahNumber, list);
-  }
-  return [...bySurah].map(([surahNumber, pageVerses]) => ({
-    surah: metadata[surahNumber - 1],
-    verses: pageVerses,
-  })).filter((item) => item.surah);
+  if (!Number.isInteger(surah) || surah < 1 || surah > 114) return null;
+  const response = await fetchQuranData<ResultResponse<Array<{ id: number; link: string }>>>(`audio/${surah}`);
+  return { _id: surah, items: response.result };
 }
 
 export function normalizeQuranSearch(value: string) {
