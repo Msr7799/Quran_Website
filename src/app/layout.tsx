@@ -15,6 +15,9 @@ const supportedOpenGraphLocales = ["en_US", "tr_TR", "hi_IN", "ur_PK", "ru_RU", 
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
+  verification: {
+    google: "tedQd55zrvYnRtg8uOcxm7sTuI3AZhKVSyQU-2Gq9pg",
+  },
   title: { default: title, template: "%s | القرآن المجيد" },
   description,
   applicationName: SITE_NAME,
