@@ -6,6 +6,23 @@ export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://msr-quran-app.vercel.app";
 export const SOCIAL_IMAGE = cloudinaryAsset("/images/social-card.png");
 
+const indexableRobots: Metadata["robots"] = {
+  index: true,
+  follow: true,
+  googleBot: {
+    index: true,
+    follow: true,
+    "max-image-preview": "large",
+    "max-snippet": -1,
+    "max-video-preview": -1,
+  },
+};
+
+const noIndexRobots: Metadata["robots"] = {
+  index: false,
+  follow: true,
+};
+
 type PageMetadata = {
   title: string;
   description: string;
@@ -44,7 +61,7 @@ export function createPageMetadata({
       description,
       images: [SOCIAL_IMAGE],
     },
-    robots: noIndex ? { index: false, follow: true } : undefined,
+    robots: noIndex ? noIndexRobots : indexableRobots,
   };
 }
 

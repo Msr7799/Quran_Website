@@ -5,12 +5,14 @@ import { PageHeader } from "@/components/PageHeader";
 import { TafsirButton } from "@/components/TafsirButton";
 import { searchQuran } from "@/lib/quran";
 import { LottiePlayer } from "@/components/LottiePlayer";
+import { createPageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = createPageMetadata({
   title: "البحث في القرآن الكريم",
   description: "ابحث في آيات القرآن الكريم، ثم افتح الآية أو صفحة المصحف أو تفسيرها.",
-  robots: { index: false, follow: true },
-};
+  path: "/search",
+  noIndex: true,
+});
 
 export default async function SearchPage({
   params,

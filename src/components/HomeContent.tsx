@@ -36,7 +36,7 @@ export function HomeContent({ surahs, azkar, collections, youtubeContent }: { su
     <section className="section">
       <div className="section-heading home-arabic-heading">
         <span className="eyebrow">{t("home.allInOne", "كل ما تحتاجه في مكان واحد")}</span>
-        <h2>{t("ui.journey", "رحلتك مع القرآن")}</h2>
+        <h1>{t("ui.journey", "رحلتك مع القرآن")}</h1>
         <p>{t("ui.tools", "أدوات بسيطة وخفيفة تساعدك على القراءة والاستماع والبحث.")}</p>
       </div>
       <div className="feature-grid">

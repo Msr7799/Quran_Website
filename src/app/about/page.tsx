@@ -17,7 +17,7 @@ export default function AboutPage() {
     url: `${SITE_URL}/about`,
     description: metadata.description,
     inLanguage: "ar",
-    isPartOf: { "@type": "WebSite", name: SITE_NAME, url: SITE_URL },
+    isPartOf: { "@id": `${SITE_URL}/#website` },
   };
 
   return <><script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} /><AboutContent /></>;

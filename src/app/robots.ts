@@ -1,3 +1,13 @@
 import type { MetadataRoute } from "next";
-const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://msr-quran-app.vercel.app";
-export default function robots(): MetadataRoute.Robots { return { rules: [{ userAgent: "*", allow: "/", disallow: ["/api/", "/auth/", "/search?"] }], sitemap: `${base}/sitemap.xml`, host: base }; }
+import { SITE_URL } from "@/lib/seo";
+
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: "*",
+      allow: ["/", "/api/media/", "/api/reciter-image/"],
+      disallow: "/api/",
+    },
+    sitemap: `${SITE_URL}/sitemap.xml`,
+  };
+}

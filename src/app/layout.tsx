@@ -54,15 +54,6 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: SITE_NAME,
-    url: SITE_URL,
-    inLanguage: ["ar", "en", "tr", "hi", "ur", "ru", "es", "fr", "de", "it", "pt", "zh", "ja", "ko", "id"],
-    potentialAction: { "@type": "SearchAction", target: `${SITE_URL}/search/{search_term_string}`, "query-input": "required name=search_term_string" },
-  };
-
   return (
     <html lang="ar" dir="rtl" translate="no" className="notranslate" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
@@ -84,7 +75,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <FloatingTools />
           </div>
         </LocaleProvider>
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       </body>
     </html>
   );

@@ -25,7 +25,9 @@ export function YouTubeShowcase({ content, compact = false }: { content: YouTube
         {content.channelThumbnailUrl && <Image src={content.channelThumbnailUrl} width={64} height={64} alt="" unoptimized />}
         <div>
           <span className="eyebrow">{t("youtube.officialChannel", "القناة الرسمية على يوتيوب")}</span>
-          <h2 id="youtube-home-title">{content.channelTitle}</h2>
+          {compact
+            ? <h2 id="youtube-home-title">{content.channelTitle}</h2>
+            : <h1 id="youtube-home-title">{content.channelTitle}</h1>}
           {content.subscriberCount !== null && <p><span className="number-font">{formatCount(content.subscriberCount, locale)}</span> {t("youtube.subscribers", "مشترك")}</p>}
         </div>
       </div>

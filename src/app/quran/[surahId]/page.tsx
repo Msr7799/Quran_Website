@@ -7,6 +7,7 @@ import { SynchronizedReader } from "@/components/SynchronizedReader";
 import { WaqfGuideLink } from "@/components/WaqfGuideLink";
 import { getSurah, getSurahNameAssets, getSurahs, getSynchronizedReciters } from "@/lib/quran";
 import { quranDataAssetUrl } from "@/lib/quran-data-api";
+import { createPageMetadata } from "@/lib/seo";
 
 type Props = { params: Promise<{ surahId: string }> };
 export async function generateStaticParams() {
@@ -16,11 +17,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const id = Number((await params).surahId);
   const surah = await getSurah(id);
   if (!surah) return {};
-  return {
+  return createPageMetadata({
     title: `سورة ${surah.name.ar}`,
     description: `قراءة سورة ${surah.name.ar} كاملة بالتشكيل، وعدد آياتها ${surah.verses_count} آية.`,
-    alternates: { canonical: `/quran/${id}` },
-  };
+    path: `/quran/${id}`,
+  });
 }
 
 export default async function SurahPage({ params }: Props) {

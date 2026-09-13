@@ -3,6 +3,7 @@ import { HomeContent } from "@/components/HomeContent";
 import { getAzkar, getCollections, getSurahs } from "@/lib/quran";
 import { getHeroMedia } from "@/lib/hero-media";
 import { getYouTubeHomeContent } from "@/lib/youtube";
+import { safeJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { connection } from "next/server";
 
 type AzkarFile = { data: Array<{ id: number; category: string; zekr: string; reference: string }> };
@@ -24,7 +25,18 @@ export default async function Home() {
   // Read live content after deployment so MongoDB and Cloudinary updates appear without rebuilding.
   await connection();
   const [surahs, content, heroMedia, youtubeContent] = await Promise.all([getSurahs(), loadHomeData(), getHeroMedia(), getYouTubeHomeContent()]);
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
+    name: SITE_NAME,
+    alternateName: "القرآن الكريم",
+    url: `${SITE_URL}/`,
+    inLanguage: ["ar", "en", "tr", "hi", "ur", "ru", "es", "fr", "de", "it", "pt", "zh", "ja", "ko", "id"],
+  };
+
   return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteJsonLd) }} />
     <HeroCarousel desktopMedia={heroMedia.desktop} mobileMedia={heroMedia.mobile} />
     <HomeContent surahs={surahs} azkar={content.azkar} collections={content.collections} youtubeContent={youtubeContent} />
   </>;

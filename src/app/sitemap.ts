@@ -1,3 +1,24 @@
 import type { MetadataRoute } from "next";
-const base = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? "https://msr-quran-app.vercel.app";
-export default function sitemap(): MetadataRoute.Sitemap { const now = new Date(); const staticRoutes = ["", "/about", "/quran-sound", "/quran-pdf", "/live", "/calendar", "/youtube"]; return [...staticRoutes.map((route) => ({ url: `${base}${route}`, lastModified: now, changeFrequency: route === "" ? "daily" as const : "weekly" as const, priority: route === "" ? 1 : 0.8 })), ...Array.from({ length: 114 }, (_, index) => ({ url: `${base}/quran/${index + 1}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.8 })), ...Array.from({ length: 604 }, (_, index) => ({ url: `${base}/quran-pages/${index + 7}`, lastModified: now, changeFrequency: "monthly" as const, priority: 0.6 }))]; }
+import { SITE_URL } from "@/lib/seo";
+
+const staticRoutes = [
+  "",
+  "/about",
+  "/quran-sound",
+  "/quran-pdf",
+  "/live",
+  "/calendar",
+  "/youtube",
+] as const;
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return [
+    ...staticRoutes.map((route) => ({ url: `${SITE_URL}${route}` })),
+    ...Array.from({ length: 114 }, (_, index) => ({
+      url: `${SITE_URL}/quran/${index + 1}`,
+    })),
+    ...Array.from({ length: 604 }, (_, index) => ({
+      url: `${SITE_URL}/quran-pages/${index + 7}`,
+    })),
+  ];
+}
