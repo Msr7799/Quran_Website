@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { LottiePlayer } from "@/components/LottiePlayer";
 import { useLocale, type Locale } from "@/i18n/LocaleProvider";
 import { missingWaqfDescriptions, waqfTranslations } from "@/i18n/waqfTranslations";
-import { cloudinaryAsset } from "@/lib/cloudinary-assets";
 import styles from "./WaqfGuideLink.module.css";
 
 type WaqfItem = { image: string; translations: Partial<Record<string, string>> };
@@ -27,7 +26,7 @@ function explanationFor(item: WaqfItem, locale: Locale, index: number) {
 }
 
 function waqfImagePath(item: WaqfItem) {
-  return cloudinaryAsset(item.image.replace(/^assets\/svg\//, "/svg/"));
+  return item.image.replace(/^assets\/svg\//, "/svg/");
 }
 
 export function WaqfGuideLink() {
@@ -40,7 +39,7 @@ export function WaqfGuideLink() {
   useEffect(() => {
     if (!open || items.length) return;
     const controller = new AbortController();
-    fetch(cloudinaryAsset("/library/waqf_translated.json"), { signal: controller.signal })
+    fetch("/library/waqf_translated.json", { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`Unable to load waqf data: ${response.status}`);
         return response.json() as Promise<WaqfItem[]>;
@@ -66,7 +65,7 @@ export function WaqfGuideLink() {
 
   return <>
     <button className="waqf-guide-link" type="button" onClick={() => { setError(false); setOpen(true); }} aria-label={copy.navigation} title={copy.navigation}>
-      <Image src={cloudinaryAsset("/svg/alwaqf.svg")} width={58} height={58} alt="" aria-hidden="true" />
+      <Image src="/svg/alwaqf.svg" width={58} height={58} alt="" aria-hidden="true" />
       <span>{copy.navigation}</span>
     </button>
 
@@ -74,7 +73,7 @@ export function WaqfGuideLink() {
       <section className={styles.dialog} role="dialog" aria-modal="true" aria-labelledby="waqf-dialog-title" onClick={(event) => event.stopPropagation()}>
         <header className={styles.header}>
           <div className={styles.heading}>
-            <Image src={cloudinaryAsset("/svg/alwaqf.svg")} width={58} height={58} alt="" aria-hidden="true" />
+            <Image src="/svg/alwaqf.svg" width={58} height={58} alt="" aria-hidden="true" />
             <div><small>{copy.eyebrow}</small><h2 id="waqf-dialog-title">{copy.title}</h2></div>
           </div>
           <button autoFocus type="button" onClick={() => setOpen(false)} aria-label={t("tafsir.close", "إغلاق")} title={t("tafsir.close", "إغلاق")}><X /></button>

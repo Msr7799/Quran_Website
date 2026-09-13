@@ -3,7 +3,7 @@
 
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type HeroCarouselProps = {
   desktopMedia: string[];
@@ -18,6 +18,8 @@ type HeroVideoProps = {
   preload: "auto" | "metadata";
   src: string;
 };
+
+type DeviceMode = "desktop" | "mobile";
 
 // يتحقق مما إذا كان ملف الوسائط مقطع فيديو.
 function isVideo(src: string) {
@@ -68,50 +70,76 @@ function HeroVideo({ active, label, onEnded, playing, preload, src }: HeroVideoP
 export function HeroCarousel({ desktopMedia, mobileMedia }: HeroCarouselProps) {
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+
+  // لا نفترض Desktop أثناء SSR. الانتظار حتى matchMedia يمنع الهاتف من طلب
+  // وسائط سطح المكتب ثم استبدالها بوسائط الهاتف بعد hydration.
+  const [deviceMode, setDeviceMode] = useState<DeviceMode | null>(null);
+
   const mobileSlides = mobileMedia.length > 0 ? mobileMedia : desktopMedia;
   const desktopSlides = desktopMedia.length > 0 ? desktopMedia : mobileMedia;
-  const images = isMobile ? mobileSlides : desktopSlides;
+  const slides = deviceMode === "mobile" ? mobileSlides : deviceMode === "desktop" ? desktopSlides : [];
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 700px)");
-    // يختار قائمة الوسائط المناسبة لحجم الشاشة.
+
     const update = () => {
-      setIsMobile(media.matches);
-      const slideCount = media.matches ? mobileSlides.length : desktopSlides.length;
+      const nextMode: DeviceMode = media.matches ? "mobile" : "desktop";
+      const slideCount = nextMode === "mobile" ? mobileSlides.length : desktopSlides.length;
+
+      setDeviceMode(nextMode);
       setIndex((value) => slideCount > 0 ? value % slideCount : 0);
     };
+
     update();
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, [desktopSlides.length, mobileSlides.length]);
 
   useEffect(() => {
-    const activeSlide = images[index];
-    if (!playing || images.length < 2 || !activeSlide || isVideo(activeSlide)) return;
+    const activeSlide = slides[index];
+    if (!playing || slides.length < 2 || !activeSlide || isVideo(activeSlide)) return;
 
-    const timer = window.setTimeout(() => setIndex((value) => (value + 1) % images.length), 7000);
+    const timer = window.setTimeout(() => setIndex((value) => (value + 1) % slides.length), 7000);
     return () => window.clearTimeout(timer);
-  }, [images, index, playing]);
+  }, [slides, index, playing]);
+
+  // نحافظ فقط على الشريحة الحالية وجارتيها. هكذا تبقى حركة الـcross-fade
+  // كما هي، لكن بقية الصور والفيديوهات لا تدخل DOM ولا يبدأ تحميلها.
+  const mountedIndices = useMemo(() => {
+    const result = new Set<number>();
+    if (slides.length === 0) return result;
+
+    result.add(index);
+    if (slides.length > 1) {
+      result.add((index - 1 + slides.length) % slides.length);
+      result.add((index + 1) % slides.length);
+    }
+    return result;
+  }, [index, slides.length]);
 
   // ينتقل إلى الشريحة السابقة.
-  const previous = () => setIndex((value) => images.length > 0 ? (value - 1 + images.length) % images.length : 0);
+  const previous = () => setIndex((value) => slides.length > 0 ? (value - 1 + slides.length) % slides.length : 0);
   // ينتقل إلى الشريحة التالية.
-  const next = () => setIndex((value) => images.length > 0 ? (value + 1) % images.length : 0);
+  const next = () => setIndex((value) => slides.length > 0 ? (value + 1) % slides.length : 0);
 
   return (
     <section className="visual-hero" aria-label="صور القرآن الكريم">
       <div className="visual-slides">
-        {images.map((src, item) => {
-          const className = item === index ? "active" : "";
+        {slides.map((src, item) => {
+          if (!mountedIndices.has(item)) return null;
+
+          const active = item === index;
+          const className = active ? "active" : "";
           const label = `صورة روحانية للقرآن الكريم ${item + 1}`;
 
           return isVideo(src) ? (
             <HeroVideo
               src={src}
-              active={item === index}
+              active={active}
               playing={playing}
-              preload={item === 0 ? "auto" : "metadata"}
+              // الفيديو الحالي فقط يأخذ auto. الفيديوان المجاوران يحملان metadata
+              // صغيرة للاستعداد للانتقال من دون تنزيل كل فيديوهات الـHero.
+              preload={active ? "auto" : "metadata"}
               label={label}
               onEnded={() => {
                 if (item === index && playing) next();
@@ -124,7 +152,10 @@ export function HeroCarousel({ desktopMedia, mobileMedia }: HeroCarouselProps) {
               src={src}
               fill
               sizes="100vw"
-              preload={item === 0}
+              // الشريحة الحالية فقط Eager/High، والجارتان Lazy/Low.
+              loading={active ? "eager" : "lazy"}
+              fetchPriority={active ? "high" : "low"}
+              preload={active && index === 0}
               unoptimized={src.endsWith(".gif")}
               alt={label}
               key={src}
@@ -139,7 +170,7 @@ export function HeroCarousel({ desktopMedia, mobileMedia }: HeroCarouselProps) {
         <button type="button" onClick={previous} aria-label="الصورة السابقة"><ChevronRight /></button>
       </div>
       <div className="carousel-dots">
-        {images.map((src, item) => <button type="button" className={item === index ? "active" : ""} onClick={() => setIndex(item)} key={src} aria-label={`الصورة ${item + 1}`} />)}
+        {slides.map((src, item) => <button type="button" className={item === index ? "active" : ""} onClick={() => setIndex(item)} key={src} aria-label={`الصورة ${item + 1}`} />)}
       </div>
     </section>
   );

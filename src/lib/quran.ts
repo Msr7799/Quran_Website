@@ -73,7 +73,12 @@ export async function getSynchronizedReciters() {
 }
 
 export async function getSurahNameAssets() {
-  return (await fetchQuranData<DataResponse<SurahNameAsset[]>>("surah-names")).data;
+  try {
+    return (await fetchQuranData<DataResponse<SurahNameAsset[]>>("surah-names")).data;
+  } catch {
+    // Surah pages remain usable even if the artwork API is temporarily unavailable.
+    return [];
+  }
 }
 
 export async function getRadios() {

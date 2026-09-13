@@ -1,0 +1,940 @@
+{
+  "converted_assets": [
+    {
+      "source": "public/svg/nav/about.svg",
+      "output": "public/svg/nav/about.webp",
+      "before_bytes": 9922674,
+      "after_bytes": 20514
+    },
+    {
+      "source": "public/svg/nav/al_mushaf.svg",
+      "output": "public/svg/nav/al_mushaf.webp",
+      "before_bytes": 830048,
+      "after_bytes": 15626
+    },
+    {
+      "source": "public/svg/nav/deep_search.svg",
+      "output": "public/svg/nav/deep_search.webp",
+      "before_bytes": 541175,
+      "after_bytes": 24678
+    },
+    {
+      "source": "public/svg/nav/islamic_calendar.svg",
+      "output": "public/svg/nav/islamic_calendar.webp",
+      "before_bytes": 441652,
+      "after_bytes": 9810
+    },
+    {
+      "source": "public/svg/nav/library_pdf.svg",
+      "output": "public/svg/nav/library_pdf.webp",
+      "before_bytes": 104694,
+      "after_bytes": 1798
+    },
+    {
+      "source": "public/svg/nav/listening_to_quran.svg",
+      "output": "public/svg/nav/listening_to_quran.webp",
+      "before_bytes": 243427,
+      "after_bytes": 2950
+    },
+    {
+      "source": "public/svg/nav/live_broadcast.svg",
+      "output": "public/svg/nav/live_broadcast.webp",
+      "before_bytes": 1958795,
+      "after_bytes": 8514
+    },
+    {
+      "source": "public/svg/nav/noor_chat.svg",
+      "output": "public/svg/nav/noor_chat.webp",
+      "before_bytes": 3214254,
+      "after_bytes": 5264
+    },
+    {
+      "source": "public/svg/nav/quran_reader_and_tafsir.svg",
+      "output": "public/svg/nav/quran_reader_and_tafsir.webp",
+      "before_bytes": 231215,
+      "after_bytes": 6214
+    },
+    {
+      "source": "public/svg/nav/youtube_channel.svg",
+      "output": "public/svg/nav/youtube_channel.webp",
+      "before_bytes": 121109,
+      "after_bytes": 2380
+    },
+    {
+      "source": "public/svg/search_icon.svg",
+      "output": "public/svg/search_icon.webp",
+      "before_bytes": 547519,
+      "after_bytes": 28500
+    }
+  ],
+  "converted_before_bytes": 18156562,
+  "converted_after_bytes": 126248,
+  "deleted_unused_svg_count": 72,
+  "deleted_unused_svg_bytes": 5502593,
+  "deleted_unused_svg": [
+    {
+      "path": "public/svg/alert.svg",
+      "bytes": 3601
+    },
+    {
+      "path": "public/svg/alheekmah_logo.svg",
+      "bytes": 11613
+    },
+    {
+      "path": "public/svg/arrow_down.svg",
+      "bytes": 1838
+    },
+    {
+      "path": "public/svg/ayah_bookmarked.svg",
+      "bytes": 13181
+    },
+    {
+      "path": "public/svg/azkar.svg",
+      "bytes": 4059
+    },
+    {
+      "path": "public/svg/azkar_b.svg",
+      "bytes": 11524
+    },
+    {
+      "path": "public/svg/backward.svg",
+      "bytes": 4123
+    },
+    {
+      "path": "public/svg/besmAllah.svg",
+      "bytes": 9542
+    },
+    {
+      "path": "public/svg/besmAllah2.svg",
+      "bytes": 9898
+    },
+    {
+      "path": "public/svg/book_back.svg",
+      "bytes": 605
+    },
+    {
+      "path": "public/svg/bookmark.svg",
+      "bytes": 13951
+    },
+    {
+      "path": "public/svg/bookmark2.svg",
+      "bytes": 13951
+    },
+    {
+      "path": "public/svg/bookmark3.svg",
+      "bytes": 13951
+    },
+    {
+      "path": "public/svg/bookmark_ic.svg",
+      "bytes": 170
+    },
+    {
+      "path": "public/svg/bookmark_icon.svg",
+      "bytes": 1928
+    },
+    {
+      "path": "public/svg/bookmark_icon2.svg",
+      "bytes": 2447
+    },
+    {
+      "path": "public/svg/bookmark_list.svg",
+      "bytes": 5705
+    },
+    {
+      "path": "public/svg/bookmarked.svg",
+      "bytes": 13951
+    },
+    {
+      "path": "public/svg/books.svg",
+      "bytes": 6624
+    },
+    {
+      "path": "public/svg/button_curve.svg",
+      "bytes": 271
+    },
+    {
+      "path": "public/svg/check_mark.svg",
+      "bytes": 3071
+    },
+    {
+      "path": "public/svg/close.svg",
+      "bytes": 4089
+    },
+    {
+      "path": "public/svg/copy_icon.svg",
+      "bytes": 3534
+    },
+    {
+      "path": "public/svg/decorations.svg",
+      "bytes": 19297
+    },
+    {
+      "path": "public/svg/email.svg",
+      "bytes": 11631
+    },
+    {
+      "path": "public/svg/font_size.svg",
+      "bytes": 5012
+    },
+    {
+      "path": "public/svg/left_book.svg",
+      "bytes": 11759
+    },
+    {
+      "path": "public/svg/list_icon.svg",
+      "bytes": 3990
+    },
+    {
+      "path": "public/svg/menu_curve.svg",
+      "bytes": 172
+    },
+    {
+      "path": "public/svg/mktabate.svg",
+      "bytes": 972872
+    },
+    {
+      "path": "public/svg/noor.svg",
+      "bytes": 915825
+    },
+    {
+      "path": "public/svg/noor_white.svg",
+      "bytes": 738078
+    },
+    {
+      "path": "public/svg/notifications.svg",
+      "bytes": 3935
+    },
+    {
+      "path": "public/svg/options.svg",
+      "bytes": 3986
+    },
+    {
+      "path": "public/svg/panel-left-toggle.svg",
+      "bytes": 235838
+    },
+    {
+      "path": "public/svg/pause_arrow.svg",
+      "bytes": 2369
+    },
+    {
+      "path": "public/svg/play-arrow.svg",
+      "bytes": 8877
+    },
+    {
+      "path": "public/svg/play_all.svg",
+      "bytes": 13206
+    },
+    {
+      "path": "public/svg/play_ayah_num.svg",
+      "bytes": 8002
+    },
+    {
+      "path": "public/svg/play_page.svg",
+      "bytes": 12858
+    },
+    {
+      "path": "public/svg/playlist.svg",
+      "bytes": 30354
+    },
+    {
+      "path": "public/svg/quran_au_ic.svg",
+      "bytes": 1554
+    },
+    {
+      "path": "public/svg/quran_ic_s.svg",
+      "bytes": 3169
+    },
+    {
+      "path": "public/svg/rewind.svg",
+      "bytes": 4122
+    },
+    {
+      "path": "public/svg/right_book.svg",
+      "bytes": 15359
+    },
+    {
+      "path": "public/svg/sajda_icon.svg",
+      "bytes": 5693
+    },
+    {
+      "path": "public/svg/share.svg",
+      "bytes": 3082
+    },
+    {
+      "path": "public/svg/share_icon.svg",
+      "bytes": 2326
+    },
+    {
+      "path": "public/svg/slider_ic.svg",
+      "bytes": 3023
+    },
+    {
+      "path": "public/svg/slider_ic2.svg",
+      "bytes": 7626
+    },
+    {
+      "path": "public/svg/sora_num.svg",
+      "bytes": 4890
+    },
+    {
+      "path": "public/svg/space_line.svg",
+      "bytes": 12129
+    },
+    {
+      "path": "public/svg/splash_icon.svg",
+      "bytes": 3947
+    },
+    {
+      "path": "public/svg/splash_icon_half_s.svg",
+      "bytes": 13698
+    },
+    {
+      "path": "public/svg/splash_icon_s.svg",
+      "bytes": 17680
+    },
+    {
+      "path": "public/svg/splash_icon_w.svg",
+      "bytes": 3831
+    },
+    {
+      "path": "public/svg/surah_banner1.svg",
+      "bytes": 33247
+    },
+    {
+      "path": "public/svg/surah_banner2.svg",
+      "bytes": 33305
+    },
+    {
+      "path": "public/svg/surah_banner3.svg",
+      "bytes": 33365
+    },
+    {
+      "path": "public/svg/surah_banner4.svg",
+      "bytes": 33305
+    },
+    {
+      "path": "public/svg/surah_banner_ayah1.svg",
+      "bytes": 33365
+    },
+    {
+      "path": "public/svg/surah_banner_ayah2.svg",
+      "bytes": 33363
+    },
+    {
+      "path": "public/svg/surah_banner_ayah4.svg",
+      "bytes": 33305
+    },
+    {
+      "path": "public/svg/tafseer.svg",
+      "bytes": 972872
+    },
+    {
+      "path": "public/svg/tafseer_book.svg",
+      "bytes": 621132
+    },
+    {
+      "path": "public/svg/tafseer_white.svg",
+      "bytes": 399543
+    },
+    {
+      "path": "public/svg/tafsir_icon.svg",
+      "bytes": 3455
+    },
+    {
+      "path": "public/svg/tashkil.svg",
+      "bytes": 14697
+    },
+    {
+      "path": "public/svg/theme0.svg",
+      "bytes": 942
+    },
+    {
+      "path": "public/svg/theme1.svg",
+      "bytes": 968
+    },
+    {
+      "path": "public/svg/theme2.svg",
+      "bytes": 944
+    },
+    {
+      "path": "public/svg/theme3.svg",
+      "bytes": 968
+    }
+  ],
+  "retained_svg_count": 135,
+  "retained_svg": [
+    {
+      "path": "public/svg/alwaqf/01.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/alwaqf/02.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/alwaqf/03.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/alwaqf/04.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/alwaqf/05.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/alwaqf.svg",
+      "reason": [
+        "src/components/WaqfGuideLink.tsx"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/1.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/10.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/hijri/11.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/hijri/12.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/hijri/2.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/3.svg",
+      "reason": [
+        "public/library/waqf_translated.json",
+        "src/app/about/AboutContent.tsx"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/4.svg",
+      "reason": [
+        "public/library/waqf_translated.json"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/5.svg",
+      "reason": [
+        "public/library/waqf_translated.json",
+        "src/app/about/AboutContent.tsx"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/6.svg",
+      "reason": [
+        "src/app/about/AboutContent.tsx"
+      ]
+    },
+    {
+      "path": "public/svg/hijri/7.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/hijri/8.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/hijri/9.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/home.svg",
+      "reason": [
+        "src/components/icons.tsx"
+      ]
+    },
+    {
+      "path": "public/svg/nightOfQadir.svg",
+      "reason": [
+        "public/library/religious_event.json"
+      ]
+    },
+    {
+      "path": "public/svg/surah_name/001.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0010.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00100.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00101.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00102.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00103.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00104.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00105.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00106.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00107.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00108.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00109.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0011.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00110.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00111.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00112.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00113.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/00114.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0012.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0013.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0014.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0015.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0016.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0017.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0018.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0019.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/002.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0020.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0021.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0022.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0023.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0024.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0025.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0026.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0027.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0028.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0029.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/003.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0030.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0031.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0032.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0033.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0034.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0035.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0036.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0037.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0038.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0039.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/004.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0040.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0041.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0042.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0043.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0044.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0045.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0046.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0047.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0048.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0049.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/005.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0050.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0051.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0052.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0053.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0054.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0055.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0056.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0057.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0058.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0059.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/006.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0060.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0061.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0062.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0063.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0064.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0065.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0066.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0067.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0068.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0069.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/007.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0070.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0071.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0072.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0073.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0074.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0075.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0076.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0077.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0078.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0079.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/008.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0080.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0081.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0082.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0083.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0084.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0085.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0086.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0087.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0088.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0089.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/009.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0090.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0091.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0092.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0093.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0094.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0095.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0096.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0097.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0098.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/surah_name/0099.svg",
+      "reason": "dynamic-family"
+    },
+    {
+      "path": "public/svg/tenDaysOfDhul-Hijjah.svg",
+      "reason": [
+        "public/library/religious_event.json"
+      ]
+    }
+  ],
+  "method": "Large runtime nav/search SVGs were rasterized at 256x256, encoded with FFmpeg libwebp lossless, and verified pixel-identical to their 256px raster reference. Dynamic SVG families were retained."
+}

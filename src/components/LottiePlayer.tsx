@@ -2,7 +2,6 @@
 
 import Lottie from "lottie-react";
 import { useEffect, useState } from "react";
-import { cloudinaryAsset } from "@/lib/cloudinary-assets";
 
 export function LottiePlayer({ src, className, label }: { src: string; className?: string; label?: string }) {
   const [animationData, setAnimationData] = useState<object | null>(null);
@@ -15,8 +14,8 @@ export function LottiePlayer({ src, className, label }: { src: string; className
     media.addEventListener("change", updatePreference);
 
     const controller = new AbortController();
-    const source = src.startsWith("/lottie/") ? cloudinaryAsset(src) : src;
-    fetch(source, { signal: controller.signal })
+    // Lottie JSON ships with the app and is faster from the same-origin Vercel CDN.
+    fetch(src, { signal: controller.signal })
       .then((response) => {
         if (!response.ok) throw new Error(`Unable to load animation: ${response.status}`);
         return response.json() as Promise<object>;

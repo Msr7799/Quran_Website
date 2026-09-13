@@ -1,30 +1,27 @@
 // المسار: src/components/icons.tsx — يوفر مكوّنات الأيقونات المعتمدة على صور المشروع.
 import Image from "next/image";
 import type { ComponentType } from "react";
-import { cloudinaryAsset } from "@/lib/cloudinary-assets";
 
 type IconComponent = ComponentType<{ className?: string }>;
 // ينشئ مكوّن أيقونة موحدًا من ملف صورة.
 const assetIcon = (src: string, alt: string): IconComponent =>
   // يعرض ملف الصورة داخل غلاف أيقونة موحد.
   function AssetIcon({ className }) {
-  const isLocalNavigationIcon = src.startsWith("/svg/nav/");
-  const detailedClass = isLocalNavigationIcon ? " nav-detailed-icon" : "";
-  const imageSrc = isLocalNavigationIcon ? src : cloudinaryAsset(src);
-  return <Image className={`nav-asset-icon${detailedClass} ${className ?? ""}`} src={imageSrc} width={48} height={48} alt={alt} aria-hidden="true" />;
+  const detailedClass = src.startsWith("/svg/nav/") ? " nav-detailed-icon" : "";
+  return <Image className={`nav-asset-icon${detailedClass} ${className ?? ""}`} src={src} width={48} height={48} alt={alt} aria-hidden="true" />;
 };
 
 const HomeIcon = assetIcon("/svg/home.svg", "");
-const QuranWrittenIcon = assetIcon("/svg/nav/quran_reader_and_tafsir.svg", "");
-const MushafIcon = assetIcon("/svg/nav/al_mushaf.svg", "");
-const QuranAudioIcon = assetIcon("/svg/nav/listening_to_quran.svg", "");
-const BooksPdfIcon = assetIcon("/svg/nav/library_pdf.svg", "");
-const LiveIcon = assetIcon("/svg/nav/live_broadcast.svg", "");
-const VideoIcon = assetIcon("/svg/nav/youtube_channel.svg", "");
-const CalendarIcon = assetIcon("/svg/nav/islamic_calendar.svg", "");
-const ResearchIcon = assetIcon("/svg/nav/deep_search.svg", "");
-const NoorIcon = assetIcon("/svg/nav/noor_chat.svg", "");
-const AboutIcon = assetIcon("/svg/nav/about.svg", "");
+const QuranWrittenIcon = assetIcon("/svg/nav/quran_reader_and_tafsir.webp", "");
+const MushafIcon = assetIcon("/svg/nav/al_mushaf.webp", "");
+const QuranAudioIcon = assetIcon("/svg/nav/listening_to_quran.webp", "");
+const BooksPdfIcon = assetIcon("/svg/nav/library_pdf.webp", "");
+const LiveIcon = assetIcon("/svg/nav/live_broadcast.webp", "");
+const VideoIcon = assetIcon("/svg/nav/youtube_channel.webp", "");
+const CalendarIcon = assetIcon("/svg/nav/islamic_calendar.webp", "");
+const ResearchIcon = assetIcon("/svg/nav/deep_search.webp", "");
+const NoorIcon = assetIcon("/svg/nav/noor_chat.webp", "");
+const AboutIcon = assetIcon("/svg/nav/about.webp", "");
 
 export type NavItem = { href: string; label: string; translationKey: string; icon: IconComponent };
 

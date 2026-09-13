@@ -58,6 +58,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="ar" dir="rtl" translate="no" className="notranslate" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <meta name="google" content="notranslate" />
+        <link rel="preconnect" href="https://res.cloudinary.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="//res.cloudinary.com" />
+        <link rel="preload" href="/fonts/arabic-font.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
         <script id="theme-initializer" dangerouslySetInnerHTML={{ __html: themeInitializer }} />
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2259594031936212"

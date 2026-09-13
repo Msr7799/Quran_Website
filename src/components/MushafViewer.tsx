@@ -109,7 +109,7 @@ export function MushafViewer({ page }: { page: number }) {
     let active = true;
     import("pdfjs-dist").then((pdfjs) => {
       pdfjs.GlobalWorkerOptions.workerSrc = new URL("pdfjs-dist/build/pdf.worker.min.mjs", import.meta.url).toString();
-      return pdfjs.getDocument({ url: mushaf.url, wasmUrl: "/api/media/pdfjs/wasm/" }).promise;
+      return pdfjs.getDocument({ url: mushaf.url, wasmUrl: "/pdfjs/wasm/" }).promise;
     }).then((pdf) => { if (active) setPdfDocument(pdf); }).catch(() => { if (active) setError(true); });
     return () => { active = false; };
   }, []);

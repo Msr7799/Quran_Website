@@ -182,7 +182,7 @@ export function Header() {
       <button className="rail-drag-handle" type="button" onPointerDown={startRailDrag} onPointerMove={moveRail} onPointerUp={finishRailDrag} onPointerCancel={cancelRailDrag} aria-label="تحريك قائمة التنقل" title="اسحب لتحريك القائمة"><Grip /></button>
       {renderRailItem(navigation[0])}
       <div className="rail-scroll" role="navigation" aria-label={t("common.navigation", "روابط الموقع")}>
-        <button onClick={() => setSearchOpen(true)} data-label={t("common.search", "البحث")} aria-label={t("common.search", "البحث")}><Image className="rail-local-icon" src={cloudinaryAsset("/svg/search_icon.svg")} width={33} height={33} alt="" aria-hidden="true" /></button>
+        <button onClick={() => setSearchOpen(true)} data-label={t("common.search", "البحث")} aria-label={t("common.search", "البحث")}><Image className="rail-local-icon" src="/svg/search_icon.webp" width={33} height={33} alt="" aria-hidden="true" /></button>
         {navigation.slice(1).map(renderRailItem)}
       </div>
       <button className="theme-rail" onClick={toggleTheme} data-label="تبديل المظهر" aria-label="تبديل المظهر"><LottiePlayer className="rail-theme-animation" src={dark ? "/lottie/sun.json" : "/lottie/moon.json"} /></button>

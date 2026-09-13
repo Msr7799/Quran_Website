@@ -6,7 +6,6 @@ import Image from "next/image";
 import { Fragment, useMemo, useState } from "react";
 import { useLocale } from "@/i18n/LocaleProvider";
 import { LottiePlayer } from "@/components/LottiePlayer";
-import { cloudinaryAsset } from "@/lib/cloudinary-assets";
 
 export type ReligiousEvent = { id: number; key: string; title: string; month: number; day: number[]; hadith: string; bookInfo: string; isReminder: boolean; visual?: { type: "lottie" | "svg"; src: string } };
 const hijriNumeric = new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { day: "numeric", month: "numeric", year: "numeric" });
@@ -17,7 +16,7 @@ function FormattedDate({ formatter, date }: { formatter: Intl.DateTimeFormat; da
 }
 // يستخرج اليوم والشهر الهجريين من التاريخ.
 function hijriParts(date: Date) { const parts = hijriNumeric.formatToParts(date); return { day: Number(parts.find((part) => part.type === "day")?.value), month: Number(parts.find((part) => part.type === "month")?.value) }; }
-function EventVisual({ event }: { event: ReligiousEvent }) { if (!event.visual) return null; return <span className="calendar-event-visual" aria-hidden="true">{event.visual.type === "lottie" ? <LottiePlayer src={event.visual.src} /> : <Image src={cloudinaryAsset(event.visual.src)} width={76} height={76} alt="" />}</span>; }
+function EventVisual({ event }: { event: ReligiousEvent }) { if (!event.visual) return null; return <span className="calendar-event-visual" aria-hidden="true">{event.visual.type === "lottie" ? <LottiePlayer src={event.visual.src} /> : <Image src={event.visual.src} width={76} height={76} alt="" />}</span>; }
 
 // يبني التقويم المزدوج ويربط الأيام بالمناسبات.
 export function DualCalendar({ events }: { events: ReligiousEvent[] }) {
@@ -42,7 +41,7 @@ export function DualCalendar({ events }: { events: ReligiousEvent[] }) {
   const move = (months: number) => setCursor((value) => { const next = new Date(value.getFullYear(), value.getMonth() + months, 1); setSelected(next); return next; });
 
   return <div className="dual-calendar">
-    <header className="calendar-toolbar"><button onClick={() => move(-1)} aria-label="الشهر السابق"><ChevronRight /></button><div className="calendar-title"><Image className="calendar-hijri-mark" src={cloudinaryAsset(`/svg/hijri/${displayHijriMonth}.svg`)} width={68} height={68} alt="" aria-hidden="true" /><div><h2><FormattedDate formatter={gregorian} date={cursor} /></h2><p><FormattedDate formatter={hijriTitle} date={cursor} /> — <FormattedDate formatter={hijriTitle} date={new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0)} /></p></div></div><button onClick={() => move(1)} aria-label="الشهر التالي"><ChevronLeft /></button></header>
+    <header className="calendar-toolbar"><button onClick={() => move(-1)} aria-label="الشهر السابق"><ChevronRight /></button><div className="calendar-title"><Image className="calendar-hijri-mark" src={`/svg/hijri/${displayHijriMonth}.svg`} width={68} height={68} alt="" aria-hidden="true" /><div><h2><FormattedDate formatter={gregorian} date={cursor} /></h2><p><FormattedDate formatter={hijriTitle} date={cursor} /> — <FormattedDate formatter={hijriTitle} date={new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0)} /></p></div></div><button onClick={() => move(1)} aria-label="الشهر التالي"><ChevronLeft /></button></header>
     <div className="calendar-weekdays">{weekdays.map((day) => <strong key={day}>{day}</strong>)}</div>
     <div className="calendar-grid" style={{ "--first-day": days[0]?.date.getDay() + 1 } as React.CSSProperties}>{days.map(({ date, islamic, events: dayEvents }) => { const current = date.toDateString() === today.toDateString(); const active = date.toDateString() === selected.toDateString(); return <button type="button" onClick={() => setSelected(date)} aria-pressed={active} aria-label={`${date.getDate()}`} className={`${current ? "today " : ""}${active ? "selected " : ""}${dayEvents.length ? "has-event" : ""}`} key={date.toISOString()}><b className="number-font">{date.getDate()}</b><span><span className="number-font">{islamic.day}</span> هـ</span>{dayEvents.map((event) => <small key={event.id}>{event.title}</small>)}</button>; })}</div>
     {selectedDay && <section className="selected-day-panel"><header><span>{t("ui.selectedDay", "اليوم المحدد")}</span><h2><FormattedDate formatter={fullGregorian} date={selectedDay.date} /></h2><p><FormattedDate formatter={fullHijri} date={selectedDay.date} /></p></header>{selectedDay.events.length ? selectedDay.events.map((event) => <article key={event.id}><EventVisual event={event} /><div><h3>{event.title}</h3><p>{event.hadith}</p>{event.bookInfo && <small>{event.bookInfo}</small>}</div></article>) : <p className="empty-events">{t("ui.noDayEvent", "لا توجد مناسبة دينية مسجلة في هذا اليوم.")}</p>}</section>}
