@@ -707,7 +707,7 @@ main {
 .surah-header h1 { font-family: Uthmanic, serif; }
 .surah-calligraphy span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .surah-calligraphy img { width: min(280px,55vw); height: 92px; margin: 0 auto; object-fit: contain; }
-:root[data-theme="dark"] .surah-calligraphy img { padding: 8px 16px; border-radius: 14px; background: #f5efe4; }
+:root[data-theme="dark"] .surah-calligraphy img { padding: 8px 16px; border-radius: 14px; background: #0a0a0a; }
 .mushaf-shell h1 { font-family: inherit; }
 .surah-header p,
 .surah-header span,

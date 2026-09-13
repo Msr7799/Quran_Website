@@ -4,7 +4,6 @@ import { getAzkar, getCollections, getSurahs } from "@/lib/quran";
 import { getHeroMedia } from "@/lib/hero-media";
 import { getYouTubeHomeContent } from "@/lib/youtube";
 import { safeJsonLd, SITE_NAME, SITE_URL } from "@/lib/seo";
-import { connection } from "next/server";
 
 type AzkarFile = { data: Array<{ id: number; category: string; zekr: string; reference: string }> };
 type Collection = { bookNumber: number; bookName: string; aboutBook: string; parts_count: number };
@@ -22,8 +21,6 @@ async function loadHomeData() {
 }
 
 export default async function Home() {
-  // Read live content after deployment so MongoDB and Cloudinary updates appear without rebuilding.
-  await connection();
   const [surahs, content, heroMedia, youtubeContent] = await Promise.all([getSurahs(), loadHomeData(), getHeroMedia(), getYouTubeHomeContent()]);
   const websiteJsonLd = {
     "@context": "https://schema.org",

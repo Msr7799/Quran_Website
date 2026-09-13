@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { YouTubeFeaturedVideo, YouTubeHomeContent, YouTubePlaylist, YouTubeShort } from "@/lib/youtube-types";
+import { unstable_cache } from "next/cache";
 
 const CHANNEL_ID = "UCseM-nFP_VlkEO7LveaD72Q";
 const FEATURED_VIDEO_IDS = [
@@ -152,10 +153,12 @@ async function loadYouTubeContent(): Promise<YouTubeHomeContent> {
   };
 }
 
+const getCachedYouTubeContent = unstable_cache(loadYouTubeContent, ["youtube-home-content"], { revalidate: 900 });
+
 export async function getYouTubeHomeContent(): Promise<YouTubeHomeContent | null> {
   if (contentCache && contentCache.expiresAt > Date.now()) return contentCache.value;
   if (!pendingContent) {
-    pendingContent = loadYouTubeContent()
+    pendingContent = getCachedYouTubeContent()
       .then((value) => {
         contentCache = { value, expiresAt: Date.now() + CACHE_TTL_MS };
         return value;
