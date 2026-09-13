@@ -65,6 +65,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <head>
         <meta name="google" content="notranslate" />
         <script id="theme-initializer" dangerouslySetInnerHTML={{ __html: themeInitializer }} />
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2259594031936212"
+          strategy="beforeInteractive"
+          crossOrigin="anonymous"
+        />
       </head>
       <body>
         <LocaleProvider>
@@ -76,11 +81,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <FloatingTools />
           </div>
         </LocaleProvider>
-        <Script
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2259594031936212"
-          strategy="afterInteractive"
-          crossOrigin="anonymous"
-        />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }} />
       </body>
     </html>
